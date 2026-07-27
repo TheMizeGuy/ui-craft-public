@@ -1,0 +1,152 @@
+[
+  {
+    "id": "anti-ai-gradient-hero-text",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "gradient-hero.html",
+    "title": "Gradient clip-text on hero heading using the AI purple-to-blue palette",
+    "evidence": "class=\"...bg-gradient-to-r from-purple-600 via-fuchsia-500 to-blue-500 bg-clip-text text-transparent\"",
+    "tellRef": "V5"
+  },
+  {
+    "id": "anti-ai-frosted-sticky-nav",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "frosted-nav-neon.html",
+    "title": "Frosted-glass sticky navigation bar (Strongest-10 #2 fingerprint)",
+    "evidence": "<nav class=\"backdrop-blur-md bg-white/70 border-b sticky top-0\">",
+    "tellRef": "L6"
+  },
+  {
+    "id": "anti-ai-neon-glow-cta",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "frosted-nav-neon.html",
+    "title": "Saturated purple neon glow box-shadow on CTA, decoupled from any brand reason",
+    "evidence": ".cta { box-shadow: 0 0 40px 6px rgba(168,85,247,.6); }",
+    "tellRef": "C18"
+  },
+  {
+    "id": "anti-ai-icon-tinted-oval",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "frosted-nav-neon.html",
+    "title": "Icon wrapped in a tinted rounded-full background (Strongest-10 #6 fingerprint)",
+    "evidence": "<span class=\"rounded-full bg-indigo-100 p-3\"><svg></svg></span>",
+    "tellRef": "V1"
+  },
+  {
+    "id": "anti-ai-cream-serif-tasteful-default",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "legacy-marketing-page.html",
+    "title": "Cream background plus serif display face (two of three tasteful-default markers)",
+    "evidence": "body { background: #faf8f5; font-family: 'Instrument Serif', Georgia, serif; }",
+    "tellRef": "cream-serif-sage"
+  },
+  {
+    "id": "anti-ai-inter-content-subtitle",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "legacy-marketing-page.html",
+    "title": "Inter as the sans companion on content copy in an otherwise serif design",
+    "evidence": ".subtitle { font-family: Inter, sans-serif; }",
+    "tellRef": "T1"
+  },
+  {
+    "id": "anti-ai-saas-speak-headline",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "legacy-marketing-page.html",
+    "title": "Vague SaaS-speak headline: 'Transform your workflow. Effortlessly.'",
+    "evidence": "<h1>Transform your workflow. Effortlessly.</h1>",
+    "tellRef": "W2"
+  },
+  {
+    "id": "anti-ai-undraw-flat-vector",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "legacy-marketing-page.html",
+    "title": "unDraw flat-vector illustration standing in for a real asset",
+    "evidence": "src=\"https://undraw.co/illustrations/team-collaboration.svg\"",
+    "tellRef": "I7"
+  },
+  {
+    "id": "anti-ai-default-shadcn-card",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "shadcn-card-kit.html",
+    "title": "Unmodified shadcn Card default (bg-card / text-card-foreground / shadow-sm / p-6)",
+    "evidence": "<div class=\"rounded-lg border bg-card text-card-foreground shadow-sm p-6\">",
+    "tellRef": "S3"
+  },
+  {
+    "id": "anti-ai-rounded-xl-shadow-border-card",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "shadcn-card-kit.html",
+    "title": "rounded-xl shadow-sm border card, straight from the generator (Strongest-10 #1)",
+    "evidence": "<div class=\"shadow-sm hover:shadow-md border border-gray-200 rounded-xl p-4\">",
+    "tellRef": "Strongest-10 #1"
+  },
+  {
+    "id": "anti-ai-cream-serif-sage-trifecta",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "cream-serif-sage.html",
+    "title": "Full cream + serif + sage tasteful-default trifecta with screenshot-card hero",
+    "evidence": "background: #faf8f5; font-family: 'Instrument Serif'...; .accent { color: #15573a; }",
+    "tellRef": "cream-serif-sage"
+  },
+  {
+    "id": "anti-ai-demoware-nonfunctional-button",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "missing-states.html",
+    "title": "Non-functional demo-ware button with an empty TODO handler",
+    "evidence": "<button onclick=\"/* TODO: wire refresh */\">Refresh</button>",
+    "tellRef": "section 15 (Demo-ware)"
+  },
+  {
+    "id": "anti-ai-happy-path-only-states",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "missing-states.html",
+    "title": "Happy-path-only table: no empty, error, or loading state designed",
+    "evidence": "<tbody> three 'Paid' rows; no empty/error/loading state present",
+    "tellRef": "section 12 (Missing States)"
+  },
+  {
+    "id": "anti-ai-gradient-text-single-tell",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "presence-single.html",
+    "title": "Gradient clip-text on a hero word, the one tell on an otherwise clean surface",
+    "evidence": ".accent { background: linear-gradient(90deg, oklch(0.62 0.15 25), oklch(0.72 0.16 60)); background-clip: text; color: transparent; }",
+    "tellRef": "V5"
+  },
+  {
+    "id": "anti-ai-token-system-drift",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "token-drift.html",
+    "title": "Hardcoded values bypass the defined token system; brand green drifts from --brand",
+    "evidence": ".save { background: #3b8f66; padding: 11px 17px; border-radius: 5px; } vs --brand:#2f6f4e / --space-* / --radius",
+    "tellRef": "section 14 (Design System Drift)"
+  }
+]

@@ -1,0 +1,218 @@
+[
+  {
+    "id": "anti-ai-gradient-hero-text",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/gradient-hero.html",
+    "line": 7,
+    "title": "Gradient text on hero heading",
+    "tellRef": "V5",
+    "evidence": "bg-clip-text text-transparent on the h1"
+  },
+  {
+    "id": "anti-ai-purple-gradient-hero",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/gradient-hero.html",
+    "line": 7,
+    "title": "Banned purple-to-blue gradient on hero",
+    "tellRef": "C5",
+    "evidence": "from-purple-600 via-fuchsia-500 to-blue-500"
+  },
+  {
+    "id": "anti-ai-shadcn-default-card",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/shadcn-card-kit.html",
+    "line": 7,
+    "title": "Unmodified shadcn Card primitive",
+    "tellRef": "S3",
+    "evidence": "rounded-lg border bg-card shadow-sm p-6, verbatim generator output"
+  },
+  {
+    "id": "anti-ai-card-combo",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/shadcn-card-kit.html",
+    "line": 9,
+    "title": "rounded plus shadow-sm plus border on every card",
+    "tellRef": "Strongest-10 #1"
+  },
+  {
+    "id": "anti-ai-icon-tinted-circle",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/frosted-nav-neon.html",
+    "line": 11,
+    "title": "Icon wrapped in a tinted circle",
+    "tellRef": "V1",
+    "evidence": "rounded-full bg-indigo-100 p-3 around the svg"
+  },
+  {
+    "id": "anti-ai-frosted-nav",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/frosted-nav-neon.html",
+    "line": 10,
+    "title": "Frosted-glass sticky navigation bar",
+    "tellRef": "L6",
+    "evidence": "backdrop-blur-md bg-white/70 border-b sticky top-0"
+  },
+  {
+    "id": "anti-ai-neon-glow",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/frosted-nav-neon.html",
+    "line": 8,
+    "title": "Neon glow box-shadow on the CTA",
+    "tellRef": "C18",
+    "evidence": "box-shadow: 0 0 40px 6px rgba(168,85,247,.6)"
+  },
+  {
+    "id": "anti-ai-cream-serif",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/legacy-marketing-page.html",
+    "line": 8,
+    "title": "Cream background plus serif display (tasteful default)",
+    "tellRef": "cream-serif-sage",
+    "evidence": "#faf8f5 background with Instrument Serif"
+  },
+  {
+    "id": "anti-ai-generic-font",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/legacy-marketing-page.html",
+    "line": 9,
+    "title": "Generic sans (Inter) as a primary face",
+    "tellRef": "T1"
+  },
+  {
+    "id": "anti-ai-hype-copy",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/legacy-marketing-page.html",
+    "line": 13,
+    "title": "Vague hype benefit copy",
+    "tellRef": "W2",
+    "evidence": "Transform your workflow. Effortlessly."
+  },
+  {
+    "id": "anti-ai-stock-illustration",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/legacy-marketing-page.html",
+    "line": 14,
+    "title": "unDraw flat-vector stock illustration",
+    "tellRef": "I7",
+    "evidence": "src=https://undraw.co/illustrations/..."
+  },
+  {
+    "id": "anti-ai-presence-gradient",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/presence-single.html",
+    "line": 18,
+    "title": "Gradient text on a hero word",
+    "tellRef": "V5"
+  },
+  {
+    "id": "anti-ai-tasteful-default",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/cream-serif-sage.html",
+    "line": 6,
+    "title": "Cream plus serif plus sage tasteful-default combination",
+    "tellRef": "cream-serif-sage",
+    "evidence": "#faf8f5 + Instrument Serif + #15573a sage"
+  },
+  {
+    "id": "anti-ai-token-drift",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/token-drift.html",
+    "line": 22,
+    "title": "Hardcoded values bypass the file's own token system",
+    "tellRef": "section 14",
+    "evidence": ".save uses #3b8f66 and padding 11px 17px instead of --brand / --space-300"
+  },
+  {
+    "id": "anti-ai-happy-path-only",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/missing-states.html",
+    "line": 20,
+    "title": "Happy-path only: no empty, loading, or error state",
+    "evidence": "table renders three hardcoded paid rows and nothing else"
+  },
+  {
+    "id": "anti-ai-demo-ware",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/missing-states.html",
+    "line": 18,
+    "title": "Non-functional Refresh control",
+    "tellRef": "section 15",
+    "evidence": "onclick is an empty TODO comment"
+  },
+  {
+    "id": "anti-ai-uncommitted-radius",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/uncommitted-radius.html",
+    "line": 1,
+    "title": "Uncommitted 8px radius on every interactive control",
+    "tellRef": "D1",
+    "evidence": "border-radius: 8px (the shadcn --radius default) on input, select, textarea, three chips and the submit button, with no radius identity declared anywhere"
+  },
+  {
+    "id": "responsive-fixed-pixel-shell",
+    "dimension": "responsive",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/fixed-desktop-shell.html",
+    "line": 1,
+    "title": "Fixed-pixel page shell that cannot resize",
+    "tellRef": "L13",
+    "evidence": "no viewport meta, container at width: 1200px (not max-width), grid-template-columns: repeat(3, 360px); overflows below 1200px and never uses room above it"
+  },
+  {
+    "id": "responsive-viewport-query-for-component",
+    "dimension": "responsive",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/viewport-query-card.html",
+    "line": 1,
+    "title": "Component laid out by a viewport media query instead of a container query",
+    "tellRef": "P1",
+    "evidence": ".firing switches to two columns at @media (min-width: 60rem) while living in both a ~16rem rail and a wide main column"
+  },
+  {
+    "id": "responsive-vh-and-safe-area",
+    "dimension": "responsive",
+    "severity": "MEDIUM",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/vh-bottom-bar.html",
+    "line": 1,
+    "title": "100vh surface with a bottom bar that ignores dvh and the safe-area inset",
+    "tellRef": "P3",
+    "evidence": "height: 100vh with a position: fixed bottom bar carrying no env(safe-area-inset-bottom) padding and no viewport-fit=cover"
+  }
+]

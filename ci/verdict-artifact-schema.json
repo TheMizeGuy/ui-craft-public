@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:ui-craft:schema:verdict-artifact:v3",
+  "title": "ui-craft verdict artifact (schemaVersion 3)",
+  "description": "Self-attested JSON verdict bundle written after a /ui-craft:improve-ui pass. Not signed and not cryptographically bound: its independent cross-checks are the reviewed-sha binding and the no-CRITICAL-finding rule that ci/ui-craft-gate.sh applies on top of this shape. The gate requires an artifact matching this schema -- every verdict GREEN, overall GREEN, blocker_findings empty -- before a UI-adjacent PR may merge, and it parses THIS FILE at runtime rather than reimplementing it, so every constraint declared here is enforced. Lineage: v1 was ui-review-artifact-schema, in production at LemonGames. v2 made 'reviewer' and 'scope' mandatory (a GREEN verdict with no attribution or scope is not trustworthy), made 'pr' optional (sha is the authoritative binding key), and added the antiAiAesthetic and typescriptSafety verdicts as optional. v3 promotes antiAiAesthetic to required (every UI surface can be judged for AI-default aesthetics, so omitting the key was a free way to drop the plugin's headline dimension from the gate) and adds the 'usability' finding dimension plus its optional verdict, so a task-flow defect can be recorded and gated instead of being unrepresentable.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sha",
+    "timestamp",
+    "reviewer",
+    "scope",
+    "verdicts",
+    "overall",
+    "blocker_findings",
+    "high_findings"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 3,
+      "description": "Artifact schema version. Bump on any field addition, rename, or type change; ui-craft-gate.sh reads this const and hard-rejects any other value."
+    },
+    "pr": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "description": "PR number, when run inside a PR context. Optional -- unlike v1, the gate does not require it. sha is the authoritative binding key; pr is a convenience for artifact-file lookup and, when present, is still checked against PR_NUMBER."
+    },
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$",
+      "description": "Git SHA (short or full, lowercase hex) that the review was run against. The gate binds this to the exact commit under test -- a stale artifact naming an older sha is rejected, not silently reused."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when the review completed."
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier for the review dispatch -- e.g. 'ui-team-lead', 'ui-verifier', or a collaborator login. Required in v2: an artifact with no attribution is not admissible evidence."
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scope the review ran against -- a path, a preview URL, or 'full'. Required in v2."
+    },
+    "verdicts": {
+      "type": "object",
+      "description": "Per-dimension gate tokens (GREEN|YELLOW|RED), collapsed from the richer four-point verdict families in references/review/04-verdicts-and-verification.md. Key names here intentionally mirror the CI-gate convention (visual/responsive/motion/accessibility/runtime), not the finding.dimension enum below -- see the mapping table in ci/README.md. An omitted OPTIONAL key means 'that specialist did not run'; a present key is a claim the gate enforces. Only typescriptSafety and usability may be omitted, because only they can be genuinely inapplicable.",
+      "additionalProperties": false,
+      "required": [
+        "visual",
+        "responsive",
+        "motion",
+        "accessibility",
+        "runtime",
+        "antiAiAesthetic"
+      ],
+      "properties": {
+        "visual": { "$ref": "#/definitions/verdict", "description": "Gate token for visual quality (STRONG/ADEQUATE/WEAK/BROKEN family)." },
+        "responsive": { "$ref": "#/definitions/verdict", "description": "Gate token for responsive quality (ROBUST/ADEQUATE/FRAGILE/BROKEN family)." },
+        "motion": { "$ref": "#/definitions/verdict", "description": "Gate token for motion quality (FLUID/ADEQUATE/STIFF/HARMFUL family)." },
+        "accessibility": { "$ref": "#/definitions/verdict", "description": "Gate token for accessibility (INCLUSIVE/ADEQUATE/GAPS/EXCLUDING family)." },
+        "runtime": { "$ref": "#/definitions/verdict", "description": "Gate token for runtime smoothness (RESPONSIVE/ACCEPTABLE/SLUGGISH/UNSTABLE family); corresponds to finding.dimension 'performance'." },
+        "antiAiAesthetic": { "$ref": "#/definitions/verdict", "description": "Gate token for anti-AI aesthetic (DISTINCTIVE/ADEQUATE/GENERIC/AI-DEFAULT family); corresponds to finding.dimension 'anti-ai'. Required since v3: every UI surface can be judged for AI-default aesthetics, so 'the auditor did not run' is a gap to fix, not a reason to omit the key." },
+        "typescriptSafety": { "$ref": "#/definitions/verdict", "description": "Optional gate token for TypeScript safety (SOUND/ADEQUATE/LEAKY/UNSOUND family); corresponds to finding.dimension 'typescript'. Omit on non-TypeScript projects." },
+        "usability": { "$ref": "#/definitions/verdict", "description": "Optional gate token for usability and task flow (EFFORTLESS/ADEQUATE/AWKWARD/BLOCKING family); corresponds to finding.dimension 'usability'. Optional while the usability specialist is still adaptive; it becomes required once every improve-ui pass dispatches it." }
+      }
+    },
+    "overall": {
+      "$ref": "#/definitions/verdict",
+      "description": "Aggregate gate token. GREEN only when every present dimension (required and optional) is GREEN."
+    },
+    "blocker_findings": {
+      "type": "array",
+      "description": "Findings with severity CRITICAL -- must be fixed before merge. Since v3 the gate enforces this literally: a non-empty blocker_findings array fails the gate no matter what the verdicts say, because a GREEN verdict shipped alongside a blocker is a self-contradicting artifact rather than a judgment call.",
+      "items": { "$ref": "#/definitions/finding" }
+    },
+    "high_findings": {
+      "type": "array",
+      "description": "Findings with severity HIGH -- strongly recommended before merge but not gate-blocking on their own (a HIGH finding with all verdicts GREEN reflects a specialist's judgment call; the verdict, not the finding list, is what the gate enforces). A finding with severity CRITICAL filed here still fails the gate: severity, not which array it landed in, decides.",
+      "items": { "$ref": "#/definitions/finding" }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional pointers to supporting screenshots, traces, or transcripts produced during the review."
+    }
+  },
+  "definitions": {
+    "verdict": {
+      "type": "string",
+      "enum": ["GREEN", "YELLOW", "RED"],
+      "description": "GREEN = ship. YELLOW = human decision needed, gate fails (no soft-pass). RED = blocker, gate fails."
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Canonical ui-craft finding shape, shared across harness findings files, the review ledger, and CI artifact finding arrays.",
+      "required": ["id", "dimension", "severity", "confidence", "file", "title"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(visual|anti-ai|accessibility|motion|responsive|performance|typescript|usability)-[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Stable slug, '<dimension>-<kebab-slug>' -- e.g. 'visual-cta-hierarchy-unclear'."
+        },
+        "dimension": {
+          "type": "string",
+          "enum": ["visual", "anti-ai", "accessibility", "motion", "responsive", "performance", "typescript", "usability"],
+          "description": "One of the 8 review dimensions. Maps to a verdicts key: anti-ai -> antiAiAesthetic, performance -> runtime, typescript -> typescriptSafety; the other 5 match verdicts keys directly."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "TASTE"],
+          "description": "Per references/review/01-universal-rubric.md severity scale."
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["Hard defect", "Quality defect", "Pattern smell", "Taste note"],
+          "description": "Confidence class per references/review/01-universal-rubric.md Layer 3."
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative path, or a fixture/component name when there is no single file (e.g. a cross-cutting design-system finding)."
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional line number within 'file'."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short, single-line summary of the defect."
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Optional supporting detail -- metric, code excerpt reference, or screenshot pointer."
+        }
+      }
+    }
+  }
+}

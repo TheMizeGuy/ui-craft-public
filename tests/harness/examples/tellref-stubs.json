@@ -1,0 +1,164 @@
+[
+  {
+    "id": "visual-stub-1",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "gradient-hero.html",
+    "line": 1,
+    "title": "off V5"
+  },
+  {
+    "id": "visual-stub-2",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "gradient-hero.html",
+    "line": 1,
+    "title": "off C5"
+  },
+  {
+    "id": "visual-stub-3",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "gradient-hero.html",
+    "line": 1,
+    "title": "off C3"
+  },
+  {
+    "id": "visual-stub-4",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "shadcn-card-kit.html",
+    "line": 1,
+    "title": "off S3"
+  },
+  {
+    "id": "visual-stub-5",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "shadcn-card-kit.html",
+    "line": 1,
+    "title": "off Strongest-10 #1"
+  },
+  {
+    "id": "visual-stub-6",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "frosted-nav-neon.html",
+    "line": 1,
+    "title": "off V1"
+  },
+  {
+    "id": "visual-stub-7",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "frosted-nav-neon.html",
+    "line": 1,
+    "title": "off L6"
+  },
+  {
+    "id": "visual-stub-8",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "frosted-nav-neon.html",
+    "line": 1,
+    "title": "off C18"
+  },
+  {
+    "id": "visual-stub-9",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "frosted-nav-neon.html",
+    "line": 1,
+    "title": "off D1"
+  },
+  {
+    "id": "visual-stub-10",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "legacy-marketing-page.html",
+    "line": 1,
+    "title": "off cream-serif-sage"
+  },
+  {
+    "id": "visual-stub-11",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "legacy-marketing-page.html",
+    "line": 1,
+    "title": "off T1"
+  },
+  {
+    "id": "visual-stub-12",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "legacy-marketing-page.html",
+    "line": 1,
+    "title": "off W2"
+  },
+  {
+    "id": "visual-stub-13",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "legacy-marketing-page.html",
+    "line": 1,
+    "title": "off I7"
+  },
+  {
+    "id": "visual-stub-14",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "presence-single.html",
+    "line": 1,
+    "title": "off V5"
+  },
+  {
+    "id": "visual-stub-15",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "cream-serif-sage.html",
+    "line": 1,
+    "title": "off cream-serif-sage"
+  },
+  {
+    "id": "visual-stub-16",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "token-drift.html",
+    "line": 1,
+    "title": "off section 14"
+  },
+  {
+    "id": "visual-stub-17",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "missing-states.html",
+    "line": 1,
+    "title": "off section 12"
+  },
+  {
+    "id": "visual-stub-18",
+    "dimension": "visual",
+    "severity": "LOW",
+    "confidence": "Taste note",
+    "file": "missing-states.html",
+    "line": 1,
+    "title": "off section 15"
+  }
+]

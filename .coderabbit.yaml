@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# NOTE: CodeRabbit reads this file from the DEFAULT branch — it takes effect
+# after the first push to main. Validate with `@coderabbitai configuration`
+# in any PR. Exemplars (when those checkouts exist on this machine):
+# ~/Dev/Limerino/.coderabbit.yaml (iOS), ~/Dev/BootyBayBroker/.coderabbit.yaml (web).
+
+# Inherit org-wide baseline from TheMizeGuy/coderabbit. Scalars below override
+# central config; arrays merge with dedupe.
+inheritance: true
+
+language: "en-US"
+tone_instructions: >
+  Be direct and technical. Skip pleasantries. Focus on bugs, security, and
+  correctness over style. Context: ui-craft — the consolidated UI engineering
+  team plugin (design, review, improve, optimize for any UI surface).
+early_access: true
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  commit_status: true
+  fail_commit_status: false
+  enable_prompt_for_ai_agents: true
+  abort_on_close: true
+
+  instructions: |
+    ui-craft is a Claude Code plugin, not an
+    application: four user-invoked skills, ten dispatched specialist agents, and
+    a ~41-file reference knowledge base, plus a zero-dependency Node scorer and
+    a CI gate script. Content IS the product — a change to a reference file or
+    an agent body changes runtime behaviour exactly as much as a code change
+    does. This repo is the source of truth; ~/Claude/plugins/ui-craft and the
+    plugin cache are downstream mirrors.
+
+    BLOCKING rules (flag as error, not nitpick):
+    - Model policy: agent frontmatter must carry NO `model:` pin, and no dated
+      model ID (e.g. a `-20250101` suffix) may appear anywhere. Models are
+      pinned at DISPATCH with undated aliases only. Flag any reintroduced
+      frontmatter pin, any dated ID, and any change lowering effort below
+      `xhigh`.
+    - Version-bump lockstep: a version change must touch all four together in
+      the same commit — `.claude-plugin/plugin.json`, `CHANGELOG.md`,
+      and `.claude-plugin/marketplace.json`.
+      Flag a bump that moves fewer than the three in-repo files.
+    - Corpus/catalogue lockstep: any edit to
+      `references/catalogue/01-ai-tells.md`, `02-empirical-evidence.md`,
+      `agents/ui-anti-slop-auditor.md`, or `agents/ui-visual-reviewer.md` that
+      changes what a tell matches must add or relabel a `tests/corpus/` fixture
+      in the same change. A catalogue edit that silently drops a tell is a
+      recall regression — flag it and ask for the re-scored harness output
+      (`node tests/harness/score-review.mjs <findings.json>`, gate recall >= 0.8).
+    - Schema versioning: the CI verdict artifact schema (currently v2) and the
+      review-ledger schema (currently v1) are versioned independently. ANY field
+      addition, rename, or type change must increment that schema's
+      `schemaVersion`. Never reshape either in place.
+    - No emojis in shipped content — skills, agents, references, or docs. This
+      includes severity tags and findings output.
+    - Third-party plugin integration, if ever re-added, must be detected by
+      capability (the session's available skill list), never by a hardcoded
+      plugin cache path, version directory, or filesystem dependency.
+    - Mirror hygiene: no `/Users/<name>` absolute paths, goodmem space UUIDs,
+      vault paths, or memory-ID citations in content destined for a public
+      mirror.
+    - CI: Namespace runner labels only (`nscloud-*`), never `ubuntu-latest` or
+      `macos-*`; third-party actions stay SHA-pinned.
+
+    Do NOT comment on:
+    - `tests/corpus/fixtures/*.html` quality. Those files are DELIBERATELY bad —
+      they encode AI-generated design tells as regression ground truth. Generic
+      gradients, default shadcn, Inter everywhere, and missing states are the
+      point, not defects.
+    - The absence of package.json, a bundler, or a dependency tree. Zero
+      dependencies (Node stdlib only, node >= 18) is a deliberate constraint.
+    - Prose style, line length, or heading conventions in `references/**` —
+      these are knowledge-base documents, not code comments.
+    - The two reference files carrying narrative provenance phrasing
+      (`references/catalogue/01-ai-tells.md`,
+      `references/design/06-shadcn-customization.md`); they are already tracked
+      as mirror-scrub items in CLAUDE.md.
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords: ["WIP", "DO NOT MERGE", "wip", "[skip ci]"]
+    base_branches: ["main"]
+
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    # Intentionally-bad regression fixtures — reviewing them is pure noise.
+    - "!tests/corpus/fixtures/**"
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "CLAUDE.md"
+      - "README.md"
+      - "ARCHITECTURE.md"
+      - "docs/**/*.md"

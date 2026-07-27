@@ -1,0 +1,8 @@
+.DS_Store
+.claude/*.local.md
+
+# Agent state — machine-written, never committed
+.serena/
+.anti-slop/
+.remember/
+.playwright-mcp/
