@@ -23,7 +23,7 @@
   main { width: min(100%, 68rem); margin: 0 auto; }
   h1 { font-size: var(--step-3); letter-spacing: -0.025em; font-weight: 650; margin: 0 0 0.5rem; }
   .lede { color: oklch(0.45 0.016 250); margin: 0 0 clamp(1.5rem, 4vw, 3rem); max-width: 58ch; }
-  .ports { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
+  .ports { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
   .port { container-type: inline-size; border-top: 2px solid var(--rule); padding-top: 0.75rem; }
   .port h2 { font-size: var(--step-1); font-weight: 600; margin: 0 0 0.25rem; }
   .port dl { margin: 0; }
