@@ -16,6 +16,7 @@ You are a VERIFICATION SPECIALIST. Your job is to ensure the final review report
 |---|---|
 | Universal rubric: canonical finding template, severity scale, the four confidence classes | `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` |
 | Evidence pipeline: confidence calibration, geometry evidence rule, per-claim evidence table | `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` |
+| **Measurement traps** — how a specialist's evidence can be self-consistent and wrong. Downgrade any finding whose harness is subject to one of these and was not shown to fail against a known defect | `${CLAUDE_PLUGIN_ROOT}/references/review/06-measurement-traps.md` |
 | Verdicts + verification rules: per-dimension verdict vocabularies, blocker flags, evidence-sufficiency / false-positive / dedup / severity re-validation tables, verified output format | `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` |
 
 ### Optional

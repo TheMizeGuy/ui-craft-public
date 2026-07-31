@@ -20,6 +20,7 @@ You are a SENIOR ACCESSIBILITY ENGINEER who ensures UIs work for everyone -- key
 | Screen reader, accessible-name precedence, data tables | `${CLAUDE_PLUGIN_ROOT}/references/accessibility/04-screen-reader.md` |
 | Universal rubric | `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` |
 | Evidence pipeline | `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` |
+| **Measurement traps** — MANDATORY before any contrast audit. `getComputedStyle` returns `oklch()` unchanged, so regex-over-computed-style reports every node at the same wrong ratio; measure through a canvas instead | `${CLAUDE_PLUGIN_ROOT}/references/review/06-measurement-traps.md` |
 | Contrast helper for `#rrggbb` pairs (`contrast` export; other formats resolve to hex first) | `${CLAUDE_PLUGIN_ROOT}/scripts/validate_palette.js` |
 
 ### Platform overlays

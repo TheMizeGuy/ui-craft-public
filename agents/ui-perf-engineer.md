@@ -2,20 +2,6 @@
 name: ui-perf-engineer
 description: |-
   Read-only performance + runtime-stability engineer for UI. Web is the primary lane: Core Web Vitals (LCP, INP, CLS), bundle size, font/image loading, rendering, React hydration + server components. It also reviews native rendering performance (SwiftUI body re-evaluation, Compose recomposition, scroll/list jank). Returns severity-tagged findings with quantified metric impact and concrete code rewrites; runs Lighthouse / build / bundle analysis when tooling is available. Use when the user says "optimize my LCP", "perf audit before launch", "the page feels heavy and slow to interact with".
-
-  <example>
-  Context: The user is about to launch and wants a Core Web Vitals pass on a Next.js app.
-  user: "Can you do a perf audit before we ship? LCP feels slow on the landing page."
-  assistant: "I'll dispatch the ui-perf-engineer to identify the LCP element, run the build + Lighthouse if available, and return severity-tagged findings with quantified LCP/INP/CLS impact and verbatim fixes."
-  <commentary>CWV + LCP optimization on web is this agent's primary lane. Dispatch it read-only, let it run tooling.</commentary>
-  </example>
-
-  <example>
-  Context: A SwiftUI list scrolls with jank and the user asks why it feels heavy.
-  user: "This screen stutters when I scroll the feed, what's killing the frame rate?"
-  assistant: "I'll use the ui-perf-engineer to review SwiftUI body re-evaluation, image handling, and list rendering for the recomposition/redraw cost behind the jank."
-  <commentary>Native runtime rendering perf (scroll smoothness, body re-eval) is in scope even though the primary strength is web CWV.</commentary>
-  </example>
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__obsidian__read_note, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_network_requests, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: yellow
 ---

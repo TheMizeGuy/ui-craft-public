@@ -1,6 +1,6 @@
 # ui-craft
 
-Consolidated UI engineering team for Claude Code. One plugin that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in depth, with Apple and Android review overlays for cross-platform work. Ten specialist agents (the nine dispatched specialists pinned to Opus 5 at dispatch, the team lead conducting on the session model, thinking always on) backed by a knowledge base of 51 reference files that ship inside the plugin. Four user-invoked skills. Findings are advisory: nothing in your source tree is edited until you approve it. Reviews do write their own state under `.claude/ui-craft/` in the reviewed repo without asking, and say so: the run-over-run ledger, plus a merged report on a full pass (see **Review ledger** below). A labeled regression corpus, a CI gate, and that ledger keep the catalogue and the auditor honest as they evolve (see **Toolkit** below).
+Consolidated UI engineering team for Claude Code. One plugin that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in depth, with Apple and Android review overlays for cross-platform work. Ten specialist agents (the nine dispatched specialists pinned to Opus 5 at dispatch, the team lead conducting on the session model, thinking always on) backed by a knowledge base of 53 reference files that ship inside the plugin. Four user-invoked skills. Findings are advisory: nothing in your source tree is edited until you approve it. Reviews do write their own state under `.claude/ui-craft/` in the reviewed repo without asking, and say so: the run-over-run ledger, plus a merged report on a full pass (see **Review ledger** below). A labeled regression corpus, a CI gate, and that ledger keep the catalogue and the auditor honest as they evolve (see **Toolkit** below).
 
 ## What ui-craft is
 
@@ -142,7 +142,7 @@ Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to 
 
 ## Knowledge base
 
-51 reference files across 12 domains, all of them inside the plugin. Every path an agent is told to read resolves under `${CLAUDE_PLUGIN_ROOT}`; no agent reads a machine-local note, a sibling plugin's cache, or any path outside this repo, so a fresh install on a new machine has the same depth as the author's. GoodMem, Serena, Context7 and Playwright are optional accelerants covered under **Requirements**, not sources the reference library leans on.
+53 reference files across 12 domains, all of them inside the plugin. Every path an agent is told to read resolves under `${CLAUDE_PLUGIN_ROOT}`; no agent reads a machine-local note, a sibling plugin's cache, or any path outside this repo, so a fresh install on a new machine has the same depth as the author's. GoodMem, Serena, Context7 and Playwright are optional accelerants covered under **Requirements**, not sources the reference library leans on.
 
 ### catalogue/ (2 files): the canonical AI-tell corpus
 

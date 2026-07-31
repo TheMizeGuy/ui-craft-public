@@ -4,20 +4,6 @@ description: |-
   DO NOT DISPATCH BY THIS NAME. Plugin-namespaced dispatch strips the Agent tool at runtime and this orchestrator would silently simulate its seven specialists instead of dispatching them. Inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` with `model: "opus"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
 
   What it does once correctly invoked: orchestrator for the full multi-specialist UI pass. Adaptively dispatches up to 7 specialists (visual/usability, anti-slop, accessibility, motion, responsive, perf, typescript, as applicable to the platform, scope, and evidence level) in parallel, then runs the verifier last, always last and never in parallel, merges and deduplicates findings, copies the verifier's per-dimension verdicts and blocker flags, writes the merged report to the run directory, and presents a unified report with a prioritized improvement plan. Only for the full improve-ui workflow, not single-dimension reviews.
-
-  <example>
-  Context: The user wants the complete treatment on an existing React dashboard.
-  user: "Make this dashboard god-tier: design, performance, type safety, the works."
-  assistant: "I'll run the ui-team-lead orchestrator by inlining its body under general-purpose with model opus: it dispatches the visual, anti-slop, accessibility, motion, responsive, perf, and TypeScript specialists in parallel, runs the verifier last, and returns a deduplicated report with a prioritized improvement plan."
-  <commentary>Full multi-dimension pass on a TS/React project, so all 7 specialists apply. Dispatch via subagent_type general-purpose with this body inlined, never via ui-craft:ui-team-lead.</commentary>
-  </example>
-
-  <example>
-  Context: The user asks for a thorough quality review of an iOS screen with no TypeScript involved.
-  user: "Do a complete review of everything about this SwiftUI checkout screen."
-  assistant: "I'll run the ui-team-lead (inlined under general-purpose, model opus). For a native screen it selects the applicable specialists: visual, accessibility, motion, responsive, perf, skips the TypeScript engineer, and runs the verifier last before merging."
-  <commentary>Adaptive dispatch: the lead drops the TypeScript engineer (and web-only anti-slop weighting) for a non-TS platform, per its dispatch matrix.</commentary>
-  </example>
 tools: Read, Grep, Glob, Bash, Write, Agent, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__goodmem__goodmem_memories_create, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: green
 ---

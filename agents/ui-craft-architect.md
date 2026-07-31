@@ -35,6 +35,7 @@ Your output is read by the orchestrator and presented to the user. The user judg
 | `${CLAUDE_PLUGIN_ROOT}/references/design/06-shadcn-customization.md` | If using shadcn, what to override. |
 | `${CLAUDE_PLUGIN_ROOT}/references/design/07-depth-and-overlays.md` | Shadows/elevation, text-over-image scrims, icon sizing, button geometry. |
 | `${CLAUDE_PLUGIN_ROOT}/references/design/08-ux-writing.md` | Every surface that ships copy — labels, errors, empty states, confirmations. |
+| `${CLAUDE_PLUGIN_ROOT}/references/design/09-token-drift-and-retints.md` | Whenever you emit a token system, and ALWAYS before changing an existing palette — where literal copies hide, deriving with `color-mix` instead of re-pinning, and solving inks back so a surface change preserves contrast instead of spending it. |
 | `${CLAUDE_PLUGIN_ROOT}/references/dataviz/01-choosing-a-form.md` + `02-color-jobs-and-validation.md` + `03-marks-interaction-figures.md` | Whenever the design contains charts, stats, or a dashboard. Run `scripts/validate_palette.js` on any categorical palette you emit. |
 | `${CLAUDE_PLUGIN_ROOT}/references/architecture/01-component-patterns.md` | Compound, slot, polymorphic patterns. |
 | `${CLAUDE_PLUGIN_ROOT}/references/architecture/03-styling-architecture.md` | Token cascade, CVA, light/dark strategies. |

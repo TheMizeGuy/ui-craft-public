@@ -30,7 +30,7 @@ ui-craft/
 │   ├── ui-typescript-engineer.md   TS6/7 strictness + TS7 type gate
 │   ├── ui-verifier.md              evidence check, dedup, severity re-validation
 │   └── ui-team-lead.md             adaptive orchestrator, up to 7 specialists, verifier always last
-├── references/                 51 self-contained knowledge files, 12 domains
+├── references/                 53 self-contained knowledge files, 12 domains
 │   ├── catalogue/{01-ai-tells, 02-empirical-evidence}.md
 │   ├── review/{01-universal-rubric, 02-evidence-pipeline, 03-viewport-matrix, 04-verdicts-and-verification, 05-density-and-economy}.md
 │   ├── platform/{01-web-overlay, 02-apple-overlay, 03-android-overlay}.md

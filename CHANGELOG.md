@@ -1,5 +1,64 @@
 # Changelog
 
+## 0.3.1 — 2026-07-31
+
+Two references distilled from shipping a real 14-page marketing site end to end
+(design system, retint, hero rebuild, five-layer review gate, production
+deploy). Both cover ground the library had no file for, and both exist because
+the failure they describe actually happened during that work.
+
+### references/review/06-measurement-traps.md (new)
+
+Seven ways a review harness produces a confident, self-consistent, wrong result.
+Written after three of them nearly shipped as fixes:
+
+- `getComputedStyle` returns `oklch()` unchanged, so a regex-over-computed-style
+  contrast audit parses `oklch(0.963 0.009 84)` as a near-black and reports
+  every node on the page at the same wrong ratio. Cost one full audit run.
+  Measure through a canvas instead — this only gets more important as CSS
+  Color 4/5 adoption grows.
+- Changing a style after load does not re-run image `sizes`/`currentSrc`
+  selection, so a real bug and a real fix read identically. This one is
+  symmetric: it can convince you a no-op fix works.
+- A preview server on a busy port silently answers as someone else's process.
+- Config validators check syntax, not matcher behaviour.
+- Element rects hide text misalignment: two flex items measured 44px tall while
+  their text sat 10.1px apart. Measure the text with a `Range`.
+- Reviewer-proposed thresholds must be checked against the passing corpus first
+  — one proposed a `> 6.0` guard for a corpus that measures 24 to 49.
+- The habit that catches all of them: a guard you have not watched fail is not
+  evidence. Three guards in that project passed while what they guarded was
+  broken, including one skipped in CI so it passed by absence.
+
+Wired into ui-visual-reviewer, ui-accessibility-reviewer (mandatory before any
+contrast audit) and ui-verifier (as grounds to downgrade a finding).
+
+### references/design/09-token-drift-and-retints.md (new)
+
+Why a palette change ships half-applied, and how to retint a surface without
+spending accessibility margin. A 14-page retint updated every `:root` block and
+still shipped 17 stale values — the worst hidden behind alpha, where
+`oklch(L C H / 0.35)` survives a search for the bare triple.
+
+- Where copies hide, ranked: literal+alpha, standalone fallback pages, non-CSS
+  copies (image generators, `theme-color`), derived tints, ratio comments.
+- Derive with `color-mix(in oklab, var(--token) N%, transparent)` rather than
+  re-pinning to a new literal. Deriving also fixed a latent bug: a component
+  took background and colour from a token but had its border frozen, so it kept
+  the light-surface accent inside dark sections.
+- Retinting: find the wall (the lowest ink ratio), then solve the inks back
+  rather than spending headroom. Field result — surface moved four points of
+  lightness with every ratio preserved to within 0.03.
+- Guards that survive the next retint, including why pinning a colour converter
+  to your own palette's output means the obvious repair validates a regression.
+
+Wired into ui-craft-architect for every token system it emits and before any
+palette change.
+
+### Also
+
+Reference count corrected to 53 in CLAUDE.md, ARCHITECTURE.md and README.md.
+
 ## 0.3.0 — 2026-07-27
 
 Total-quality pass. A 12-dimension adversarial audit of this plugin produced 205
