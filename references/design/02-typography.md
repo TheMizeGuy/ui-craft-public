@@ -72,6 +72,8 @@ If the off-Apple rendering matters to the brand, do not stretch the system stack
 
 **Poppins** is the approved display face for modern-elegant areas (marketing moments, hero and display type). Use it at chosen weights, never as body text.
 
+For long-form reading — articles, documentation, editorial body — the house serif is **Source Serif 4** (Adobe, SIL Open Font License 1.1). It is the serif counterpart to the self-hostable sans above: variable on both `wght` (200-900) and `opsz` (8-60), with a true variable italic rather than a synthesised oblique, and drawn for screen reading rather than luxury display. The two siblings are treated differently on purpose: **Source Sans** is banned as a primary face for ubiquity, and that ban does not extend to Source Serif, because the reason for it — the sans is everywhere — is not true of the serif.
+
 ### The checkable rule (replaces "deliberate vs default")
 
 "Was the system stack deliberate?" is not auditable. This is:
@@ -111,6 +113,7 @@ A globals.css whose entire type system is `--font-sans: <system stack>` with def
 | GT America / GT Walsheim / GT Sectra / GT Pressura | Custom direction | Grilli Type families with designerly voice |
 | DM Sans | Body, UI | Low-contrast geometric humanist; a workhorse single-family choice that is not Inter |
 | Plus Jakarta Sans | Body, display | Warm geometric with real personality at display weights; carries a whole product on its own |
+| Source Serif 4 | Body, long-form | Open-licensed screen serif: genuine optical sizing, a true variable italic, contrast low enough to hold at 16px. The serif counterpart to DM Sans and Plus Jakarta Sans above -- not another display serif |
 
 Pair *one* display + *one* body. Optionally one mono for genuine code/log content only -- a mono face is never the display or body voice, and never styles labels, kickers, stats, or numerals (tabular figures on the sans do digit alignment). Three families is the absolute ceiling — and one well-chosen sans-serif is often enough on its own (weights, optical sizes, and tracking do the differentiation; mood-keyed pairing seeds live in `references/aesthetic/04-style-taxonomy.md`).
 
@@ -218,6 +221,8 @@ Reference: [web.dev min-max-clamp](https://web.dev/articles/min-max-clamp).
 ```
 
 Fonts with strong `opsz`: Fraunces, Roboto Flex, Source Serif 4, Recursive, Inter Display.
+
+Check the build, not the family name. Source Serif 4 is the cautionary case: the Google Fonts build ships one file per style carrying both axes (`SourceSerif4[opsz,wght].ttf`, `opsz` 8-60, `wght` 200-900), while Adobe's own GitHub release ships a weight-only variable font (`wght` 200-900, no `opsz`) alongside five *static* optical cuts named Caption, SmText, Text, Subhead, and Display. Self-host the second one and `font-optical-sizing: auto` does nothing, with no error and no fallback: the page renders and the axis is absent. Confirm the axes in the binary you are actually shipping (Wakamai Fondue, or `fonttools ttx -t fvar`) rather than trusting the family name. Optical sizing is a property of the file, not the typeface.
 
 ## 6. Web font loading
 

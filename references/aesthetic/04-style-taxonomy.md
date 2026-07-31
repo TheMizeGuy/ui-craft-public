@@ -70,7 +70,7 @@ Mood-keyed starting points; the full type system (scale caps, display tightening
 | House default (any mood, 2026-07-17 directive) | SF Pro / system stack throughout; Poppins display for modern-elegant moments | The fleet's main go-to -- reach here first; weight + optical size differentiate. On web, "SF Pro" means the `-apple-system` system stack (never self-host SF Pro files) |
 | Tech/startup | Space Grotesk + DM Sans | Solid; consider Söhne or Geist to sharpen it |
 | Minimal Swiss | Single sans throughout (Geist, Söhne, Untitled Sans) | One family, weights and optical sizes do the work |
-| Editorial classic | Cormorant Garamond + Source Serif | Serif + serif works when measure and leading are disciplined |
+| Editorial classic | Cormorant Garamond + Source Serif 4 | Serif + serif works when measure and leading are disciplined |
 | Elegant luxury | High-contrast serif + humanist sans (e.g. GT Sectra + Söhne) | Playfair Display + Inter is the worn version of this idea |
 | Bold statement | Compressed display (Bebas-like) + neutral sans | Display face for headlines only, never UI chrome |
 | Warm/wellness | Lora + Raleway or a humanist sans | Watch the cream-sage tell; type alone will not save it |

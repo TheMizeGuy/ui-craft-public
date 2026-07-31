@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.3.2 — 2026-07-31
+
+Source Serif 4 added to the type policy (user directive). The corpus already
+recommended the face across four files -- the editorial POV template, the
+style-taxonomy pairing seeds, the catalogue's Editorial Magazine stack, and the
+strong-`opsz` list -- while the authoritative approved-defaults table never
+listed it, and it appeared under three different names. This resolves both.
+
+- **`design/02-typography.md` § 2.** New approved-defaults row (body,
+  long-form) and a house-doctrine paragraph naming it the long-form reading
+  serif: Adobe, SIL Open Font License 1.1, variable on `wght` 200-900 and
+  `opsz` 8-60, with a true variable italic rather than a synthesised oblique.
+  Positioned as the serif counterpart to DM Sans and Plus Jakarta Sans, not as
+  a sixth display serif -- every serif already in the table was display-only,
+  so long-form had no approved answer. The paragraph also states the deliberate
+  asymmetry with **Source Sans**, which stays banned as a primary face: the
+  reason for that ban is that the sans is everywhere, which is not true of the
+  serif, so the ban does not extend to it.
+- **`design/02-typography.md` § 5.** New optical-sizing caveat. The Google
+  Fonts build ships one file per style carrying both axes
+  (`SourceSerif4[opsz,wght].ttf`); Adobe's own GitHub release ships a
+  weight-only variable font plus five *static* optical cuts (Caption, SmText,
+  Text, Subhead, Display). Self-host the second and `font-optical-sizing: auto`
+  does nothing, with no error and no fallback. Check the axes in the binary you
+  ship, not the family name -- optical sizing is a property of the file, not
+  the typeface. This makes the pre-existing "fonts with strong `opsz`" line
+  conditional, which it always was in practice.
+- **`aesthetic/01-point-of-view.md`.** Body-serif row corrected from the stale
+  "Source Serif Pro" -- the pre-4 name, retired when version 4 shipped -- to
+  Source Serif 4.
+- **`aesthetic/04-style-taxonomy.md`.** Editorial-classic pairing seed
+  normalised to Source Serif 4.
+
+No new reference files, so the count stays 53. No catalogue edit either: the
+banned-as-primary list names Source Sans specifically and never the
+superfamily, so no tell changed what it matches and the corpus was not
+re-scored.
+
 ## 0.3.1 — 2026-07-31
 
 Two references distilled from shipping a real 14-page marketing site end to end

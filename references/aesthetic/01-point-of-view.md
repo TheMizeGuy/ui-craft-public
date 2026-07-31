@@ -136,7 +136,7 @@ Light is this template's primary scheme; the dark column is its authored counter
 | Text tertiary | `oklch(0.52 0.01 280)` -- 5.3:1 | `oklch(0.60 0.008 280)` -- 4.9:1 |
 | Accent | `oklch(0.55 0.18 25)` warm terracotta -- 5.1:1; one-color punctuation, not a primary CTA color | `oklch(0.70 0.15 25)` -- 6.8:1; lifted and desaturated for the dark surface |
 | Display serif | GT Sectra / Editorial New / Source Serif / Söhne Schmal -- distinctive serif with personality | same |
-| Body serif (for long-form) | Source Serif Pro / Charter / Tiempos Text |
+| Body serif (for long-form) | Source Serif 4 / Charter / Tiempos Text |
 | Body sans (for UI) | GT America / ABC Diatype / Söhne Buch |
 | Caps / overline | `font-feature-settings: 'smcp'` small-caps, never `text-transform: uppercase` |
 | Modular scale | 1.333 (perfect fourth -- editorial standard) |
