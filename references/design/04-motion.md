@@ -11,6 +11,8 @@ Spring physics, native CSS easing, View Transitions API, scroll-driven animation
 
 Primary sources cited inline: MDN, web.dev, Chrome developer docs, and the scroll-driven-animations reference site.
 
+The spring `linear()` palette and the three-curve maximum (§3), the stagger system rules (§9), and the mixed-personality / `scale(0)` / keyword-easing anti-pattern rows (§10) are adapted from [VibeCurb](https://github.com/Yu-369/VibeCurb) (MIT, Copyright (c) 2026 Yu-369), curated and merged with this library's conventions. Where a value there disagreed with a core reference or with `catalogue/01-ai-tells.md`, the core reference won.
+
 ## 1. What good motion looks like
 
 | Principle | What to look for |
@@ -115,44 +117,37 @@ CSS suffices when: animation is deterministic, no gesture velocity, no choreogra
 
 ### Physics-derived spring curves in pure CSS
 
-Beyond the single `--ease-overshoot` above, full spring character is expressible in CSS `linear()` today: plot a simulated spring's position at discrete stops and let the browser interpolate. Three curves generated from named physics (mass 1 throughout), with the durations that match their settle -- adapted from [VibeCurb](https://github.com/Yu-369/VibeCurb) (MIT, Copyright (c) 2026 Yu-369):
+Beyond the single `--ease-overshoot` above, full spring character is expressible in CSS `linear()` today: plot a simulated spring's position at discrete stops and let the browser interpolate. Three curves, each generated from the named physics in its comment (mass 1 throughout) by sampling the analytical step response, with a duration token set at that spring's settle window. The claim is mechanically checkable and must stay that way: the largest stop in a `linear()` list IS that curve's peak overshoot, so a comment that disagrees with its own stops is a defect, not a rounding.
 
 ```css
 :root {
-  /* SNAPPY -- stiffness 400, damping 30: explosive start, ~2% overshoot, soft settle.
-     The default arrival curve: entries, reveals, modal opens. */
-  --spring-snappy: linear(
-    0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%,
-    1.017 19.4%, 1.067 22.5%, 1.089 26%, 1.079 30.3%, 1.049 36%,
-    1.024 42.6%, 1.011 50.3%, 1.004 59.2%, 1.001 69.3%, 1);
-  --spring-snappy-duration: 0.55s;
+  /* SNAPPY -- stiffness 400, damping 30 (zeta 0.75): explosive start, ~3% overshoot,
+     soft settle. The default arrival curve: entries, reveals, modal opens. */
+  --spring-snappy: linear(0, 0.002 1%, 0.014 2.5%, 0.042 4.5%, 0.094 7%, 0.171 10%, 0.259 13%, 0.366 16.5%, 0.473 20%, 0.586 24%, 0.698 28.5%, 0.81 34%, 0.901 40%, 0.969 47%, 1.011 55%, 1.028 65%, 1.023 78%, 1);
+  --spring-snappy-duration: 0.35s;
 
-  /* SMOOTH -- stiffness 200, damping 24: gentle acceleration, ~5% overshoot,
-     two-phase settle. Position changes: tab switches, carousels, panel moves. */
-  --spring-smooth: linear(
-    0, 0.004, 0.016 2.3%, 0.063 4.7%, 0.141 7.2%, 0.25 9.9%,
-    0.601 16.5%, 0.815 21%, 0.929 25.2%, 0.987 29%, 1.025 33.5%,
-    1.042 38%, 1.04 43.5%, 1.027 50%, 1.013 57.5%, 1.005 67%, 1.001 79%, 1);
-  --spring-smooth-duration: 0.7s;
+  /* SMOOTH -- stiffness 200, damping 24 (zeta 0.85): gentle acceleration, no visible
+     overshoot, two-phase settle. Position changes: tab switches, carousels, panel moves. */
+  --spring-smooth: linear(0, 0.002 1%, 0.009 2.5%, 0.028 4.5%, 0.063 7%, 0.116 10%, 0.178 13%, 0.257 16.5%, 0.338 20%, 0.429 24%, 0.525 28.5%, 0.63 34%, 0.728 40%, 0.817 47%, 0.891 55%, 0.95 65%, 0.989 78%, 1);
+  --spring-smooth-duration: 0.4s;
 
-  /* BOUNCY -- stiffness 500, damping 18: ~12% overshoot, visible bounce-settle.
-     Sparingly: toggles, reactions, small badges. Never large surfaces,
-     never destructive confirms (see §10). */
-  --spring-bouncy: linear(
-    0, 0.014, 0.055 1.8%, 0.218 3.7%, 0.867 8.5%, 1.085 10.7%,
-    1.212 12.9%, 1.264 15%, 1.262 17%, 1.217 19.5%, 1.098 24%,
-    1.035 28.5%, 0.993 33%, 0.981 38%, 0.988 45%, 0.998 55%, 1.001 68%, 1);
-  --spring-bouncy-duration: 0.5s;
+  /* BOUNCY -- stiffness 500, damping 18 (zeta 0.40): ~25% overshoot, visible
+     bounce-settle. Celebration moments only, and rare even there. Never toggles,
+     never everyday controls, never large surfaces, never destructive confirms (§10). */
+  --spring-bouncy: linear(0, 0.007 1%, 0.043 2.5%, 0.129 4.5%, 0.281 7%, 0.496 10%, 0.714 13%, 0.939 16.5%, 1.107 20%, 1.219 24%, 1.251 28.5%, 1.196 34%, 1.088 40%, 0.983 47%, 0.937 55%, 0.964 65%, 1.011 78%, 1);
+  --spring-bouncy-duration: 0.55s;
 }
 ```
 
-Motion (JS) equivalents when the same feel needs velocity inheritance: snappy `{ stiffness: 400, damping: 30 }`, smooth `{ stiffness: 200, damping: 24 }`, bouncy `{ stiffness: 500, damping: 18 }`. GSAP approximations: `power3.out`, `power2.inOut`, `back.out(1.7)`.
+Motion (JS) equivalents when the same feel needs velocity inheritance: snappy `{ stiffness: 400, damping: 30 }`, smooth `{ stiffness: 200, damping: 24 }`, bouncy `{ stiffness: 500, damping: 18 }` -- the same triads the curves were generated from, so the CSS token and the JS spring render the same motion. GSAP approximations: `power3.out`, `power2.inOut`, `back.out(1.7)`.
 
-Curve-to-job guidance: springs carry things with mass (arrivals, position changes, press feedback); cubic-bezier carries what has none (color, opacity, background shifts); the `linear` keyword only on constant-rate loops (marquees, spinners). Spring overshoot on hover reads as jitter -- hovers stay on the fast bezier tokens above.
+Cross-platform: converting the triads to SwiftUI's `spring(duration:bounce:)` (`duration = 2*pi/sqrt(k/m)`, `bounce = 1 - c/(2*sqrt(km))`) gives snappy 0.31s / bounce 0.25 and smooth 0.44s / bounce 0.15, but bouncy lands at 0.28s / **bounce 0.60** -- above the 0.5 that native guidance holds production UI under (`platform/02-apple-overlay.md` § Motion (Apple-specific)). That is the same verdict as the celebration-only lane above, stated in the other platform's units.
+
+Curve-to-job guidance: springs carry things with mass (arrivals, position changes, press feedback); cubic-bezier carries what has none (color, opacity, background shifts); the `linear` keyword for constant-rate motion (marquees, spinners, scroll-driven progress) and for confirms where overshoot would trivialise the action (§2). Spring overshoot on hover reads as jitter -- hovers stay on the fast bezier tokens above.
 
 ### The three-curve maximum and motion personality
 
-Cohesion is the strongest single predictor of whether motion reads as designed. Lock ONE motion personality per product -- surgical (fast, zero overshoot: dev tools, dashboards), physical (spring-based, tactile: consumer product, native-adjacent), or cinematic (dramatic, slow-build: marketing narrative) -- and pick at most THREE curves for the whole surface: one primary (entries/reveals), one secondary (state changes), one utility (hover/feedback). Every animation uses one of the three, declared once as tokens. Reaching for a fourth curve means one of the three was chosen wrong. A page where fade-ups, bouncy springs, and slide-lefts coexist reads as committee-built even when each animation is individually fine -- and grep makes the palette auditable: a curve literal at a call site instead of a token is the drift.
+Cohesion is the strongest single predictor of whether motion reads as designed. Lock ONE motion personality per product -- surgical (fast, zero overshoot: dev tools, dashboards), physical (spring-based, tactile: consumer product, native-adjacent), or cinematic (dramatic, slow-build: marketing narrative) -- and pick at most THREE curves for the whole surface: one primary (entries/reveals), one secondary (state changes), one utility (hover/feedback). Every animation uses one of the three, declared once as tokens. Reaching for a fourth curve means one of the three was chosen wrong. The token blocks above are a menu, not a budget: a given surface selects three from them, and constant-rate `linear` (marquees, spinners, scroll-driven progress) sits outside the count because it expresses no character to be cohesive with. A page where fade-ups, bouncy springs, and slide-lefts coexist reads as committee-built even when each animation is individually fine -- and grep makes the palette auditable: a curve literal at a call site instead of a token is the drift.
 
 ## 4. View Transitions API
 
@@ -417,7 +412,7 @@ button:focus-visible,
 
 ## 9. Stagger and orchestration
 
-Staggered entries communicate hierarchy. Cap at 30-50ms per item; >80ms feels slow.
+Staggered entries communicate hierarchy. Web product UI runs 30-50ms per item; past that a list stops reading as responsive and starts reading as deliberate, which is the cinematic lane's job, not a product list's (lanes and platform numbers: § system rules below).
 
 CSS-only stagger via `--i` custom property + `animation-delay`:
 
@@ -452,7 +447,9 @@ animate(".list-item", { opacity: 1, y: 0 },
 | CSS `animation-delay` | Static lists, no gesture, no interruption |
 | Motion `stagger()` | Gesture-driven lists, springs, or where order may change at runtime |
 
-System rules for any stagger: order by VISUAL HIERARCHY (container, primary content, supporting text, actions, decoration), never by DOM order; stagger at most 6-8 items individually and bring the remainder in as one batch (a 12-step stagger is a forced 1+ second wait); the whole entry sequence completes inside ~800ms; a stagger plays once per arrival, never on every state refresh. The 30-50ms increment above is the product-UI lane; a cinematic marketing page can stretch to ~80-120ms per item where the reveal IS the content, and no further -- past that it reads as buffering.
+System rules for any stagger: order by VISUAL HIERARCHY (container, primary content, supporting text, actions, decoration), never by DOM order; stagger at most 6-8 items individually and bring the remainder in as one batch; the whole entry sequence completes inside ~800ms; a stagger plays once per arrival, never on every state refresh.
+
+Two lanes, one budget. The 30-50ms increment above is the **web product-UI lane**, where 6-8 items fit inside ~800ms with room to spare (12 steps at that increment cost 360-600ms, so the item cap, not the clock, is why the remainder batches). A **cinematic marketing page**, where the reveal IS the content, stretches to ~80-120ms per item and drops to 4-6 staggered items so the sequence still lands inside ~800ms -- at cinematic increments a 12-step stagger is the forced 1+ second wait. Above ~150ms per item, either lane reads as buffering. Native iOS is its own lane again, slower than web product UI at 40-60ms per tier; `platform/02-apple-overlay.md` § Motion (Apple-specific) carries the platform's conventions.
 
 ## 10. Motion anti-patterns
 

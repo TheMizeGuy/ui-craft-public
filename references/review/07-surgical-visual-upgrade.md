@@ -74,7 +74,7 @@ Adding reveal animations non-destructively: `data-*` attributes on existing JSX 
 
 ## 6. Post-op verification
 
-Functionality first, and any failure blocks all visual assessment: every route, every form, every state toggle, every handler, auth flow, console clean, no undefined-property errors, all conditional renders (loading/error/empty) intact. Then the visual pass: no framework-default accent anywhere, no pure `#000`-on-`#FFF`, display face on headings with negative tracking and compressed leading, body text constrained to a readable measure, generous card padding, consistent radius language, hover + active + focus-visible on all interactive elements, background atmosphere present, motion tokens (not keyword easings), reduced-motion respected. Then the responsive pass at the standard widths (`review/03-viewport-matrix.md`). Last, the rollback check: removing the override import reverts cleanly; no existing CSS was deleted; no JSX structure changed -- the owner can accept or reject the upgrade as one unit.
+Functionality first, and any failure blocks all visual assessment: every route, every form, every state toggle, every handler, auth flow, console clean, no undefined-property errors, all conditional renders (loading/error/empty) intact. Then the visual pass: no framework-default accent anywhere, no pure `#000`-on-`#FFF`, display face on headings with negative tracking and compressed leading, body text constrained to a readable measure, generous card padding, consistent radius language, hover + active + focus-visible on all interactive elements, background atmosphere present, motion tokens (not keyword easings), reduced-motion respected. Then the responsive pass at the standard widths (`review/03-viewport-matrix.md`), including viewport units per `responsive/01-fluid-and-intrinsic-sizing.md` §7 (not bare `vh`). Last, the rollback check: removing the override import reverts cleanly; no existing CSS was deleted; no JSX structure changed -- the owner can accept or reject the upgrade as one unit.
 
 Scope discipline: "make the hero look good" upgrades the hero, not the site. Respect the ask; upgrading more than asked adds risk with no mandate.
 
@@ -86,12 +86,12 @@ The recurring generic-default defects and their cures (framework-default example
 |---|---|
 | Body face as display font | Real display face for headings (`design/02-typography.md`) |
 | Pure `#000` on `#FFF` | Near-black on warm off-white, temperature-matched |
-| Framework-default accent (`#0d6efd`, un-themed indigo) | Brand-derived accent via the token layer |
+| Framework-default accent (`#0d6efd`, un-themed Bootstrap blue) | Brand-derived accent via the token layer |
 | Default shadow on everything, same depth | Elevation scale; shadow communicates interactivity |
 | One radius everywhere by default | A radius language: token-stated, varied by control class |
 | `transition: all .15s ease-in-out` | Named properties, palette curves (`design/04-motion.md`) |
 | Cramped card padding, tight heading gaps | Spacing scale from `design/03-spacing-rhythm.md`; spacing is the highest-impact single change |
-| Zebra-striped tables | Subtle hover row highlight |
+| Zebra-striped tables | Row rules (1px bottom border in the border token) plus a hover AND `:focus-visible` row highlight, so the boundary survives touch and keyboard. Striping earns its place only on dense reference tables read row-by-row |
 | No hover/entry states | Lift + shadow on hover, press feedback, staggered entry -- reduced-motion gated |
 | Flat dead background | Subtle warmth: radial tint or grain under 0.05 |
 

@@ -226,7 +226,7 @@ Foreground. `model: "opus"` is mandatory: an omitted model inherits the session 
    - "everything in <filename>"
    - "skip"
    ```
-5. If the user picks, apply each finding's suggested rework using Edit/Write. Do not re-dispatch a reviewer.
+5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer.
 6. If the harness provides an Artifact tool, offer to render the merged report (verdict table + numbered findings) as a shareable HTML artifact. If no Artifact tool is available, skip this offer silently and don't mention its absence.
 7. Refresh the ledger: write (or overwrite) `.claude/ui-craft/last-review.json` in the reviewed repo.
 
@@ -265,7 +265,7 @@ Foreground. `model: "opus"` is mandatory: an omitted model inherits the session 
 
 ## Step 6: Post-application verification
 
-After applying any fixes:
+After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 6 first -- functionality before visuals, and any functional failure blocks the visual assessment -- then:
 1. If TypeScript: run the typecheck gate by path (`node node_modules/ts7/bin/tsc --noEmit`; `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent) to verify compilation. Never bare `tsc`, because both packages declare that bin and npm's link order on the collision is not guaranteed.
 2. Run the project's lint command.
 3. If Tailwind: check that `@theme` tokens are valid.

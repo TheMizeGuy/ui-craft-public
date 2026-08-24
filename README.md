@@ -151,7 +151,7 @@ Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to 
 | `01-ai-tells.md` | The single merged AI-tell catalogue: typescript-ui's 88 base tells across 8 categories plus 20 deep cuts and the Strongest-10, ui-review's 10 user-flagged visual tells plus 15 web/10 Apple/10 Android platform-specific tells, and anti-slop's component fingerprints, Strongest-10 fingerprints, logo-swap test, and demo-ware/happy-path patterns, deduped by tell identity, every entry keeping its severity and remediation |
 | `02-empirical-evidence.md` | anti-slop's corpus-backed evidence: the 3.2M-post study's cited-vs-cleared clearance rates (bento-grid at 0.1% clearance, mesh-gradient artifact data), plus the drift spot-check and refresh contract tying this file to anti-slop's quarterly rankings refresh |
 
-### review/ (5 files): rubric, evidence, verdicts
+### review/ (7 files): rubric, evidence, verdicts
 
 | File | Covers |
 |---|---|
@@ -160,6 +160,8 @@ Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to 
 | `03-viewport-matrix.md` | Web/iOS/Android viewport families, failure classes, deduplication rules |
 | `04-verdicts-and-verification.md` | Per-dimension verdict vocabularies plus the verifier's evidence-sufficiency, dedup, and severity re-validation rules |
 | `05-density-and-economy.md` | The waste dimension: viewport utilisation, width distribution, page length, copy length in front of controls, action-to-target distance, with measurement recipes. Paired with `scripts/measure_density.js`, a browser-side measurement that returns percentages and pixel counts, because "this feels empty" gets dismissed as taste and a number does not |
+| `06-measurement-traps.md` | Evidence that looks collected and is wrong: the traps that produce confident, plausible, false measurements, and the verification each one needs before a finding leans on it |
+| `07-surgical-visual-upgrade.md` | The non-destructive application method: Sacred-vs-Slop classification, audit before prescription, tokens-first surgery in layers, the override-stylesheet strategy with a one-import rollback, framework variants, functionality-before-visuals post-op checks, defect-to-cure table |
 
 ### platform/ (3 files): cross-platform overlays
 
@@ -195,27 +197,31 @@ Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to 
 | `02-breakpoints-vs-container-queries.md` | The decision rule between the two, container query syntax and containment gotchas, container units, when a media query is still right, migrating a viewport-styled component, severity guide, style and scroll-state queries |
 | `03-zoom-orientation-and-adaptive.md` | WCAG 1.4.4 resize-to-200% and 1.4.10 Reflow with their real numbers, page vs text-only zoom, orientation as an aspect ratio, multi-window/foldable/split-screen width, density and pixel ratio, the two-part safe-area rule |
 
-### design/ (8 files)
+### design/ (11 files)
 
 | File | Covers |
 |---|---|
 | `01-color-oklch.md` | OKLCH syntax, 3-tier token system, semantic hue meanings, dark-mode surface craft, APCA contrast, Display P3 fallbacks |
 | `02-typography.md` | Variable fonts, banned defaults, type scales, size-count caps, display tightening, fluid clamp() |
 | `03-spacing-rhythm.md` | Modular scale, proximity grouping, grids-as-guidelines, logical properties, container queries, subgrid |
-| `04-motion.md` | Spring physics, View Transitions, reduced motion, the compositor-safe property list, and the anti-pattern severity table |
+| `04-motion.md` | Spring physics including the physics-derived `linear()` spring palette (snappy/smooth/bouncy) and the three-curve maximum, View Transitions, stagger lanes, reduced motion, the compositor-safe property list, and the anti-pattern severity table |
 | `05-tailwind-v4.md` | @theme directive, OKLCH tokens, container queries, migration from v3 |
 | `06-shadcn-customization.md` | Default tells to override, token replacement, recomposition |
 | `07-depth-and-overlays.md` | Shadow tuning, elevation logic, text-over-image scrims + progressive blur, icon sizing, ghost buttons, padding ratios |
 | `08-ux-writing.md` | Voice rules, error/empty-state direction, copy-carries-POV, content formatting, the copy review checklist |
+| `09-token-drift-and-retints.md` | Why a palette change ships half-applied: literals that shadow tokens, the drift audit, and keeping a retint coherent end to end |
+| `10-hero-and-section-architectures.md` | Six named hero architectures, hero typography/palette/atmosphere specs, the objection sequence, per-type section architectures, and the visual-rhythm rules that prevent the wall-of-same page |
+| `11-image-to-code-replication.md` | Seven-layer extraction for screenshot-to-code work: proportional grid measurement, font identification by letterform, color sampling from compressed sources, radius language, atmosphere fidelity, responsive inference, the artistic-asset rule, the replication diff |
 
-### aesthetic/ (4 files)
+### aesthetic/ (5 files)
 
 | File | Covers |
 |---|---|
 | `01-point-of-view.md` | POV discovery worksheet, AI-default-looks calibration, 3 full templates with complete token sets |
 | `02-distinctive-systems.md` | 12 case studies (Linear, Vercel, Stripe, Apple, Things, Arc, Figma, Notion, Raycast, Bear, Cron, Stripe Press) |
 | `03-taste-checklist.md` | 64 audit questions across 21 sections, including a responsive and adaptive audit, plus smell tests |
-| `04-style-taxonomy.md` | Seed vocabulary: 10 style families, domain conventions, landing structures, font-pairing seeds, icon discipline, motion intensity ladder, AI-surface patterns |
+| `04-style-taxonomy.md` | Seed vocabulary: 10 style families, domain conventions, the eight landing structures, font-pairing seeds, icon discipline, motion intensity ladder, AI-surface patterns |
+| `05-brand-direction-and-reference-generation.md` | The two pre-design lanes: implementation-ready reference-image generation (one image per section, composition-anchor variety, negative prompting) and brand-mark direction (symbol from meaning, the reduction ladder, the hard constraints, generated-logo bans, frozen geometry) |
 
 ### dataviz/ (4 files + validator script)
 
@@ -323,10 +329,11 @@ Agents fall back to the plugin's reference files. Quality remains high; Context7
 
 ### Findings cite a reference file that doesn't exist in the cache
 
-Reference paths resolve relative to the plugin root at runtime. If the cache copy is stale, re-sync it from source:
+Reference paths resolve relative to the plugin root at runtime. If the cache copy is stale, pull the current release and restart Claude Code:
 
-```bash
-~/.claude/scripts/sync-mize-plugin-cache.sh ui-craft
+```
+/plugin marketplace update ui-craft-public
+/plugin update ui-craft@ui-craft-public
 ```
 
 ### Empty scope

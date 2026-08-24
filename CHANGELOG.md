@@ -1,5 +1,85 @@
 # Changelog
 
+## 0.4.1 — 2026-08-24
+
+Corrections from an adversarial cohesion review of the 0.4.0 integration
+(internal consistency, cross-link validity, dedupe against the existing
+library, wiring completeness, and a cross-repo pass against the sibling
+plugins that took the same upstream material). No new capability; every change
+below either makes a shipped claim true or removes a contradiction with a
+reference that already owned the rule. The catalogue and its corpus stay
+untouched again: nothing here changes what a tell matches.
+
+- **`design/04-motion.md` — the spring palette is regenerated, not relabelled.**
+  0.4.0 shipped `linear()` curves whose stops did not follow from the
+  stiffness/damping triads printed beside them, with prose overshoot figures
+  that matched neither (snappy claimed ~2% against stops peaking at 8.9%,
+  bouncy claimed ~12% against 26.4%). All three curves are now generated from
+  their stated physics by sampling the analytical step response, and the
+  duration tokens are recomputed from the same settle windows (0.55s/0.7s/0.5s
+  become 0.35s/0.4s/0.55s). The characterizations are now mechanically
+  checkable — the largest stop in a `linear()` list is that curve's peak
+  overshoot — and read ~3% / no visible overshoot / ~25%. `--spring-bouncy`
+  moves off toggles and small badges onto the celebration lane only, with the
+  cross-platform note that the same triad converts to SwiftUI bounce 0.60,
+  above the ceiling native guidance holds production UI under. The Motion (JS)
+  equivalents line is now a true equivalence.
+- **`design/04-motion.md` — stagger lanes stated once, with one buffering
+  threshold.** Web product UI 30-50ms, cinematic marketing ~80-120ms capped at
+  4-6 staggered items so the sequence still lands inside the ~800ms entry
+  budget, native iOS 40-60ms per tier with a pointer to the Apple overlay, and
+  above ~150ms per item any lane reads as buffering. The 12-step parenthetical
+  is requalified to cinematic increments, where it is actually true. The
+  `linear`-keyword guidance now covers constant-rate motion and confirms
+  (matching §2's own rows rather than contradicting them), and the three-curve
+  maximum states that the token blocks are a menu a surface selects three
+  from, with constant-rate `linear` outside the count.
+- **`design/10-hero-and-section-architectures.md` — §4 no longer prescribes the
+  scaffold the catalogue grades CRITICAL.** The fixed HERO -> features -> proof
+  -> ... -> footer order is gone; §4 is now an objection sequence (the
+  visitor's questions, not the page's sections), explicitly subordinate to
+  `aesthetic/04-style-taxonomy.md` §3, which owns the eight landing structures,
+  and to catalogue L1 / §11. `design-ui` states the precedence in the same
+  terms: the taxonomy picks the structure, design/10 supplies the per-section
+  architecture. Also corrected: the Tasteful Default is cream + serif +
+  **sage**, not "warm-accent"; the invented `uniform-section-padding` slug
+  becomes the real L7; "the #1 layout tell" becomes L4 (HIGH) compounded by V1
+  (Strongest-10 #6); the Fit rule gains the peek clause, so a hero that
+  terminates exactly at the fold is no longer prescribed into the
+  scroll-chevron patch.
+- **Viewport units, one owner.** `100dvh` heroes contradicted the reference
+  that owns the rule. `design/10`, `design/11` and the `review/07` post-op gate
+  now say `100svh`/`100lvh` and cite
+  `responsive/01-fluid-and-intrinsic-sizing.md` §7 (0.4.0 cited
+  `responsive/03`, which owns nothing here).
+- **`design/11-image-to-code-replication.md`.** The placeholder-literal cue
+  cites the catalogue's real greppable literals (lorem ipsum, the
+  fake-testimonial name pool, `$45,231.89`) instead of "John Doe"/"99.99%",
+  which the catalogue does not carry; grain is reworded as an extraction
+  observation with the library's 0.05 ceiling rather than a 0.06 prescription.
+- **`review/07-surgical-visual-upgrade.md`.** `#0d6efd` is labelled Bootstrap
+  blue, not indigo. The zebra-table cure gains the row-rule + hover +
+  `:focus-visible` wording and the dense-reference-table exception, matching
+  the fleet's remediation.
+- **Wiring and counts.** `ui-visual-reviewer` gains the `review/07` row it was
+  specced for; `improve-ui` binds the surgical method where it applies fixes
+  (Step 5) and verifies them (Step 6), not only in the finding-vocabulary
+  section. README's per-domain tables — the drift 0.4.0's count sweep could not
+  see, since subtotals encode the same fact the total grep misses — go to 7
+  review / 11 design / 5 aesthetic with the six missing rows added, and now sum
+  to the 57 stated elsewhere in the same document. `.coderabbit.yaml`'s stale
+  "~41-file" becomes 57, and its mirror-hygiene rule covers home-relative
+  tooling paths rather than vault paths alone.
+- **Attribution.** `design/04-motion.md` gains a file-level VibeCurb line
+  covering every derived addition (spring palette, three-curve maximum, stagger
+  rules, the three anti-pattern rows); 0.4.0's inline line was scoped to the
+  curve values only.
+- **Recorded omission.** The bouncing-scroll-chevron tell still has no
+  `references/catalogue/` home. Adding it requires a corpus fixture in the same
+  change under this repo's lockstep rule, which this patch deliberately does
+  not open; fleet coverage stands via the sibling scanner rule. Logged here
+  rather than left implicit.
+
 ## 0.4.0 — 2026-08-24
 
 Four new references and a motion-doctrine extension, adapted from

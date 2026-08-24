@@ -49,7 +49,7 @@ Layered Depth failure mode: 8-10 cards scattered at random rotations. The shelf 
 
 Support hierarchy: eyebrow at `0.75rem / letter-spacing 0.12em / uppercase / muted`; subtext at most ~20 words, `max-width: 45ch`, muted; ONE CTA (a second "Learn more" link halves the first CTA's weight and is a catalogue tell).
 
-**Palette: three hues, hard cap.** Dark heroes: off-black `#0a0a0a` ground (pure `#000` is a dead surface that cannot hold atmosphere) + warm off-white text + one accent on at most 1-2 small elements. Light heroes: warm off-white ground + near-black `#1a1a1a` text + one accent -- and note the cream+serif+warm-accent combination is itself the current top emerging tell (`catalogue/01-ai-tells.md`), so a light hero needs its palette anchored to the brand, not to "tasteful."
+**Palette: three hues, hard cap.** Dark heroes: off-black `#0a0a0a` ground (pure `#000` is a dead surface that cannot hold atmosphere) + warm off-white text + one accent on at most 1-2 small elements. Light heroes: warm off-white ground + near-black `#1a1a1a` text + one accent -- and note the cream + serif + sage/forest-green combination is itself the current top emerging tell (`catalogue/01-ai-tells.md` § The Tasteful Default), so a light hero needs its palette anchored to the brand, not to "tasteful."
 
 **Atmosphere: never flat.** Two recipes that register without being seen:
 
@@ -59,7 +59,9 @@ Support hierarchy: eyebrow at `0.75rem / letter-spacing 0.12em / uppercase / mut
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse 60% 50% at 50% 40%, rgb(255 255 255 / 0.03) 0%, transparent 70%);
 }
-/* Film grain -- fixed so it never repaints on scroll; 0.04 = felt, not seen */
+/* Film grain -- fixed so it never repaints on scroll; 0.04 = felt, not seen.
+   Ceiling 0.05 across this library (`review/07`, `design/11`); the catalogue's
+   remediation band is 2-5% (`catalogue/01-ai-tells.md` §11). */
 .grain::after {
   content: ''; position: fixed; inset: 0; pointer-events: none; opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -68,18 +70,20 @@ Support hierarchy: eyebrow at `0.75rem / letter-spacing 0.12em / uppercase / mut
 
 Atmosphere is additive texture on a committed palette -- distinct from the decorative blur-blob tell (a `rounded-full` + `blur-3xl` element standing in for design).
 
-**Fit.** The whole composition (nav + heading + subtext + CTA + focal visual) fits one 1440x900 viewport. `min-height: 100dvh`, never `100vh` (`responsive/03` owns the viewport-unit rule). Entry animation per `design/04-motion.md` -- staggered fade-up, whole entry under 800ms, reduced-motion gated.
+**Fit.** The whole composition (nav + heading + subtext + CTA + focal visual) fits one 1440x900 viewport -- and the next section peeks. A hero that terminates exactly at the fold invites the scroll-chevron patch, itself a tell. Size it with `min-height: 100lvh` (or `100svh` as the conservative default), never bare `vh`: `references/responsive/01-fluid-and-intrinsic-sizing.md` §7 owns the viewport-unit rule and its table. Entry animation per `design/04-motion.md` -- staggered fade-up, whole entry under 800ms, reduced-motion gated.
 
-## 4. The persuasion sequence
+## 4. The objection sequence
 
-A landing page is a persuasion sequence, not a parts bin. Section ORDER answers visitor objections in the order they arise:
+A landing page is a persuasion sequence, not a parts bin. What is ordered is the visitor's QUESTIONS, which arrive in a predictable sequence:
 
 ```
-HERO -> WHAT (features/value) -> PROOF (logos/testimonials/metrics) -> HOW (process)
-     -> RESULTS (case studies/stats) -> PRICE -> OBJECTIONS (FAQ) -> FINAL CTA -> FOOTER
+WHAT is this -> WHY believe it -> HOW does it work -> WHAT did it do for others
+     -> WHAT does it cost -> WHAT is still stopping me -> WHAT do I do now
 ```
 
-Not every page needs every section; the order is fixed. CTA appears 2-3 times total (hero, final, optionally one mid-page). The final CTA is its own section, never the footer. Before choosing sections, read the page: conversion goal, top three visitor objections in order, what the hero already established (palette, type, mood) -- sections continue the hero's system, never restart it.
+Which sections answer those questions, and in what order they appear, is a content decision: `references/aesthetic/04-style-taxonomy.md` §3 owns the structural choice and supplies eight landing patterns, each with its own section order. Use the list above to check that no question is left unanswered, never as a section order to fill in. A page whose section list reproduces the L1 scaffold unmodified is the catalogue's CRITICAL tell regardless of how varied the individual section architectures are (`catalogue/01-ai-tells.md` L1, §11 "The SaaS landing-page sequence").
+
+CTA appears 2-3 times total (hero, final, optionally one mid-page). The final CTA is its own section, never the footer. Before choosing sections, read the page: conversion goal, top three visitor objections in order, what the hero already established (palette, type, mood) -- sections continue the hero's system, never restart it.
 
 ## 5. Visual rhythm rules
 
@@ -90,13 +94,13 @@ The "wall of same" is the page-level tell -- every section `py-20`, centered hea
 - One visual break per page: a full-bleed image, one giant stat, or a CSS marquee strip. Nothing else in it.
 - Heading scale varies section to section; a monotone scale is a monotone page.
 - Max two grid-based sections in a row; the third must break the pattern (asymmetric split, full-width, single column).
-- Vertical padding varies by role: content-heavy sections generous, proof strips tight, visual breaks near-zero. One uniform `py-24` everywhere is `catalogue` territory (`uniform-section-padding`).
+- Vertical padding varies by role: content-heavy sections generous, proof strips tight, visual breaks near-zero. One uniform `py-24` everywhere is `catalogue/01-ai-tells.md` L7 (section padding overload).
 
 ## 6. Section architectures by type
 
 Pick one per section; the notes carry only what is specific to the type.
 
-**Feature/value** -- (a) *Bento*: asymmetric grid where the primary cell spans 2x2 and cells vary in content type (visual in one, stat in another, quote in a third); uniform same-size icon-heading-text cells are the #1 layout tell. (b) *Stacked feature rows*: 2-3 features, each a full-width alternating split -- alternation must be visual (`lg:order-*`), DOM stays text-first for reading order; mechanical alternation down a long page is itself a tell, so cap it. (c) *Single spotlight*: one massive product visual, minimal text above.
+**Feature/value** -- (a) *Bento*: asymmetric grid where the primary cell spans 2x2 and cells vary in content type (visual in one, stat in another, quote in a third); uniform same-size icon-heading-text cells are the equal-column-grid tell (`catalogue/01-ai-tells.md` L4, HIGH), usually compounded by the tinted icon container (V1, Strongest-10 #6). (b) *Stacked feature rows*: 2-3 features, each a full-width alternating split -- alternation must be visual (`lg:order-*`), DOM stays text-first for reading order; mechanical alternation down a long page is itself a tell, so cap it. (c) *Single spotlight*: one massive product visual, minimal text above.
 
 **Proof** -- (a) *Logo strip*: one quiet row, grayscale at ~40% opacity, color on hover, band separators; no large "Trusted by" heading. (b) *Testimonial cascade*: 2-3 cards, ONE visually dominant (span 2 columns, larger quote); identical uniform cards are the proof-section tell; real names, roles, faces. (c) *Metric bar*: 3-4 large numbers with `font-variant-numeric: tabular-nums` (no layout shift under count-up), tiny labels, generous space. Specific numbers beat round ones ("12,847 teams" over "10,000+").
 
@@ -119,7 +123,7 @@ No placeholder text, no "[Feature Name]", no lorem. Copy specific over generic: 
 ## See also
 
 - `references/aesthetic/01-point-of-view.md` -- the POV commitment that makes any architecture distinctive
-- `references/aesthetic/04-style-taxonomy.md` -- landing structures by style family and domain
+- `references/aesthetic/04-style-taxonomy.md` -- OWNER of the eight landing structures (§3); it picks the page structure, this file supplies the per-section architecture and rhythm rules
 - `references/design/02-typography.md` -- display-face selection, fluid scales
 - `references/design/03-spacing-rhythm.md` -- the spacing scale the rhythm rules draw from
 - `references/design/04-motion.md` -- entry choreography, spring palette, stagger

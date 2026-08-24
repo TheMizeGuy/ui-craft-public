@@ -28,11 +28,10 @@ reviews:
   instructions: |
     ui-craft is a Claude Code plugin, not an
     application: four user-invoked skills, ten dispatched specialist agents, and
-    a ~41-file reference knowledge base, plus a zero-dependency Node scorer and
+    a 57-file reference knowledge base, plus a zero-dependency Node scorer and
     a CI gate script. Content IS the product — a change to a reference file or
     an agent body changes runtime behaviour exactly as much as a code change
-    does. This repo is the source of truth; ~/Claude/plugins/ui-craft and the
-    plugin cache are downstream mirrors.
+    does.
 
     BLOCKING rules (flag as error, not nitpick):
     - Model policy: agent frontmatter must carry NO `model:` pin, and no dated
@@ -60,9 +59,11 @@ reviews:
     - Third-party plugin integration, if ever re-added, must be detected by
       capability (the session's available skill list), never by a hardcoded
       plugin cache path, version directory, or filesystem dependency.
-    - Mirror hygiene: no `/Users/<name>` absolute paths, goodmem space UUIDs,
-      vault paths, or memory-ID citations in content destined for a public
-      mirror.
+    - Mirror hygiene: no machine-local paths in content destined for a public
+      mirror — neither `/Users/<name>` absolutes nor home-relative private
+      tooling directories (vault, plugin sources, harness config), and no
+      goodmem space UUIDs or memory-ID citations. A public reader can act on
+      none of them, and each one names private tooling.
     - CI: Namespace runner labels only (`nscloud-*`), never `ubuntu-latest` or
       `macos-*`; third-party actions stay SHA-pinned.
 

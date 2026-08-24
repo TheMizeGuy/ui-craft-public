@@ -39,7 +39,7 @@ Below confident identification, state the top 2-3 candidates with the discrimina
 
 **Layer 5 -- Component inventory.** Per component (buttons, cards, inputs, badges, avatars, nav, dividers): radius, border, shadow, background, visible states, icon style. Identify the radius LANGUAGE (sharp / subtle 4-8px / rounded 12-16px / pill / deliberately mixed) -- radius mismatches are detected by eye faster than color or spacing errors.
 
-**Layer 6 -- Atmosphere.** Grain (note opacity, typically 0.03-0.06), ambient glows (position, spread), backdrop blur (which elements, how much), gradients (direction, stops), tinted shadows, scrims, background patterns. Extract only what the reference shows -- adding atmosphere it does not have is interpretation, not replication, and so is omitting what it has.
+**Layer 6 -- Atmosphere.** Grain (sampled grain usually reads 0.03-0.05; anything above that is more likely a compression artifact than a design decision, and 0.05 is this library's ceiling either way -- `design/10-hero-and-section-architectures.md` §3), ambient glows (position, spread), backdrop blur (which elements, how much), gradients (direction, stops), tinted shadows, scrims, background patterns. Extract only what the reference shows -- adding atmosphere it does not have is interpretation, not replication, and so is omitting what it has.
 
 **Layer 7 -- Responsive and interaction inference.** A static image still declares behavior: multi-column implies single-column collapse; a sticky-looking nav implies `position: fixed` + blur; elements composed "mid-landing" imply an entry stagger; bordered cards imply border/background hover shifts; dot rows imply carousels. Write the inferences down so they are implemented deliberately.
 
@@ -63,7 +63,7 @@ An imperfect stand-in image is closer to the reference than any CSS approximatio
 
 ## 5. The replication diff
 
-Before delivery, walk the implementation against the reference category by category -- layout (count, order, proportions, alignment), typography (face rendering, size against viewport, weight, leading, tracking), color (per-role match, no unexpected shifts), components (radius language, padding, state styling), spacing (each measured gap, top/bottom independence), atmosphere (present exactly where the reference shows it) -- plus the standing technical floor: zero console errors, fonts loaded, no horizontal overflow at any width, hover/focus states, `dvh` not `vh`, reduced-motion respected. Any category that fails blocks delivery; "close" compounds.
+Before delivery, walk the implementation against the reference category by category -- layout (count, order, proportions, alignment), typography (face rendering, size against viewport, weight, leading, tracking), color (per-role match, no unexpected shifts), components (radius language, padding, state styling), spacing (each measured gap, top/bottom independence), atmosphere (present exactly where the reference shows it) -- plus the standing technical floor: zero console errors, fonts loaded, no horizontal overflow at any width, hover/focus states, viewport units per `responsive/01-fluid-and-intrinsic-sizing.md` §7 (not bare `vh`), reduced-motion respected. Any category that fails blocks delivery; "close" compounds.
 
 Evidence discipline for review findings on a replication is owned by `review/02-evidence-pipeline.md` -- claims of pixel divergence need geometry, not squinting.
 
@@ -71,8 +71,8 @@ Evidence discipline for review findings on a replication is owned by `review/02-
 
 - **Multiple references:** extract each independently, confirm one design system spans them; on conflict ask which is authoritative. Desktop + mobile pairs: desktop owns the system, mobile owns the breakpoints.
 - **Recognizable component library:** say so ("this is shadcn/ui"), ask library-vs-manual, and if library, theme it to match rather than fighting it (`design/06-shadcn-customization.md`).
-- **Dynamic content in the shot:** reproduce appearance with realistic static data -- real-sounding names, organic numbers, never "John Doe"/"99.99%" (placeholder literals are catalogue tells).
-- **The one sanctioned override:** `min-height: 100dvh` replaces an apparent `100vh` -- a browser-behavior correction, not a design deviation. Everything else defers to the reference, including where the reference contradicts the replicator's taste.
+- **Dynamic content in the shot:** reproduce appearance with realistic static data -- real-sounding names, organic numbers, no placeholder literals. The catalogue supplies the greppable ones: lorem ipsum (W1, CRITICAL), the fake-testimonial name pool ("Sarah Johnson", "Michael Chen", "CEO at TechCorp"), and the shadcn demo value `$45,231.89` (`catalogue/01-ai-tells.md`). Reproducing the reference's *shape* of data is the job; reproducing the corpus's stock names is a tell the reference never had.
+- **The one sanctioned override:** an apparent `100vh` becomes `100svh` (conservative) or `100lvh` (backgrounds and full-bleed fills), per `responsive/01-fluid-and-intrinsic-sizing.md` §7 -- a browser-behavior correction, not a design deviation. Everything else defers to the reference, including where the reference contradicts the replicator's taste.
 
 ## See also
 

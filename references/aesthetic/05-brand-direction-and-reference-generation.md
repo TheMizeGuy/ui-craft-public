@@ -23,7 +23,7 @@ Both lanes run the same discipline: for each axis, pick ONE option from a small 
 
 **Negative constraints do the heavy lifting.** Every generation prompt carries a WHAT-THIS-IS-NOT block naming the defaults to break, because generation collapses into the same five: purple/blue AI-glow heroes, floating translucent blobs, generic dashboard-card spam, centered-text-over-gradient, stock-photo business imagery. Add the specific bans for the brief ("NOT a purple gradient hero. NOT floating glass orbs. NOT a dashboard screenshot."). The same tells that mark generated UI mark generated reference imagery -- `catalogue/01-ai-tells.md` applies to the image, and an image that would fail the catalogue must not be handed to a builder as a target.
 
-**Every section has a conversion job** -- hook, prove, educate, or convert -- and the page sequence follows the persuasion order in `design/10-hero-and-section-architectures.md` §4. A reference image that is beautiful but implies no reading order or action has failed as a reference.
+**Every section has a conversion job** -- hook, prove, educate, or convert -- and the sections together answer the objection sequence in `design/10-hero-and-section-architectures.md` §4, in whatever order the chosen landing structure puts them (`aesthetic/04-style-taxonomy.md` §3). A reference image that is beautiful but implies no reading order or action has failed as a reference.
 
 ## 3. Brand direction: the mark
 
