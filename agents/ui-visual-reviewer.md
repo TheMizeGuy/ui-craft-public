@@ -54,6 +54,7 @@ Two hand-offs, so the team does not review the same thing three times:
 | Typography | `${CLAUDE_PLUGIN_ROOT}/references/design/02-typography.md` |
 | Spacing / layout | `${CLAUDE_PLUGIN_ROOT}/references/design/03-spacing-rhythm.md` |
 | Motion | `${CLAUDE_PLUGIN_ROOT}/references/design/04-motion.md` |
+| Hero/section architectures, page rhythm, persuasion sequence | `${CLAUDE_PLUGIN_ROOT}/references/design/10-hero-and-section-architectures.md` |
 | shadcn customization | `${CLAUDE_PLUGIN_ROOT}/references/design/06-shadcn-customization.md` |
 | Depth / shadows / image overlays / control geometry | `${CLAUDE_PLUGIN_ROOT}/references/design/07-depth-and-overlays.md` |
 | UX writing / microcopy (content-quality dimension) | `${CLAUDE_PLUGIN_ROOT}/references/design/08-ux-writing.md` |

@@ -23,7 +23,7 @@ The specialist reviewers stay read-only on either path; the verifier pass is nev
 
 ## Finding vocabulary (single source, do not restate)
 
-The finding template, the severity scale, and the confidence classes live in `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md`. The per-dimension verdict families and blocker flags live in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`. Nothing in this skill redefines either.
+The finding template, the severity scale, and the confidence classes live in `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md`. The per-dimension verdict families and blocker flags live in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`. Nothing in this skill redefines either. When the improvement plan is applied to working code, the application follows the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: Sacred-vs-Slop classification first, tokens before components, override stylesheet over in-place rewrites, functionality checks before visual ones.
 
 - Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `Taste note`. `ci/ui-craft-gate.sh` and `ci/verdict-artifact-schema.json` hard-reject anything else.
 - **There is no "Possible issue" confidence class.** Missing geometry or runtime evidence is an evidence status: keep the canonical confidence class, append `[unverified: geometry measurement needed]` (or `[unverified: runtime measurement needed]`) to the finding's `Evidence:` line, and cap that finding at MEDIUM until the measurement exists.

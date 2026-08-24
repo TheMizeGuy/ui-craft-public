@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.4.0 — 2026-08-24
+
+Four new references and a motion-doctrine extension, adapted from
+[VibeCurb](https://github.com/Yu-369/VibeCurb) (MIT, Copyright (c) 2026
+Yu-369), deduplicated against the existing library and reconciled to house
+doctrine wherever the two disagreed (the reconciliations are called out
+below). The anti-AI-tells catalogue and its corpus lockstep are deliberately
+untouched: nothing in this release changes what a tell matches.
+
+- **`design/10-hero-and-section-architectures.md` (new).** Six named,
+  committable hero architectures with typography/palette/atmosphere specs
+  (fluid clamp scale, negative tracking, three-hue cap, glow + grain recipes),
+  the below-the-fold persuasion sequence, per-type section architectures, and
+  the visual-rhythm rules that prevent the wall-of-same page. Cross-linked to
+  the catalogue rather than restating tells.
+- **`design/11-image-to-code-replication.md` (new).** Seven-layer extraction
+  for screenshot-to-code work: proportional grid measurement, font
+  identification by discriminating letterforms, compressed-screenshot color
+  sampling, independent top/bottom spacing, radius-language detection,
+  atmosphere fidelity, responsive/interaction inference, plus the
+  artistic-asset classification rule (never approximate art with CSS) and the
+  replication diff.
+- **`review/07-surgical-visual-upgrade.md` (new).** The non-destructive
+  improve-ui application method: Sacred-vs-Slop classification with the
+  gray-zone table, audit -> prescription -> layered surgery, the
+  override-stylesheet strategy with a one-import rollback contract,
+  framework variants (Tailwind config-level, CSS-in-JS, MUI theming), and
+  functionality-before-visuals post-op checks.
+- **`aesthetic/05-brand-direction-and-reference-generation.md` (new).** The
+  two pre-design lanes: implementation-ready reference-image generation
+  (one image per section, composition-anchor variety, WHAT-THIS-IS-NOT
+  negative prompting) and brand-mark direction (symbol-from-meaning, the
+  reduction ladder, the six hard constraints, the generated-logo bans, the
+  frozen-geometry consistency rule).
+- **`design/04-motion.md` (extended).** Physics-derived `linear()` spring
+  palette with real curve values and Motion/GSAP equivalents; the three-curve
+  maximum and motion-personality lock; stagger system rules (hierarchy order,
+  6-8 item cap, entry under 800ms); the house 30-50ms increment stands, with
+  VibeCurb's 80-120ms framed as the cinematic-marketing lane only; three new
+  anti-pattern rows (mixed personalities, scale(0) entrances,
+  keyword-easing-only files).
+- **Wiring.** Architect gains the three new design/aesthetic rows;
+  visual reviewer gains the section-rhythm row; motion reviewer's map names
+  the new palette; `design-ui` routes landing briefs, image-spec briefs, and
+  brand-direction asks to the new references; `improve-ui` binds application
+  to the surgical method. ARCHITECTURE/README/CLAUDE counts corrected to 57
+  (the tree was also missing the pre-existing `design/09` and `review/06`
+  entries; both restored).
+
 ## 0.3.2 — 2026-07-31
 
 Source Serif 4 added to the type policy (user directive). The corpus already

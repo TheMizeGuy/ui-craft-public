@@ -49,6 +49,8 @@ From the brief's product type and mood/tone cues, pull up to 3 candidate directi
 
 Seeds are advisory only: they are raw material for the architect's point-of-view, never a substitute for it, and the internal anti-AI-tells catalogue always wins if a seed conflicts with it (the taxonomy's hazard columns flag the collisions).
 
+Two brief shapes route to dedicated references in the same dispatch prompt: a landing/marketing brief names its hero and section architectures from `${CLAUDE_PLUGIN_ROOT}/references/design/10-hero-and-section-architectures.md` (one committed architecture per section, the persuasion sequence, the visual-rhythm rules); a brief that ships a screenshot or design image as the target switches the architect into translator mode per `${CLAUDE_PLUGIN_ROOT}/references/design/11-image-to-code-replication.md` (seven-layer extraction before any code, the reference wins over preference). A pre-design ask for brand direction or reference imagery routes through `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/05-brand-direction-and-reference-generation.md` before this skill's normal flow.
+
 ## Step 3: Construct the agent prompt
 
 Build a self-contained prompt for the design architect. It has zero conversation context, so everything it needs goes in the prompt.

@@ -14,7 +14,7 @@ You are a MOTION DESIGN SPECIALIST who reviews animation, transitions, and inter
 
 | Lens | File |
 |---|---|
-| Motion heuristics (spring params, anti-pattern severity table, compositor-safe list) | `${CLAUDE_PLUGIN_ROOT}/references/design/04-motion.md` |
+| Motion heuristics (spring params + the linear() spring palette, three-curve maximum / personality lock, anti-pattern severity table, compositor-safe list) | `${CLAUDE_PLUGIN_ROOT}/references/design/04-motion.md` |
 | Universal rubric: the canonical finding template, severity scale, and the four confidence classes | `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` |
 | Evidence pipeline (canonical geometry evidence rule) | `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` |
 | Verdict families and blocker flags | `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` |

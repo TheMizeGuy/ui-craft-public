@@ -30,15 +30,15 @@ ui-craft/
 │   ├── ui-typescript-engineer.md   TS6/7 strictness + TS7 type gate
 │   ├── ui-verifier.md              evidence check, dedup, severity re-validation
 │   └── ui-team-lead.md             adaptive orchestrator, up to 7 specialists, verifier always last
-├── references/                 53 self-contained knowledge files, 12 domains
+├── references/                 57 self-contained knowledge files, 12 domains
 │   ├── catalogue/{01-ai-tells, 02-empirical-evidence}.md
-│   ├── review/{01-universal-rubric, 02-evidence-pipeline, 03-viewport-matrix, 04-verdicts-and-verification, 05-density-and-economy}.md
+│   ├── review/{01-universal-rubric, 02-evidence-pipeline, 03-viewport-matrix, 04-verdicts-and-verification, 05-density-and-economy, 06-measurement-traps, 07-surgical-visual-upgrade}.md
 │   ├── platform/{01-web-overlay, 02-apple-overlay, 03-android-overlay}.md
 │   ├── accessibility/{01-wcag-2-2, 02-keyboard-focus, 03-motion-reduce, 04-screen-reader}.md
 │   ├── usability/{01-task-flows-and-journeys, 02-forms-and-error-recovery, 03-navigation-and-information-architecture, 04-states-feedback-and-affordances}.md
 │   ├── responsive/{01-fluid-and-intrinsic-sizing, 02-breakpoints-vs-container-queries, 03-zoom-orientation-and-adaptive}.md
-│   ├── design/{01-color-oklch, 02-typography, 03-spacing-rhythm, 04-motion, 05-tailwind-v4, 06-shadcn-customization, 07-depth-and-overlays, 08-ux-writing}.md
-│   ├── aesthetic/{01-point-of-view, 02-distinctive-systems, 03-taste-checklist, 04-style-taxonomy}.md
+│   ├── design/{01-color-oklch, 02-typography, 03-spacing-rhythm, 04-motion, 05-tailwind-v4, 06-shadcn-customization, 07-depth-and-overlays, 08-ux-writing, 09-token-drift-and-retints, 10-hero-and-section-architectures, 11-image-to-code-replication}.md
+│   ├── aesthetic/{01-point-of-view, 02-distinctive-systems, 03-taste-checklist, 04-style-taxonomy, 05-brand-direction-and-reference-generation}.md
 │   ├── dataviz/{01-choosing-a-form, 02-color-jobs-and-validation, 03-marks-interaction-figures, 04-anti-patterns}.md
 │   ├── performance/{01-core-web-vitals, 02-react-19-perf, 03-css-perf, 04-bundle-loading, 05-measurement, 06-perceived-performance, 07-runtime-engine-patterns}.md
 │   ├── typescript/{01-ts6-essentials, 02-component-typing, 03-state-typing, 04-branded-primitives}.md

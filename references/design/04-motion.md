@@ -113,6 +113,47 @@ button {
 
 CSS suffices when: animation is deterministic, no gesture velocity, no choreography across many elements. Reach for JS (Motion) when you need orchestration, springs from gesture, or animating non-CSS values (canvas, SVG path morphs).
 
+### Physics-derived spring curves in pure CSS
+
+Beyond the single `--ease-overshoot` above, full spring character is expressible in CSS `linear()` today: plot a simulated spring's position at discrete stops and let the browser interpolate. Three curves generated from named physics (mass 1 throughout), with the durations that match their settle -- adapted from [VibeCurb](https://github.com/Yu-369/VibeCurb) (MIT, Copyright (c) 2026 Yu-369):
+
+```css
+:root {
+  /* SNAPPY -- stiffness 400, damping 30: explosive start, ~2% overshoot, soft settle.
+     The default arrival curve: entries, reveals, modal opens. */
+  --spring-snappy: linear(
+    0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%,
+    1.017 19.4%, 1.067 22.5%, 1.089 26%, 1.079 30.3%, 1.049 36%,
+    1.024 42.6%, 1.011 50.3%, 1.004 59.2%, 1.001 69.3%, 1);
+  --spring-snappy-duration: 0.55s;
+
+  /* SMOOTH -- stiffness 200, damping 24: gentle acceleration, ~5% overshoot,
+     two-phase settle. Position changes: tab switches, carousels, panel moves. */
+  --spring-smooth: linear(
+    0, 0.004, 0.016 2.3%, 0.063 4.7%, 0.141 7.2%, 0.25 9.9%,
+    0.601 16.5%, 0.815 21%, 0.929 25.2%, 0.987 29%, 1.025 33.5%,
+    1.042 38%, 1.04 43.5%, 1.027 50%, 1.013 57.5%, 1.005 67%, 1.001 79%, 1);
+  --spring-smooth-duration: 0.7s;
+
+  /* BOUNCY -- stiffness 500, damping 18: ~12% overshoot, visible bounce-settle.
+     Sparingly: toggles, reactions, small badges. Never large surfaces,
+     never destructive confirms (see §10). */
+  --spring-bouncy: linear(
+    0, 0.014, 0.055 1.8%, 0.218 3.7%, 0.867 8.5%, 1.085 10.7%,
+    1.212 12.9%, 1.264 15%, 1.262 17%, 1.217 19.5%, 1.098 24%,
+    1.035 28.5%, 0.993 33%, 0.981 38%, 0.988 45%, 0.998 55%, 1.001 68%, 1);
+  --spring-bouncy-duration: 0.5s;
+}
+```
+
+Motion (JS) equivalents when the same feel needs velocity inheritance: snappy `{ stiffness: 400, damping: 30 }`, smooth `{ stiffness: 200, damping: 24 }`, bouncy `{ stiffness: 500, damping: 18 }`. GSAP approximations: `power3.out`, `power2.inOut`, `back.out(1.7)`.
+
+Curve-to-job guidance: springs carry things with mass (arrivals, position changes, press feedback); cubic-bezier carries what has none (color, opacity, background shifts); the `linear` keyword only on constant-rate loops (marquees, spinners). Spring overshoot on hover reads as jitter -- hovers stay on the fast bezier tokens above.
+
+### The three-curve maximum and motion personality
+
+Cohesion is the strongest single predictor of whether motion reads as designed. Lock ONE motion personality per product -- surgical (fast, zero overshoot: dev tools, dashboards), physical (spring-based, tactile: consumer product, native-adjacent), or cinematic (dramatic, slow-build: marketing narrative) -- and pick at most THREE curves for the whole surface: one primary (entries/reveals), one secondary (state changes), one utility (hover/feedback). Every animation uses one of the three, declared once as tokens. Reaching for a fourth curve means one of the three was chosen wrong. A page where fade-ups, bouncy springs, and slide-lefts coexist reads as committee-built even when each animation is individually fine -- and grep makes the palette auditable: a curve literal at a call site instead of a token is the drift.
+
 ## 4. View Transitions API
 
 Native cross-fade or FLIP-style morphing across same-document state changes (SPA) and across navigations (MPA). GPU composited, off-main-thread. Support is stated once, in the § 4 status table below; the two halves of the API do not ship together, so check which one you are using.
@@ -411,6 +452,8 @@ animate(".list-item", { opacity: 1, y: 0 },
 | CSS `animation-delay` | Static lists, no gesture, no interruption |
 | Motion `stagger()` | Gesture-driven lists, springs, or where order may change at runtime |
 
+System rules for any stagger: order by VISUAL HIERARCHY (container, primary content, supporting text, actions, decoration), never by DOM order; stagger at most 6-8 items individually and bring the remainder in as one batch (a 12-step stagger is a forced 1+ second wait); the whole entry sequence completes inside ~800ms; a stagger plays once per arrival, never on every state refresh. The 30-50ms increment above is the product-UI lane; a cinematic marketing page can stretch to ~80-120ms per item where the reveal IS the content, and no further -- past that it reads as buffering.
+
 ## 10. Motion anti-patterns
 
 | Anti-pattern | Why it's a problem | Severity | Replace with |
@@ -432,6 +475,9 @@ animate(".list-item", { opacity: 1, y: 0 },
 | Skeleton screens for sub-300ms loads | Adds perceived latency | LOW-MEDIUM | Just render the data; no shimmer |
 | Animations that restart when scrolling back | Performative, not functional | LOW-MEDIUM | Play-once via `animation-play-state` guard or `IntersectionObserver` |
 | Hover-only reveals on touch UI | Touch has no hover | LOW-MEDIUM | Tap-to-toggle or always-visible on touch via `(hover: hover)` MQ |
+| Mixed motion personalities (springs here, dramatic curves there, snaps elsewhere) | Each fine alone; together the page reads committee-built | MEDIUM | Lock one personality; enforce the three-curve maximum (§3) |
+| Entrances from `scale(0)` | Nothing physical appears from nothingness; reads as a render glitch | LOW-MEDIUM | Start at `scale(0.9)`-`scale(0.97)` paired with opacity |
+| Only keyword easings (`ease`, `ease-in-out`) across a file | The browser's "nobody decided" curves; no motion was designed | LOW-MEDIUM | Name curves from the token palette; keyword easing kept only as a stated choice |
 
 ### Motion tooling
 
