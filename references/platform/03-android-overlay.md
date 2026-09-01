@@ -239,7 +239,7 @@ Compute ratios with the math in `references/accessibility/01-wcag-2-2.md` sectio
 
 | Condition | Severity |
 |---|---|
-| Core path breaks on fold, tablet, or multi-window | CRITICAL-HIGH |
+| Core path breaks on fold, tablet, or multi-window | HIGH; CRITICAL when the broken path is the screen's primary task |
 | No accessibility semantics on custom interactive components | CRITICAL |
 | Font scaling globally disabled (custom `Density` with `fontScale = 1f`) | CRITICAL |
 | Configuration change causes state loss or crash | CRITICAL |
@@ -252,13 +252,13 @@ Compute ratios with the math in `references/accessibility/01-wcag-2-2.md` sectio
 | Minimum interactive size enforcement disabled | HIGH |
 | Color as the only state signal | HIGH |
 | Material semantics replaced without proper custom semantics | HIGH |
-| Dynamic color used without verifying paired roles across wallpapers | MEDIUM-HIGH |
-| Navigation ignores width-class ergonomics | MEDIUM-HIGH |
+| Dynamic color used without verifying paired roles across wallpapers | MEDIUM; HIGH when a role pair measured on a tested wallpaper fails 4.5:1 |
+| Navigation ignores width-class ergonomics | MEDIUM; HIGH when a top-level destination is unreachable at a window size class |
 | Contrast setting (`UiModeManager.getContrast()`) ignored | MEDIUM |
 | Headings not marked, so TalkBack cannot skim the screen | MEDIUM |
 | Phone-only layout on tablet with no blocking issue | MEDIUM |
 | RTL not verified on a localized app | MEDIUM |
-| Minor visual deviation from Material with no usability cost | LOW-TASTE |
+| Minor visual deviation from Material with no usability cost | TASTE; LOW when the deviation removes an affordance (ripple, state) |
 
 ## Design rule
 

@@ -1,7 +1,7 @@
 ---
 name: optimize-ui
 description: |-
-  Use this skill when the user asks to optimize UI performance: Core Web Vitals (LCP, INP, CLS), bundle size, rendering performance, runtime smoothness, font loading, image optimization, or framework-specific patterns (React compiler, RSC, Suspense, hydration; SwiftUI/Compose re-render stability). Triggers: "optimize my UI", "make it faster", "fix LCP", "reduce bundle size", "optimize for Core Web Vitals", "performance audit", "speed up the page", "reduce CLS", "fix INP", "the UI feels janky", "dropped frames". Dispatches the ui-craft:ui-perf-engineer agent (pinned to Opus 5 at dispatch) which measures first (Lighthouse / tsc / bundle analysis if available), then produces severity-tagged findings with estimated metric impact and concrete code fixes.
+  Use this skill when the user asks to optimize UI performance: Core Web Vitals (LCP, INP, CLS), bundle size, rendering performance, runtime smoothness, font loading, image optimization, or framework-specific patterns (React compiler, RSC, Suspense, hydration; SwiftUI/Compose re-render stability). Triggers: "optimize my UI", "make the page faster", "fix LCP", "reduce bundle size", "optimize for Core Web Vitals", "UI performance audit", "speed up the page", "reduce CLS", "fix INP", "the UI feels janky", "dropped frames". Dispatches the ui-craft:ui-perf-engineer agent (pinned to the Fable 5.1 lane at dispatch) which measures first (Lighthouse / tsc / bundle analysis if available), then produces severity-tagged findings with estimated metric impact and concrete code fixes.
 argument-hint: '[path | file | directory | url | "staged" | "diff" | "pr" | "all"]'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
 ---
@@ -10,7 +10,7 @@ allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
 
 You are coordinating a performance review and optimization of UI code. Your job is to gather context, dispatch the perf engineer, and present actionable results.
 
-For a full multi-dimension review use `review-ui`; for review + optimization in one pass use `improve-ui`. This skill is performance-only.
+For a multi-dimension review use `review-ui`; for the full pass with the verifier use `improve-ui`. This skill is performance-only.
 
 **Read-only until the user picks.** The only file this skill writes unasked is the review ledger (Step 6). The `Edit`/`Write` grant in the frontmatter exists for that and for the Step 5 apply step.
 
@@ -22,7 +22,7 @@ Both halves report under one dimension, `Runtime smoothness`, whose verdict fami
 
 ## Execution mode
 
-The dispatched `ui-perf-engineer` is pinned to Opus 5 (`model: "opus"`) at dispatch, the coding/review floor (owner directive 2026-07-24); the orchestrator conducts on the session model. If the session model is already the strongest tier and the task is important or complex, run the review inline in the main context (foreground) instead of dispatching, following the same measurement-first process as `ui-perf-engineer`. The perf engineer stays read-only regardless of dispatch mode.
+The review is dispatched, never run inline in the orchestrating session. The `ui-perf-engineer` runs as a Fable 5.1 subagent: pin `model: "fable"` and put the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` first in its prompt (the standing lane for UI/UX, frontend, and design work, owner directive 2026-09-01; a policy-gated harness checks for that line, and it costs nothing where nothing checks). If the harness rejects the `fable` alias, re-dispatch the same prompt with `model: "opus"` (Opus 5), the floor for UI work. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: scope, context, the prompt, gating, and the ledger. Run the perf engineer's measurement-first process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -43,7 +43,7 @@ Same resolution rules as `review-ui`:
 | `<url>` | A running app or preview deployment. The only scope on which LCP, INP, and CLS can be measured rather than estimated; can be combined with a path |
 | `all` | Entire project |
 
-Include: components, pages, layouts, styles, configs (next.config, vite.config, tailwind.config, package.json). Exclude: node_modules, dist, build, .next.
+Include: components, pages, layouts, styles, configs (next.config, vite.config, tailwind.config, package.json). Exclude: node_modules, dist, build, .build, .next, Pods, DerivedData.
 
 ### Check for a prior ledger
 
@@ -91,17 +91,17 @@ PROJECT CONTEXT:
 
 PRIOR PERFORMANCE FINDINGS: <performance-dimension entries from the ledger, or "none">
 
-PLUGIN REFERENCES: ${CLAUDE_PLUGIN_ROOT}/references/performance/ (5 files). Read them BEFORE reviewing.
+PLUGIN REFERENCES: ${CLAUDE_PLUGIN_ROOT}/references/performance/ (7 files, 01 through 07). Read every one of them BEFORE reviewing.
 Also read: ${CLAUDE_PLUGIN_ROOT}/references/design/05-tailwind-v4.md for Tailwind v4 perf, and
 ${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md for the finding format.
 
 TASK:
 1. Read all files in scope.
-2. Read the 5 performance reference files.
-3. If available: run the typecheck gate by path (`node node_modules/ts7/bin/tsc --noEmit`;
-   `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent), the build
-   command, and Lighthouse. Never bare `tsc`, because both packages declare that bin and npm's
-   link order on the collision is not guaranteed.
+2. Read all seven performance reference files.
+3. If available: run the TypeScript 7 gate by path, resolving the compiler by version (the first of
+   `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, `node_modules/typescript/bin/tsc`
+   whose `--version` prints `Version 7.`; never bare `tsc`; read the exit code from a log, never the
+   output), the build command, and Lighthouse.
 4. Identify the likely LCP element per page (web) or the most re-render-prone view (native).
 5. Review all perf angles per your system prompt: load/delivery AND runtime/rendering stability.
 6. Quantify estimated impact for each finding ("+800ms LCP", "+0.15 CLS", "+120KB JS",
@@ -134,7 +134,8 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 ## Step 4: Dispatch
 
 - `subagent_type`: `"ui-craft:ui-perf-engineer"`
-- `model`: `"opus"` (mandatory; an omitted model inherits the session model, which the model-policy guard denies)
+- `model`: `"fable"` (mandatory, see Execution mode; `"opus"` only when the harness rejects the alias; never omitted)
+- `prompt`: `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` on the first line, then the prompt from Step 3
 - `description`: `"Perf review of N files"`
 - Foreground
 
@@ -142,7 +143,7 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 
 1. Gate the report against the ACCEPTANCE CRITERIA from Step 3. Any failure means ONE re-dispatch naming the failed criterion; a second failure means present it flagged.
 2. Show it verbatim, under a header carrying the scope, evidence level, the `Runtime smoothness` verdict token, and the `runtime_instability` flag state.
-3. If a prior ledger was loaded, prepend the performance delta using the same buckets the other skills use, matched on `id` + `file`: NEW, RESOLVED (re-verified), STILL OPEN (same severity), REGRESSED (higher severity), IMPROVED (lower severity).
+3. If a prior ledger was loaded, prepend the performance delta using the same buckets the other skills use, matched on `id` + `file`: NEW, RESOLVED (re-verified), STILL OPEN (same severity), REGRESSED (higher severity), IMPROVED (lower severity), Carried forward (every prior entry whose dimension is not performance).
 4. Prompt:
    ```
    Apply any of these optimizations? Tell me which:
@@ -152,7 +153,7 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
    - "skip"
    ```
 5. If the user picks, apply with Edit/Write. After applying:
-   - Run the typecheck gate by path (`node node_modules/ts7/bin/tsc --noEmit`; `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent) to verify fixes compile.
+   - Run the TypeScript 7 gate by path (resolve the compiler by version as in Step 3; never bare `tsc`; read the exit code) to verify fixes compile.
    - Run build if possible to check bundle size delta.
    - Re-measure if a URL is available. A perf fix with no after-number is an assertion.
    - Offer to run `review-ui` if design quality wasn't checked yet, or `improve-ui` for the full team treatment.
@@ -169,13 +170,13 @@ Note in one line that the ledger was refreshed.
 
 ## Step 7: No CI verdict artifact here
 
-This skill never writes the machine-readable CI gate artifact. The gate schema requires verdicts for all five base dimensions and this is a single-dimension pass, so anything written here would either fail schema validation or assert GREEN on dimensions nobody reviewed. `improve-ui` is the only producer. If the repo has `ci/ui-craft-gate.sh` or a `.claude/ui-craft-artifacts/` directory, say that and point at `/ui-craft:improve-ui`.
+This skill never writes the machine-readable CI gate artifact. The gate schema requires verdicts for all six base dimensions and this is a single-dimension pass, so anything written here would either fail schema validation or assert GREEN on dimensions nobody reviewed. `improve-ui` is the only producer. If the repo has `ci/ui-craft-gate.sh` or a `.claude/ui-craft-artifacts/` directory, say that and point at `/ui-craft:improve-ui`.
 
 ## Anti-patterns
 
 - Don't skip tooling. If build/Lighthouse is available, run it.
 - Don't guess metric impact; measure or cite the reference's documented impact.
-- Don't dispatch without `model: "opus"`.
+- Don't dispatch without `model: "fable"` and its attestation line (or the `opus` fallback); never an omitted model.
 - Don't overwrite the ledger's other dimensions.
 - Don't summarize agent output.
 - Don't auto-apply.

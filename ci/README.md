@@ -66,7 +66,7 @@ Run `/ui-craft:improve-ui` against the PR's branch, preview deployment, or local
 improve-ui is the pass that dispatches `ui-team-lead`'s full specialist fleet and always finishes
 with `ui-verifier`, so it is the only skill that produces every verdict this gate requires.
 
-`/ui-craft:review-ui` is **not** an alternative here. Its adaptive pass dispatches only 2-3
+`/ui-craft:review-ui` is **not** an alternative here. Its adaptive pass dispatches 3-5
 specialists by design, so it cannot fill the six required verdicts, and a hand-completed artifact
 claiming dimensions nobody reviewed is worse than no artifact.
 
@@ -177,8 +177,8 @@ on:
 
 jobs:
   ui-craft-gate:
-    # TheMizeGuy repos run on Namespace.so managed runners, never
-    # GitHub-hosted labels -- e.g. `runs-on: nscloud-ubuntu-22.04-arm64-2x4`.
+    # TheMizeGuy repos never use GitHub-hosted labels: self-hosted fleet first,
+    # Namespace as the fallback -- e.g. `runs-on: nscloud-ubuntu-22.04-arm64-2x4`.
     # The placeholder below is for adopters outside that fleet; swap in
     # whatever hosted or self-hosted runner your org actually uses.
     runs-on: ubuntu-latest

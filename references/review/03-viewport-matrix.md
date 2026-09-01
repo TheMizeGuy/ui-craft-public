@@ -32,6 +32,10 @@ Do not open all sixteen. Open the narrowest, 900, the widest the product will
 realistically see, plus any width where the product's own breakpoints fire. The
 rest are for reproducing a family once a defect is found.
 
+Default when the product states nothing: 320, 390, 900, 1440, 1920, 2560. The 1920
+measurement is the one the density thresholds are calibrated at
+(`references/review/05-density-and-economy.md`), so it stays in even when 2560 is open.
+
 ## Required review modes
 
 Widths are one axis. These are the others, and each fails independently. The
@@ -64,7 +68,7 @@ systemic rather than per-component.
 | Phone compact portrait | ~360dp | Compact |
 | Phone compact landscape | ~640dp | Medium |
 | Foldable closed | ~360dp | Compact |
-| Foldable open/flat | ~580dp | Medium/Expanded |
+| Foldable open/flat | ~670dp portrait, ~840dp landscape | Medium / Expanded |
 | 8-inch tablet | ~600dp | Medium |
 | 10.5-inch tablet | ~720dp | Expanded |
 | 13-inch Chromebook | ~840dp+ | Expanded/Large |
@@ -78,9 +82,9 @@ and a folded foldable is a 360dp phone.
 
 | Device class | Viewport | Notes |
 |---|---|---|
-| iPhone SE | 375pt | Smallest current |
+| iPhone SE (2nd/3rd gen) | 375pt | Narrowest width iOS 26 still supports; no longer sold |
 | iPhone 16 | 393pt | Standard |
-| iPhone 16 Pro Max | 430pt | Large |
+| iPhone 16 Pro Max | 440pt | Large |
 | iPad Mini | 744pt | Compact iPad |
 | iPad Air/Pro 11" | 820pt | Standard iPad |
 | iPad Pro 13" | 1024pt | Largest iPad |
@@ -119,7 +123,7 @@ confirm a resize mid-task keeps state and scroll position
   threshold and the menu of correct fixes are in "Surplus width above 1600px"
   below, because "excessive" with no number and no target behaviour produces a
   finding nobody can act on
-- Line lengths > 80ch on wide screens (the same decision as dead space, from the
+- Line lengths > 75ch on wide screens (the same decision as dead space, from the
   other side: see below)
 - A single container child absorbing the slack: an unsized column in a
   `table-layout:fixed`, an `auto` margin, a bare `1fr` beside fixed siblings.
@@ -143,7 +147,7 @@ width as a share of viewport width at 1920px and at the widest width in the
 matrix. Under 60% with no second column, sidebar or reading-measure
 justification is HIGH; 60 to 75% unjustified is MEDIUM; a prose surface capped at
 a 65 to 75ch measure is correct and not a finding; a tabular, dashboard or data
-surface capped like prose is HIGH. Measure with `scripts/measure_density.js` or
+surface capped like prose is HIGH. Measure with `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` (evaluated through the browser tool) or
 the inline snippet in that file, and quote the percentage plus the unused pixel
 count.
 
@@ -204,7 +208,8 @@ Worst observed at 320px portrait.
 | Important content clipped on one common viewport family | HIGH |
 | Layout degraded but usable on common viewport family | MEDIUM |
 | Cosmetic issue only on fringe width or rare orientation | LOW |
-| Under 60% viewport utilisation, or a page over 2x viewport height with nothing disclosed, on a common desktop width | HIGH |
+| Under 60% viewport utilisation on a common desktop width | HIGH |
+| Page over 2x viewport height with nothing disclosed | MEDIUM (`references/review/05-density-and-economy.md`) |
 | A container child hoarding the slack, measurably (>40% of its container, content maximum far below it) | HIGH |
 | Content or a control lost at 320 CSS px reflow, or two-dimensional scrolling on content that does not require it | HIGH, CRITICAL when it blocks the primary task (WCAG 1.4.10) |
 | Text clipped, truncated or overlapped at 200% page zoom | HIGH (WCAG 1.4.4) |

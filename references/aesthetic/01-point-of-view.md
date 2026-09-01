@@ -56,13 +56,15 @@ The answers form the POV brief. Every component decision later is checked agains
 
 ### Calibration: the current AI-default looks
 
-AI-generated design currently clusters around three looks: (1) a warm cream background (near `#F4F1EA`) with a high-contrast serif display and a terracotta or sage accent (the "tasteful default," dissected in `references/catalogue/01-ai-tells.md`); (2) a near-black background with a single bright acid-green or vermilion accent; (3) a broadsheet-style layout with hairline rules, zero border-radius, and dense newspaper columns. All three are legitimate for some briefs, but they are defaults rather than choices and appear regardless of subject. Where the brief pins down a direction, the brief's own words always win, including when it asks for one of these looks; where an axis is left free, do not spend that freedom on a default.
+AI-generated design currently clusters around three looks: (1) a warm cream background (near `#F4F1EA`) with a high-contrast serif display and a terracotta or sage accent (the "tasteful default," dissected in `references/catalogue/01-ai-tells.md`; Templates B and C below each sit within one axis of it, see the collision notes in section 3); (2) a near-black background with a single bright acid-green or vermilion accent; (3) a broadsheet-style layout with hairline rules, zero border-radius, and dense newspaper columns. All three are legitimate for some briefs, but they are defaults rather than choices and appear regardless of subject. Where the brief pins down a direction, the brief's own words always win, including when it asks for one of these looks; where an axis is left free, do not spend that freedom on a default.
 
 The plan-stage self-test: before building, work through a *similar* brief in your head. If the plan you drafted for this brief would come out roughly the same for that one, the plan is a default wearing this project's name; revise the generic part and say what changed and why. The subject's own world (its materials, instruments, artifacts, vernacular) is where distinctive choices come from, so if the brief does not pin down the subject, pin it yourself: name the concrete subject, its audience, and the page's single job before designing.
 
 ## 3. Three POV Templates to Start From
 
 These are starting points -- never ship a template-rendered POV. Use them as gravity wells; deviate intentionally. Each carries a complete token set, **both schemes**, so the downstream coherence is automatic.
+
+**Collision notes.** Templates B and C each satisfy the catalogue's two-of-three Tasteful Default rule (cream/paper + serif; cream + moss). They stay legitimate only as a stated decision: when a design lands within one axis of either template, change one axis (cool paper for B, a subject-derived accent for C) or mark the token block `anti-slop-allow: <reason>` so the auditor grades it as a choice.
 
 **Both schemes, authored independently.** Every template below gives a light value and a dark value per token. That is not decoration: a template that covers one scheme means the second scheme gets improvised late, which is how the mirrored dark mode `references/design/01-color-oklch.md` warns about gets shipped. The counterpart column is *derived by the rules in that file's Dark-mode surface craft section* (dim the borders, elevation as a lightness delta rather than shadow, desaturate bright chips and flip their text relationship, pick the dark ramp from the brand hue), not by inverting L. Wire the two columns once, at the root:
 
@@ -101,11 +103,11 @@ Dark is this template's primary scheme; the light column is its authored counter
 | Text primary | `oklch(0.95 0.005 90)` warm-paper -- 17.4:1 | `oklch(0.22 0.010 270)` -- 15.7:1 |
 | Text secondary | `oklch(0.65 0.01 90)` -- 6.2:1 | `oklch(0.45 0.012 270)` -- 6.7:1 |
 | Text tertiary | `oklch(0.58 0.01 90)` -- 4.7:1 | `oklch(0.51 0.012 270)` -- 5.2:1 |
-| Accent | `oklch(0.7 0.18 60)` amber-signal -- 7.2:1; single accent, used sparingly for active state and primary action | `oklch(0.52 0.15 60)` -- 5.2:1; darkened and slightly desaturated so it does not glare on paper |
+| Accent | `oklch(0.7 0.16 60)` amber-signal -- 7.2:1; single accent, used sparingly for active state and primary action | `oklch(0.52 0.12 60)` -- 5.2:1; darkened and slightly desaturated so it does not glare on paper |
 | Status alert | `oklch(0.62 0.22 25)` blood-red -- 5.0:1; destructive confirms and outage only | `oklch(0.52 0.20 25)` -- 5.5:1 |
 | Status ok | `oklch(0.7 0.13 145)` muted forest -- 7.9:1; desaturated to not compete | `oklch(0.50 0.12 145)` -- 5.1:1 |
 | Display font | Söhne Variable / a condensed grotesque -- weight (600-650) + tight negative tracking as the brand statement, never a mono face | same |
-| Body font | Söhne Variable, or DM Sans / Plus Jakarta Sans where a commercial licence is not available (450-550 range, never 400/700). **Never a display cut** -- display faces carry tighter default spacing and higher stroke contrast, which degrades at the 13-14px body sizes this template specifies | same |
+| Body font | Söhne Variable, or DM Sans / Plus Jakarta Sans where a commercial licence is not available (450-550 range, never 400/700; DM Sans only with its weights and tracking tuned, never at the unmodified shadcn dashboard defaults the catalogue bans). **Never a display cut** -- display faces carry tighter default spacing and higher stroke contrast, which degrades at the 14px body floor this template specifies (12-13px only for secondary metadata, the scale's bottom step; catalogue T12 asks for 16px, so a dense-operator body below 16px is a stated decision carrying `anti-slop-allow: dense operator UI` and never goes below 14px) | same |
 | Numeric font | Same as body with `font-feature-settings: 'tnum'` | same |
 | Modular scale | 1.2 (12 -> 14 -> 17 -> 20 -> 24 -> 29 -> 35) |
 | Spacing scale | 4-8-12-16-24-32-48-72 (8px grid with 4 for tight inline) |

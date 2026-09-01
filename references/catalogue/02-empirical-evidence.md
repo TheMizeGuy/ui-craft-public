@@ -45,14 +45,14 @@ Comment share (100% on-topic) with false-positive risk and verdict.
 | Symmetric hero + 3 feature cards + CTA | 0.4% | medium | Confirmed, thin |
 | **Cream + serif + sage "tasteful default"** | rising | n/a | The current top emerging tell (see catalogue file 01) |
 
-## UI: cleared by the data (do NOT flag)
+## UI: low-evidence or unsupported by the data (never lead with these; the catalogue class still applies when the pattern is concentrated or decorative)
 
 The stereotypical "AI design" memes sit near the bottom or were rejected outright. Do not lead a review with any of these.
 
 | Pattern | Verdict |
 |---------|---------|
-| Mesh / blob / aurora backgrounds | **Rejected**: keyword artifact -- most matches were GitHub `/blob/` URLs, not design complaints |
-| Bento grid | Dead last (0.1%); people defend it. Not a tell |
+| Mesh / blob / aurora backgrounds | **Rejected as evidence**: keyword artifact -- most matches were GitHub `/blob/` URLs, not design complaints. The data is silent on C11 blur blobs, which stay LOW |
+| Bento grid | Dead last (0.1%); people defend it. Not a tell on presence; L3 (bento as the only, decorative layout) stays MEDIUM |
 | Glassmorphism / frosted glass | 0.2%, contested. Low signal. Flag only "everywhere, without purpose," never on presence |
 | shadcn / Tailwind / dark mode themselves | The *un-themed defaults* are the tell, not the tools. A themed shadcn site is invisible to the complaint |
 
@@ -69,7 +69,7 @@ A bounded check of the ranking's top claims against public discussion from mid-2
 
 ## How to use this file
 
-- **Severity follows the data, but share never lowers a catalogue severity.** Top-ranked, low-FP tells (cookie-cutter sameness, un-themed shadcn, AI purple, gradients, cream-serif-sage) carry weight in a review verdict. Inflated / high-FP tells (too-many-animations, glassmorphism) only count when they cluster. The share column is *evidence of how loudly people complain*, not a severity scale: where a row's verdict already reads "share understates it" (generic sans at 0.4%, gradients at 2.0%), the low share is a measurement artifact of how people phrase complaints, and the binding severity stays the one in `references/catalogue/01-ai-tells.md` section 18. T1 (Inter/Geist as primary) is CRITICAL there and stays CRITICAL here despite its 0.4% comment share.
+- **Severity follows the data, but share never lowers a catalogue severity.** Top-ranked, low-FP tells (cookie-cutter sameness, un-themed shadcn, AI purple, gradients, cream-serif-sage) carry weight in a review verdict. Inflated / high-FP tells (too-many-animations, glassmorphism) only count when they cluster. The share column is *evidence of how loudly people complain*, not a severity scale: where a row's verdict already reads "share understates it" (generic sans at 0.4%, gradients at 2.0%), the low share is a measurement artifact of how people phrase complaints, and the binding severity stays the one in `references/catalogue/01-ai-tells.md` section 18. T1 (Inter as primary) is CRITICAL there and stays CRITICAL here despite the row's 0.4% comment share; Geist unmodified is T4, HIGH.
 - **Route regex-blind tells to a semantic read.** "All looks the same," coherence, and taste need a reviewer agent or a human, not a scanner.
 - **Honor the escape hatch.** A flagged construct on a line marked `anti-slop-allow:` is a deliberate choice. Skip it.
 - **A clean scan is not the finish line.** It clears the cheap layer; the structural read is where the real signal lives.

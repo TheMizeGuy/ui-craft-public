@@ -120,7 +120,7 @@ When grandchildren must align to the parent grid, `grid-template-rows: subgrid` 
 ```css
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   grid-auto-rows: min-content;
   gap: 1.5rem;
 }
@@ -202,16 +202,18 @@ Let content drive size. Avoid `width: 100%` everywhere.
 
 ```css
 :root {
-  /* min @ 360px viewport, max @ 1280px viewport */
-  --space-3xs: clamp(0.25rem, 0.21rem + 0.18vw, 0.375rem);   /*  4 ->  6 */
-  --space-2xs: clamp(0.5rem,  0.42rem + 0.36vw, 0.75rem);    /*  8 -> 12 */
-  --space-xs:  clamp(0.75rem, 0.63rem + 0.54vw, 1.125rem);   /* 12 -> 18 */
-  --space-s:   clamp(1rem,    0.84rem + 0.72vw, 1.5rem);     /* 16 -> 24 */
-  --space-m:   clamp(1.5rem,  1.26rem + 1.08vw, 2.25rem);    /* 24 -> 36 */
-  --space-l:   clamp(2rem,    1.68rem + 1.43vw, 3rem);       /* 32 -> 48 */
-  --space-xl:  clamp(3rem,    2.52rem + 2.15vw, 4.5rem);     /* 48 -> 72 */
-  --space-2xl: clamp(4rem,    3.36rem + 2.87vw, 6rem);       /* 64 -> 96 */
-  --space-3xl: clamp(6rem,    5.04rem + 4.30vw, 9rem);       /* 96 ->144 */
+  /* min @ 360px viewport, max @ 1440px viewport: the same anchors as the type
+     ladder in references/design/02-typography.md section 4, so type and space
+     freeze at the same widths. Each end verified by the section-4 formula. */
+  --space-3xs: clamp(0.25rem, 0.2083rem + 0.1852vw, 0.375rem);   /*  4 ->  6 */
+  --space-2xs: clamp(0.5rem,  0.4167rem + 0.3704vw, 0.75rem);    /*  8 -> 12 */
+  --space-xs:  clamp(0.75rem, 0.625rem  + 0.5556vw, 1.125rem);   /* 12 -> 18 */
+  --space-s:   clamp(1rem,    0.8333rem + 0.7407vw, 1.5rem);     /* 16 -> 24 */
+  --space-m:   clamp(1.5rem,  1.25rem   + 1.1111vw, 2.25rem);    /* 24 -> 36 */
+  --space-l:   clamp(2rem,    1.6667rem + 1.4815vw, 3rem);       /* 32 -> 48 */
+  --space-xl:  clamp(3rem,    2.5rem    + 2.2222vw, 4.5rem);     /* 48 -> 72 */
+  --space-2xl: clamp(4rem,    3.3333rem + 2.963vw,  6rem);       /* 64 -> 96 */
+  --space-3xl: clamp(6rem,    5rem      + 4.4444vw, 9rem);       /* 96 ->144 */
 }
 
 .section { padding-block: var(--space-2xl); }
@@ -258,8 +260,8 @@ html { font-size: 100%; line-height: 1.5; }   /* base = 24px */
 h2 {
   font-size: var(--text-3xl);
   line-height: 1.2;
-  margin-block-start: calc(var(--space-l) * 1);
-  margin-block-end:   calc(var(--space-s) * 1);
+  margin-block-start: 1.5rlh;   /* 36px on the 24px base: 1.5x base above */
+  margin-block-end:   1rlh;     /* 24px: 1x base below */
 }
 
 p + p { margin-block-start: 1lh; }  /* one line-height between paragraphs */

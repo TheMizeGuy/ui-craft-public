@@ -170,7 +170,7 @@ The browser computes an accessible name per the W3C Accessible Name and Descript
 
 | # | Source | Notes |
 |---|---|---|
-| 1 | `aria-labelledby` | Collates the text of every referenced element, in the order the ids are listed. Wins even when it points at empty text |
+| 1 | `aria-labelledby` | Collates the text of every referenced element, in the order the ids are listed. Wins whenever the referenced text is non-empty; if every referenced element is empty or missing, the algorithm falls through to `aria-label`, then the native label, then contents |
 | 2 | `aria-label` | Only applies to elements that support naming. On a bare `<div>` or `<span>` with no role, it is ignored |
 | 3 | Native host-language label | `<label for>` / wrapping `<label>` on a form control, `<legend>` for a `<fieldset>`, `<caption>` for a `<table>`, `alt` on `<img>`, `<title>` child of an inline `<svg>` |
 | 4 | Element contents (subtree text) | Only for roles whose name comes from content: button, link, heading, cell, menuitem, option, tab, tooltip, treeitem, and similar. NOT for `<input>`, `<textarea>`, `<select>`, or landmark/region roles |

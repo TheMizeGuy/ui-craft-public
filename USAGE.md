@@ -18,12 +18,14 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    ```
    With no argument, this reviews your uncommitted + staged changes filtered to UI-relevant
    files. Pass a path, a screenshot, `staged`, `pr`, or `all` to target something else.
-4. **What to expect**: agents are pinned to Opus 5 at dispatch (thinking always on) and never
-   modify files themselves; the invoking session applies findings or generated code only after
+4. **What to expect**: every dispatched agent runs on Fable 5.1 (pinned at dispatch, thinking
+   always on; `opus` only where a harness rejects the alias) and never modifies files itself;
+   the invoking session applies findings or generated code only after
    you explicitly approve. The exception to read-only is the plugin's own state, all of it under
    `.claude/ui-craft/` in the reviewed repo and all of it announced in one line: the three review
    skills write `last-review.json` on every run without asking (it is what makes the second
-   run a delta instead of a cold re-listing), and a full `improve-ui` pass also writes
+   run a delta instead of a cold re-listing), a browser run also writes its evidence captures
+   under `runs/<timestamp>/evidence/`, and a full `improve-ui` pass also writes
    `runs/<timestamp>/merged-report.md`, because a seven-specialist report exceeds the ~60KB at
    which a subagent's reply truncates. Add `.claude/ui-craft/` to `.gitignore` if your repo runs
    a clean-tree check, but do not ignore `.claude/` wholesale: gate artifacts under
@@ -153,12 +155,12 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 3. It gathers project context in parallel: for web, the framework, `tailwind.config.*` or
    `globals.css` token system, and `tsconfig.json` strictness. It then establishes the evidence
    level explicitly rather than assuming one: code + browser, code-only, or screenshot-only.
-4. It decides which 2-3 specialists to dispatch. A web component always gets
+4. It decides which 3-5 specialists to dispatch, by rank. A web component always gets
    `ui-craft:ui-visual-reviewer` and `ui-craft:ui-accessibility-reviewer`; web also defaults in
-   `ui-craft:ui-responsive-reviewer` (3 agents total here). `ui-craft:ui-motion-reviewer` joins
-   if animation is in scope, `ui-craft:ui-anti-slop-auditor` if the user asked whether it looks
-   AI-generated, `ui-craft:ui-perf-engineer` if performance is a stated concern, and
-   `ui-craft:ui-typescript-engineer` on TS projects.
+   `ui-craft:ui-responsive-reviewer` on any adaptive platform. `ui-craft:ui-anti-slop-auditor` runs on
+   any aesthetic-bearing surface, `ui-craft:ui-motion-reviewer` joins if animation is in scope,
+   `ui-craft:ui-perf-engineer` if performance is a stated concern or a runtime is measurable, and
+   `ui-craft:ui-typescript-engineer` on TS projects (five agents on this checkout form).
 5. If a browser and a URL are both available, the skill captures the viewport matrix itself
    (one screenshot plus one geometry dump per width) before dispatching, and hands those files
    to every specialist as read-only evidence. Specialists share one browser, so letting them
@@ -180,8 +182,8 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 
 **Scope:** src/components/CheckoutForm.tsx
 **Platform:** Web
-**Specialists:** ui-visual-reviewer, ui-accessibility-reviewer, ui-responsive-reviewer
-**Dimensions not reviewed:** motion (no animation in scope), runtime and type safety (not requested)
+**Specialists:** ui-visual-reviewer, ui-accessibility-reviewer, ui-responsive-reviewer, ui-anti-slop-auditor, ui-typescript-engineer
+**Dimensions not reviewed:** motion (no animation in scope), runtime (no performance concern and no measurable runtime)
 **Evidence level:** code-only
 **Flows reviewed:** complete a checkout (3 steps)
 
@@ -237,7 +239,7 @@ refreshed with this run's findings either way, so the next run has something to 
 
 `review-ui` does not offer to write a CI gate artifact. The gate schema requires six verdicts
 (visual, responsive, motion, accessibility, runtime, anti-AI aesthetic) and this pass dispatched
-three specialists, so any artifact it wrote would either be missing required keys or carry
+five specialists, so any artifact it wrote would either be missing required keys or carry
 invented verdicts for dimensions nobody reviewed. When the reviewed repo has a
 `.claude/ui-craft-artifacts/` directory or the gate script wired in, the report says so and
 points at `/ui-craft:improve-ui`, which runs the full set and offers the write. See **CI gate**
@@ -367,11 +369,11 @@ lint after applying.
    unnecessary re-renders); on native platforms it also covers SwiftUI body-recomputation and
    Compose recomposition-scope issues.
 4. It measures first, rather than guessing at impact: the typecheck gate
-   (`node node_modules/ts7/bin/tsc --noEmit`, falling back to
-   `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent, and never
-   bare `tsc`, since both packages declare that bin), the project's build, and Lighthouse when
-   the project has it configured. The real TS7 gate needs `"ts7": "npm:typescript@~7.0.2"` as a
-   devDependency (`references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck
+   (TypeScript 7 resolved by version: the first of `node_modules/ts7/bin/tsc`,
+   `node_modules/@typescript/native/bin/tsc`, `node_modules/typescript/bin/tsc` whose `--version`
+   prints `Version 7.`; never bare `tsc`, since with two compilers installed the link is arbitrary), the project's build, and Lighthouse when
+   the project has it configured. The real TS7 gate needs a TypeScript 7 compiler installed (the fleet's
+   `"ts7": "npm:typescript@~7.0.2"` alias or Microsoft's `@typescript/native` layout) (`references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck
    gate); without it the tooling line below reads as a fallback or a skip, never a silent pass.
 
 **You get:**
@@ -381,7 +383,7 @@ lint after applying.
 
 **Scope:** src/app/page.tsx
 **Platform:** Web
-**Evidence level:** code + build
+**Evidence level:** code-only
 **Likely LCP element:** hero <Image> (no `priority`, no explicit width/height)
 **Tooling:** TS7 gate OK, build OK, Lighthouse unavailable (no lighthouserc.* found)
 **Runtime smoothness:** SLUGGISH
@@ -470,7 +472,7 @@ step. WARN bands do not fail the run: they are legal only with the secondary enc
 names. Checks 1 and 6 (fixed hue order, values drawn from the documented palette) are structural
 and unmeasurable from hex alone, which is why the report says so on every run: a PASS line means
 the computable checks passed, never that the palette is approved. Pass
-`--mode dark --surface "#1a1a19"` for a dark chart surface, `--ordinal` for a sequential ramp,
+`--mode dark --surface "#1a1a19"` for a dark chart surface, `--ordinal` for a discrete ordered ramp (funnel stages, tiers) whose palest step must still read as a mark; a continuous sequential ramp is not run through the validator (check lightness monotonicity instead, `references/dataviz/02` section 3),
 and `--pairs all` for scatter, bubble and map palettes where any two slots can end up adjacent.
 
 **Reviewing one.** Chart defects come back in the data-visualization dimension of a normal
@@ -501,8 +503,8 @@ colorblind-safety.
 | `improve-ui` seems to hang or never dispatches its specialists | The team lead was invoked via the plugin namespace (`ui-craft:ui-team-lead`), which silently strips the `Agent` tool it needs | Dispatch via `subagent_type: "general-purpose"` with the team lead's full agent body inlined, substituting `${CLAUDE_PLUGIN_ROOT}` for the resolved plugin root (see the RUNTIME DISPATCH NOTE at the top of `agents/ui-team-lead.md`) |
 | A finding carries `[unverified: geometry measurement needed]` and sits at MEDIUM when it looks worse than that | No DOM bounding-box or layout-bounds data was available for that spatial claim, so the geometry evidence rule in `references/review/02-evidence-pipeline.md` capped it | Provide Playwright MCP (web) or a running app with an accessibility-tree snapshot so the specialist measures instead of estimating. Taking the measurement removes the modifier and restores the finding's natural severity |
 | "Screenshot-only review covers visual quality and estimated accessibility..." message, fewer specialists than expected | Only screenshot files matched scope -- no code, no running app | Expected behavior. Point the skill at source files or a running app to unlock responsive, motion, and runtime review |
-| Report is missing a dimension you expected (for example no motion findings on a static page) | `review-ui` dispatches 2-3 specialists; anything else is conditional on scope. This is never silent: the report header carries a **Dimensions not reviewed** line naming each one and why | Ask for that dimension explicitly, or use `improve-ui`, which runs every applicable specialist plus the verifier |
+| Report is missing a dimension you expected (for example no motion findings on a static page) | `review-ui` dispatches 3-5 specialists by rank (visual, accessibility and responsive always; anti-slop on aesthetic-bearing scope; motion, perf and TypeScript by condition); anything else is conditional on scope. This is never silent: the report header carries a **Dimensions not reviewed** line naming each one and why | Ask for that dimension explicitly, or use `improve-ui`, which runs every applicable specialist plus the verifier |
 | Findings cite a reference file that seems out of date | Cache split-brain: the plugin cache was not re-synced after a source edit | Re-sync the plugin cache from source and start a fresh session (directory-source plugins do not auto-refresh on edits) |
 | `improve-ui` returns a truncated report, or the tail of a long pass is missing | A subagent final message truncates around 60KB and a seven-specialist pass exceeds it | Read `.claude/ui-craft/runs/<timestamp>/merged-report.md` in the reviewed repo. That file is the deliverable; the returned message is the pointer |
-| The CI gate fails on a run whose report looked GREEN | The gate needs a schema-valid artifact bound to the reviewed sha, six GREEN verdicts, GREEN `overall`, and an empty `blocker_findings`. YELLOW does not soft-pass, and `review-ui` never writes an artifact at all | Run `/ui-craft:improve-ui`, accept the artifact write, commit the artifact, and read `ci/README.md` for the full policy |
+| The CI gate fails on a run whose report looked GREEN | The gate needs a schema-valid artifact bound to the reviewed sha, six GREEN verdicts, GREEN `overall`, an empty `blocker_findings`, and no CRITICAL finding in either array. YELLOW does not soft-pass, and `review-ui` never writes an artifact at all | Run `/ui-craft:improve-ui`, accept the artifact write, commit the artifact, and read `ci/README.md` for the full policy |
 | "Entire project" (`all`) scope times out or reviews too much | No path filter applied; large repos exceed the file-count warning threshold | Scope to a directory or `diff`/`staged`/`pr` instead of `all` on large repos |

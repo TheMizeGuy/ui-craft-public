@@ -14,7 +14,7 @@ Chart color is not hand-picked. Every color in a chart does exactly one job, and
 | Job | Encodes | Structure |
 |---|---|---|
 | **Categorical** | identity (which series) | 8 hues, fixed order, assigned in sequence, never cycled |
-| **Ordinal** | position in a sequence (funnel stage, tier, bucket) | one hue, monotone lightness steps; light end still >= 2:1 on surface |
+| **Ordinal** | position in a sequence (funnel stage, tier, bucket) | one hue, monotone lightness steps; the step nearest the surface still >= 2:1 on it |
 | **Sequential** | magnitude (how much) | one hue, light to dark; flips anchor in dark mode |
 | **Diverging** | polarity (which side of a baseline) | two warm/cool hues + a neutral gray midpoint; equal steps per arm |
 | **Status** | state (good to critical) | a small fixed scale, reserved meaning, always icon + label |
@@ -26,22 +26,22 @@ Chart color is not hand-picked. Every color in a chart does exactly one job, and
 1. **Fixed hue anchors.** Eight families in a fixed order. The order is the CVD-safety mechanism; it never changes. (Structural: enforced, not measured.)
 2. **Lightness band per mode.** OKLCH L ~ 0.43-0.77 light; ~ 0.48-0.67 dark. (Validator.)
 3. **Chroma floor.** OKLCH C >= ~0.10; below it a hue reads as gray and stops doing identity work. (Validator.)
-4. **CVD separation.** Delta-E throughout is Euclidean distance in OKLab x100, under protanopia and deuteranopia simulated with Machado-Oliveira-Fernandes 2009 at severity 1.0 (the simulation model is part of the standard). Target >= 8; floor >= 6, legal only with secondary encoding. A companion **normal-vision floor** gates the same pairs unsimulated: worst pair >= 15, a hard gate that secondary encoding does not excuse. Adjacent pairs for stacks/bars/lines; **all pairs for scatter, bubble, choropleth, and small multiples** (`--pairs all`), where any two marks can sit side by side. All-pairs is strictly harder and caps how many series those forms carry: the reference palette validates all-pairs with its first four slots only. More series in an all-pairs form means folding to "Other," faceting, or direct labels, never a palette change. (Validator.)
+4. **CVD separation.** Delta-E throughout is Euclidean distance in OKLab x100, under protanopia and deuteranopia simulated with Machado-Oliveira-Fernandes 2009 at severity 1.0 (the simulation model is part of the standard). Target >= 8; floor >= 6, legal only with secondary encoding. A companion **normal-vision floor** gates the same pairs unsimulated: worst pair >= 15, a hard gate that secondary encoding does not excuse. Adjacent pairs for stacks/bars/lines; **all pairs for scatter, bubble, choropleth, and small multiples** (`--pairs all`), where any two marks can sit side by side. All-pairs is strictly harder and caps how many series those forms carry: the reference palette clears all-pairs clean with four slots; light carries a fifth only in the floor band (section 5). More series in an all-pairs form means folding to "Other," faceting, or direct labels, never a palette change. (Validator.)
 5. **Contrast vs surface.** >= 3:1 for marks; conditionally relaxed where values are readable another way (visible direct labels or the table view). A contrast WARN is not dismissable: it obligates the relief channel. (Validator.)
 6. **Documented palette only.** Every slot is a hex from the palette instance below or your system's equivalent; no eyeballed values. (Structural.)
 
 ## 3. Run the Validator
 
 ```bash
-node scripts/validate_palette.js \
+node ${CLAUDE_PLUGIN_ROOT}/scripts/validate_palette.js \
   "#2a78d6,#008300,#e87ba4,#eda100,#1baf7a,#eb6834,#4a3aa7,#e34948" --mode light
-node scripts/validate_palette.js "..." --mode dark --surface "#1a1a19"
-node scripts/validate_palette.js "#86b6ef,#5598e7,#256abf,#104281" --ordinal
+node ${CLAUDE_PLUGIN_ROOT}/scripts/validate_palette.js "..." --mode dark --surface "#1a1a19"
+node ${CLAUDE_PLUGIN_ROOT}/scripts/validate_palette.js "#86b6ef,#5598e7,#256abf,#104281" --ordinal
 ```
 
 It can also be loaded as a `<script type="module">` in the chart's own page, where it reads `data-palette` (plus `data-mode`, `data-surface`, `data-pairs`, `data-ordinal`) off `<body>` and logs a `console.table` report.
 
-Reading the result: exit 0 means no hard FAIL. WARN bands still exit 0 and carry obligations: CVD in the 6-8 floor band requires secondary encoding (direct labels, gaps, or texture); sub-3:1 contrast requires visible labels or the table view. A normal-vision-floor FAIL on the adjacent pairlist means re-stepping one of the pair; under `--pairs all` it means the series cap is binding, so cut series, facet, or change form. Scope: the six checks judge categorical palettes only. For a lone status or text color run a WCAG text-contrast check (the script exports `contrast(a, b)`); for a sequential ramp the check is lightness monotonicity, and running the categorical validator on a good ramp FAILs by design. Use `--ordinal` for discrete ordered ramps: it checks monotone L, adjacent delta-L >= 0.06, light-end contrast >= 2:1, and single hue instead.
+Reading the result: exit 0 means no hard FAIL. WARN bands still exit 0 and carry obligations: CVD in the 6-8 floor band requires secondary encoding (direct labels, gaps, or texture); sub-3:1 contrast requires visible labels or the table view. A normal-vision-floor FAIL on the adjacent pairlist means re-stepping one of the pair; under `--pairs all` it means the series cap is binding, so cut series, facet, or change form. Scope: the six checks judge categorical palettes only. For a lone status or text color run a WCAG text-contrast check (the script exports `contrast(a, b)`); for a sequential ramp the check is lightness monotonicity, and running the categorical validator on a good ramp FAILs by design. Use `--ordinal` for discrete ordered ramps: it checks monotone L, adjacent delta-L >= 0.06, surface-end contrast >= 2:1 (the palest step on light, the darkest step on dark), and single hue instead. An emphasis palette (accent + de-emphasis gray, file 01 section 2) validates its accent slot(s) only; the gray is chrome, taken from the muted ink token (`#898781` both modes, section 5), and is never a validator input.
 
 ## 4. Snap-to-Passing (Any Design System)
 
@@ -70,9 +70,9 @@ A validated default, usable as-is or as the template to fill with brand values. 
 | 7 | violet | `#4a3aa7` | `#9085e9` |
 | 8 | red | `#e34948` | `#e66767` |
 
-Adjacent pairlist: worst CVD delta-E 9.1 light / 8.4 dark, worst normal-vision 19.6 / 19.3, all gates cleared. Three light-mode slots (magenta, yellow, aqua) sit below 3:1 on the light surface: the relief rule applies. Under `--pairs all` only the first four slots validate (dark lands in the 6-8 floor band; ship secondary encoding).
+Adjacent pairlist: worst CVD delta-E 9.1 light / 8.4 dark, worst normal-vision 19.6 / 19.3, all gates cleared. Three light-mode slots (magenta, yellow, aqua) sit below 3:1 on the light surface: the relief rule applies. Under `--pairs all` the light palette passes clean with four slots and sits in the 6-8 band with five (secondary encoding required); the dark palette is already in the band at four and fails at five. Past those counts, fold, facet, or change form.
 
-**Sequential:** blue, steps 100-700 light to dark (`#cde2fb` 100, `#9ec5f4` 200, `#6da7ec` 300, `#3987e5` 400, `#256abf` 500, `#184f95` 600, `#0d366b` 700). A second simultaneous sequential context takes the next categorical hue (green) as its own one-hue ramp. For an ordinal ramp, the palest step must still clear 2:1: start no lighter than step 250 (`#86b6ef`) on light; go no darker than step 600 on dark.
+**Sequential:** blue, steps 100-700 light to dark (`#cde2fb` 100, `#9ec5f4` 200, `#6da7ec` 300, `#3987e5` 400, `#256abf` 500, `#184f95` 600, `#0d366b` 700). A second simultaneous sequential context takes the next categorical hue (green) as its own one-hue ramp. For an ordinal ramp, the step nearest the surface must still clear 2:1: start no lighter than step 250 (`#86b6ef`, 2.05:1) on light; go no darker than step 600 (`#184f95`, 2.14:1) on dark.
 
 **Diverging:** blue vs red (warm/cool poles that read as opposite), neutral gray midpoint (light `#f0efec`, dark `#383835`), equal steps per arm. Two cool hues as poles fails; the midpoint must read as "nothing."
 

@@ -23,12 +23,12 @@ Distilled from the ~85 named web/mobile style archetypes in circulation. Pick a 
 | Organic and calm (Biophilic, Nature Distilled, Biomimetic, Soft pastels) | Earth tones, rounded organic shapes, texture, generous air | Wellness, sustainability, food/artisan, meditation, care | Tech-forward tools, urgent/critical workflows | Sage-green-on-cream sits inside the "tasteful default" AI tell; earn it with subject-specific materials, not a palette swap |
 | Editorial (Magazine grids, Kinetic typography, Parallax storytelling, Bento) | Column grids, mixed serif/sans, large display type, scroll choreography | Publications, brand stories, marketing, annual reports | Dashboards, forms, real-time data, SEO-critical long-form (heavy scroll effects) | Bento-as-default is a tell; kinetic/scrolljacking needs reduced-motion parity and a reading-order fallback |
 | Utility dashboard (Data-dense, Executive summary, Real-time monitoring) | Density, tabular numerals, status color, recessive chrome | BI, ops/monitoring, finance internals, admin | Marketing surfaces, consumer onboarding | Density is a discipline, not a look: spacing rhythm and type caps (`references/design/02-typography.md`) or it collapses into noise |
-| Dark-native (OLED dark, Terminal/CLI, Cinema dark) | True-dark surfaces, luminous status color, tabular numerals in data | Dev tools, media/streaming, trading, night-use apps | Print-first content, outdoor/high-brightness use, warmth-critical brands | Dark mode is designed, not inverted (`references/design/01-color-oklch.md` dark-surface craft); pure-black + neon everywhere is a tell |
+| Dark-native (OLED dark, Terminal/CLI, Cinema dark) | True-dark surfaces, luminous status color, tabular numerals in data | Dev tools, media/streaming, trading, night-use apps | Print-first content, outdoor/high-brightness use, warmth-critical brands | Dark mode is designed, not inverted (`references/design/01-color-oklch.md` dark-surface craft); pure-black + neon everywhere is a tell; Terminal/CLI: mono stays inside the actual terminal pane; mono + uppercase + tracking on chrome, labels or stats is catalogue T13 (maintainer-banned) |
 | AI-native (Conversational, streaming-first) | Chat/command surfaces, streaming output, suggestion chips | Copilots, assistants, generative tools | Traditional forms, data-entry-heavy work | The "AI purple gradient" is the single most-cited tell; see §7 for the interaction patterns that actually matter |
 
 ## 2. Domain Conventions
 
-Reader expectations by product domain, distilled from ~160 domain-reasoning rules. These are conventions to honor or deliberately subvert, never a substitute for the POV brief. Recurring hard rule: trust-critical domains (finance, legal, government, medical, insurance) ban decorative purple/pink gradients outright; that pattern now reads as "AI-generated" to their audiences.
+Reader expectations by product domain, distilled from ~160 domain-reasoning rules. These are conventions to honor or deliberately subvert, never a substitute for the POV brief. Recurring hard rule: trust-critical domains (finance, legal, government, medical, insurance) ban decorative purple/pink gradients outright; that pattern now reads as "AI-generated" to their audiences. "Blue" in this table means hue 200-250 at any chroma, or chroma below 0.15 above hue 250 (the catalogue's deep-prussian 235, deep-cyan 205 and dust-blue 260/c0.045 replacements). Tailwind `blue-500`/`blue-600` (hue ~260, chroma 0.19-0.22) sit inside catalogue C3's window and are HIGH regardless of the trust rationale.
 
 | Domain cluster | Structure that converts | Color mood | Type mood | Standing cautions |
 |---|---|---|---|---|
@@ -36,10 +36,10 @@ Reader expectations by product domain, distilled from ~160 domain-reasoning rule
 | Fintech / banking / crypto | Trust-and-authority; visible credentials | Navy/deep blue + restrained gold or green | Trustworthy, tabular numerals | Playful tone; unclear fees; purple/pink gradients |
 | Legal / government / insurance | Minimal and direct; plain language | High-contrast professional blue + neutrals | Large, clear, accessible | Ornate decoration; low contrast; motion effects |
 | Healthcare / medical / senior care | Social proof + trust; large targets | Calm blue + health green, warm neutrals | Readable, 16px+ body (18px+ senior) | Neon; motion-heavy; small text; dark-first |
-| Wellness / meditation / care | Storytelling; soft surfaces | Ultra-calm pastels, sage/lavender/cream | Soft, humanist | Sits one step from the cream-sage AI tell; ground it in the subject |
+| Wellness / meditation / care | Storytelling; soft surfaces | Ultra-calm pastels; at most ONE of {cream surface, sage accent} (two together is the catalogue's Tasteful Default, HIGH) | Soft, humanist | Derive the accent from the subject's materials (linen, clay, water, wood), not from the sage/cream average; a serif display on top makes it three of three |
 | Education / kids / habit apps | Feature tour + progress mechanics | Playful primaries, progress green, warm streak colors | Friendly, rounded | Muted "corporate" palettes kill it; dark modes for kids |
 | E-commerce / marketplace | Feature-rich catalog; social proof | Brand primary + success green; luxury goes near-monochrome + gold | Engaging or refined by tier | Text walls; flat catalogs without depth cues; low trust signals |
-| Food / hospitality / travel | Hero-centric, image-led | Appetizing warm (terracotta/orange/brown) or destination-vibrant | Warm, inviting | Poor photography defeats any style choice; complex booking flows |
+| Food / hospitality / travel | Hero-centric, image-led | Appetizing warm (terracotta/orange/brown) or destination-vibrant | Warm, inviting | Poor photography defeats any style choice; complex booking flows; terracotta is the Tasteful Default's accent variant (aesthetic/01 §2 calibration), so at most one of {cream surface, terracotta accent} without a stated reason |
 | Creative / portfolio / agency | Storytelling-driven; the work leads | Bold, artist-controlled; often monochrome + one loud accent | Expressive display type | Corporate templates; hidden work; timidity |
 | Media / streaming / music | Dark-native, content-forward | Dark surfaces + content-derived accents | Bold, high-contrast on dark | Pure-white backgrounds; chrome competing with content |
 | Dev tools / technical | Dark-native, docs-forward | Editor-dark + syntax accents, blue focus | Functional sans, tabular numerals; mono only inside code/log content | Light-only; slow perceived performance; decoration; mono leaking out of code panes into chrome |
@@ -48,18 +48,20 @@ Reader expectations by product domain, distilled from ~160 domain-reasoning rule
 
 ## 3. Landing-Page Structures
 
-Eight structural patterns; pick by what the visitor must decide, then let the POV style it.
+Eight structural patterns; pick by what the visitor must decide, then let the POV style it -- then take each section's architecture and the page's rhythm rules from `references/design/10-hero-and-section-architectures.md`, which is subordinate to the order chosen here.
 
-| Pattern | Section order | Primary CTA | Right when |
-|---|---|---|---|
-| Hero + features + CTA | hero, value prop, features, CTA | sticky hero + bottom | Default SaaS/product |
-| Hero + testimonials + CTA | hero, problem, solution, proof, CTA | hero + post-proof | Trust gap to close |
-| Product demo + features | hero, live demo/video center, features | beside demo | The product sells itself visually |
-| Minimal single column | headline, one paragraph, benefits, CTA | center, large | Indie/consulting/micro-SaaS |
-| Funnel (3-step) | hero, problem, solution, outcome, CTA | mini-CTA per step, main at end | Considered purchases |
-| Comparison table + CTA | hero, problem, table, CTA | in table's right column | Switching-cost decisions |
-| Lead magnet + form | benefit headline, magnet preview, form | the submit button | Email capture |
-| Pricing + CTA | pricing headline, tier cards, FAQ | per card + sticky nav | Plan-selection traffic |
+| Pattern | Section order | Primary CTA | Right when | Hazard |
+|---|---|---|---|---|
+| Hero + features + CTA | hero, value prop, features, CTA | sticky hero + bottom | SaaS/product only when the content genuinely has nothing to lead with | The L1 skeleton. CRITICAL if the section list ships unmodified, HIGH if partially customized (catalogue L1, §11); before choosing it, check the catalogue's "Layout compositions to consider instead of the SaaS scaffold" table |
+| Hero + testimonials + CTA | hero, problem, solution, proof, CTA | hero + post-proof | Trust gap to close | L1 plus proof; same rule |
+| Product demo + features | hero, live demo/video center, features | beside demo | The product sells itself visually | The demo is the real product; a generated screenshot card beside the hero is the Tasteful Default's companion tell (catalogue § The Tasteful Default) |
+| Minimal single column | headline, one paragraph, benefits, CTA | center, large | Indie/consulting/micro-SaaS | A centered narrow column is catalogue T10 / D14 unless the headline is a full-bleed single statement; left-align or break the measure |
+| Funnel (3-step) | hero, problem, solution, outcome, CTA | mini-CTA per step, main at end | Considered purchases | The horizontal 3-box-with-arrows process is the highest-slop-risk section architecture (design/10 §6); stack the steps |
+| Comparison table + CTA | hero, problem, table, CTA | in table's right column | Switching-cost decisions | Only when the differentiators are real; a matrix of shared features is padding (design/10 §6 pricing note) |
+| Lead magnet + form | benefit headline, magnet preview, form | the submit button | Email capture | Visible labels above inputs, never placeholder-as-label or a floating label (catalogue S6, HIGH) |
+| Pricing + CTA | pricing headline, tier cards, FAQ | per card + sticky nav | Plan-selection traffic | The floating "Most Popular" badge on the middle tier is Strongest-10 #5 / S11 (HIGH); distinguish the recommended plan by size and position instead |
+
+A page whose section list reproduces the L1 scaffold unmodified is the catalogue's CRITICAL tell regardless of section architecture.
 
 ## 4. Font Pairing Seeds
 
@@ -68,12 +70,12 @@ Mood-keyed starting points; the full type system (scale caps, display tightening
 | Mood | Seed pairing (display + body) | Note |
 |---|---|---|
 | House default (any mood, 2026-07-17 directive) | SF Pro / system stack throughout; Poppins display for modern-elegant moments | The fleet's main go-to -- reach here first; weight + optical size differentiate. On web, "SF Pro" means the `-apple-system` system stack (never self-host SF Pro files) |
-| Tech/startup | Space Grotesk + DM Sans | Solid; consider Söhne or Geist to sharpen it |
-| Minimal Swiss | Single sans throughout (Geist, Söhne, Untitled Sans) | One family, weights and optical sizes do the work |
-| Editorial classic | Cormorant Garamond + Source Serif 4 | Serif + serif works when measure and leading are disciplined |
+| Tech/startup | Space Grotesk + DM Sans (weights and tracking tuned, never the unmodified shadcn dashboard defaults) | Solid; consider Söhne to sharpen it |
+| Minimal Swiss | Single sans throughout (Söhne, Untitled Sans; Geist only with tuned weights and tracking and never the stock Geist Sans + Geist Mono stack -- catalogue T4) | One family, weights and optical sizes do the work |
+| Editorial classic | Cormorant Garamond + Source Serif 4 | Serif + serif works when measure and leading are disciplined. Cormorant is on the catalogue's cream-serif-sage serif list: keep the page off cream and sage or mark `anti-slop-allow` |
 | Elegant luxury | High-contrast serif + humanist sans (e.g. GT Sectra + Söhne) | Playfair Display + Inter is the worn version of this idea |
 | Bold statement | Compressed display (Bebas-like) + neutral sans | Display face for headlines only, never UI chrome |
-| Warm/wellness | Lora + Raleway or a humanist sans | Watch the cream-sage tell; type alone will not save it |
+| Warm/wellness | Source Serif 4 or Recoleta + Raleway or a humanist sans (Lora is catalogue-banned as a primary) | Watch the cream-sage tell; type alone will not save it |
 | Developer/technical | IBM Plex Sans or Söhne (display + body, weight range for hierarchy) | System-honest sans throughout; tabular numerals in data; mono reserved for actual code blocks |
 | Playful/kids | Rounded display (Fredoka-like) + Nunito | Keep body legibility boring; the display carries the fun |
 | Geometric modern | Outfit + Work Sans | Neutral-modern without reaching for Inter |
@@ -94,7 +96,7 @@ Set the tier in the POV brief, then implement per `references/design/04-motion.m
 | Tier | Vocabulary | Feels like | Budget |
 |---|---|---|---|
 | Subtle | Opacity/lift hovers, fade-in reveals, skeleton shimmer | The product is stable and fast | 100-200ms, ease-out; nothing moves more than a few px |
-| Standard | Staggered list/grid entrances, slide-up section reveals, route fades | Considered, alive | 200-350ms; stagger 30-60ms/item; one choreographed moment per view |
+| Standard | Staggered list/grid entrances, slide-up section reveals, route fades | Considered, alive | 200-350ms; stagger 30-50ms/item (design/04 §9 product lane; cinematic marketing 80-120ms with 4-6 items); one choreographed moment per view |
 | Complex | Scroll-scrubbed storytelling, shared-element/hero morphs, split-text reveals | A production | Reserved for marketing/storytelling; never product chrome; orchestrate one sequence rather than scattering effects |
 
 ## 7. AI-Product Surface Patterns
@@ -111,7 +113,9 @@ For AI-native products (§1), the interaction contract matters more than the gra
 | Need | File |
 |---|---|
 | The POV method this vocabulary feeds | `references/aesthetic/01-point-of-view.md` |
-| Complete committed token systems | `references/aesthetic/02-distinctive-systems.md` |
+| Complete committed token systems (both schemes, stated ratios) | `references/aesthetic/01-point-of-view.md` §3 |
+| Case studies of committed systems | `references/aesthetic/02-distinctive-systems.md` |
+| Per-section architectures and visual-rhythm rules | `references/design/10-hero-and-section-architectures.md` |
 | Pre-ship taste audit | `references/aesthetic/03-taste-checklist.md` |
 | The tells several seeds sit adjacent to | `references/catalogue/01-ai-tells.md` |
 | Type scale, loading, overused-defaults table | `references/design/02-typography.md` |

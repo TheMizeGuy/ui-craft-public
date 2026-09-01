@@ -140,15 +140,15 @@
     "evidence": "#faf8f5 + Instrument Serif + #15573a sage"
   },
   {
-    "id": "anti-ai-token-drift",
+    "id": "anti-ai-hardcoded-color-bypasses-token",
     "dimension": "anti-ai",
     "severity": "HIGH",
     "confidence": "Hard defect",
     "file": "tests/corpus/fixtures/token-drift.html",
-    "line": 22,
-    "title": "Hardcoded values bypass the file's own token system",
+    "line": 25,
+    "title": "Hardcoded color bypasses the file's own brand token",
     "tellRef": "section 14",
-    "evidence": ".save uses #3b8f66 and padding 11px 17px instead of --brand / --space-300"
+    "evidence": ".save { background: oklch(0.587 0.104 159); } beside --brand: oklch(0.49 0.085 158)"
   },
   {
     "id": "anti-ai-happy-path-only",
@@ -188,10 +188,10 @@
     "severity": "HIGH",
     "confidence": "Hard defect",
     "file": "tests/corpus/fixtures/fixed-desktop-shell.html",
-    "line": 1,
+    "line": 15,
     "title": "Fixed-pixel page shell that cannot resize",
     "tellRef": "L13",
-    "evidence": "no viewport meta, container at width: 1200px (not max-width), grid-template-columns: repeat(3, 360px); overflows below 1200px and never uses room above it"
+    "evidence": ".shell { width: 1200px; margin: 0 auto; }"
   },
   {
     "id": "responsive-viewport-query-for-component",
@@ -205,14 +205,113 @@
     "evidence": ".firing switches to two columns at @media (min-width: 60rem) while living in both a ~16rem rail and a wide main column"
   },
   {
-    "id": "responsive-vh-and-safe-area",
+    "id": "responsive-vh-full-height-shell",
     "dimension": "responsive",
     "severity": "MEDIUM",
     "confidence": "Hard defect",
     "file": "tests/corpus/fixtures/vh-bottom-bar.html",
-    "line": 1,
-    "title": "100vh surface with a bottom bar that ignores dvh and the safe-area inset",
+    "line": 16,
+    "title": "100vh full-height shell on a mobile surface",
     "tellRef": "P3",
-    "evidence": "height: 100vh with a position: fixed bottom bar carrying no env(safe-area-inset-bottom) padding and no viewport-fit=cover"
+    "evidence": ".app { height: 100vh; }"
+  },
+  {
+    "id": "responsive-fixed-grid-tracks",
+    "dimension": "responsive",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/fixed-desktop-shell.html",
+    "line": 18,
+    "title": "Grid asserts fixed pixel column tracks",
+    "tellRef": "L13",
+    "evidence": ".lanes { grid-template-columns: repeat(3, 360px); }"
+  },
+  {
+    "id": "responsive-missing-viewport-meta",
+    "dimension": "responsive",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/fixed-desktop-shell.html",
+    "line": 3,
+    "title": "No viewport meta tag in the document head",
+    "tellRef": "L13",
+    "evidence": "<head> carries charset and title only; no <meta name=\"viewport\">"
+  },
+  {
+    "id": "responsive-bottom-bar-no-safe-area-inset",
+    "dimension": "responsive",
+    "severity": "MEDIUM",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/vh-bottom-bar.html",
+    "line": 21,
+    "title": "Fixed bottom action bar ignores the safe-area inset",
+    "tellRef": "P3",
+    "evidence": ".bar { position: fixed; bottom: 0; padding: 0.75rem 1rem; } with no env(safe-area-inset-bottom)"
+  },
+  {
+    "id": "anti-ai-off-scale-spacing-and-radius",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/token-drift.html",
+    "line": 27,
+    "title": "Off-scale spacing and radius values bypass the defined tokens",
+    "tellRef": "section 14",
+    "evidence": "padding: 11px 17px; border-radius: 5px; margin-top: 9px beside --space-100/200/300 and --radius: 6px"
+  },
+  {
+    "id": "anti-ai-shadcn-oklch-default-tokens",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/shadcn-oklch-default.html",
+    "line": 8,
+    "title": "Untouched shadcn OKLCH init token block",
+    "tellRef": "S1",
+    "evidence": ":root carries --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --radius: 0.625rem, the current shadcn init scaffold value for value"
+  },
+  {
+    "id": "anti-ai-shadcn-default-card",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/shadcn-oklch-default.html",
+    "line": 35,
+    "title": "Unmodified shadcn Card primitive",
+    "tellRef": "S3",
+    "evidence": "rounded-xl border bg-card text-card-foreground shadow-sm p-6, verbatim generator output"
+  },
+  {
+    "id": "anti-ai-slow-page-transition",
+    "dimension": "anti-ai",
+    "severity": "LOW",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/slow-page-transition.html",
+    "line": 17,
+    "title": "Cross-document page transition runs 650ms",
+    "tellRef": "M3",
+    "evidence": "::view-transition-old(root), ::view-transition-new(root) { animation-duration: 650ms; } under @view-transition { navigation: auto; }, over the 400ms page-transition ceiling"
+  },
+  {
+    "id": "anti-ai-emoji-as-interface-chrome",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/emoji-chrome.html",
+    "line": 37,
+    "title": "Emoji used as status dots, list bullets and a button icon",
+    "tellRef": "V12",
+    "evidence": "&#x1F7E2; / &#x1F7E1; / &#x1F534; as table status dots, &#x2705; and &#x26A0;&#xFE0F; as list bullets, &#x1F680; inside the Deploy button; none of it inside prose"
+  },
+  {
+    "id": "anti-ai-icon-only-button-no-accessible-name",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/icon-only-button.html",
+    "line": 36,
+    "title": "Icon-only button has no accessible name",
+    "tellRef": "U13",
+    "evidence": "<button class=\"remove\" type=\"button\"><svg ...></svg></button> with no aria-label, no hidden text, no <title>"
   }
 ]

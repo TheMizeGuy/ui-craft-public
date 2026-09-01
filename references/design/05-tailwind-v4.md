@@ -105,8 +105,8 @@ Three rules about `@theme` that fail silently when broken:
 
 | Rule | What happens when broken |
 |---|---|
-| Theme variables must be declared **top level**. Never nest `@theme` inside `@media`, `:root`, or any selector | Tailwind ignores the block. The tokens never apply and nothing errors |
-| A token whose value contains `var()` needs `@theme inline` | The value resolves at the point of definition, not of use, so a nested theme scope yields the wrong colour |
+| Theme variables must be declared **top level**. Never nest `@theme` inside `@media`, `:root`, or any selector | Tailwind hoists the nested declarations into `:root` and drops the media query or selector, so the nested value overwrites the top-level token unconditionally: a dark `@theme` inside `@media (prefers-color-scheme: dark)` puts the dark colour in `:root` for every user, with no error |
+| A token whose `var()` target is re-declared in a scope (`.dark`, `[data-theme]`) needs `@theme inline`; a root-only reference works either way | The value resolves at the point of definition, not of use, so a nested theme scope yields the wrong colour |
 | `@theme inline` does **not** emit a CSS custom property; it inlines the value into the generated utility | `var(--color-foo)` written by hand elsewhere resolves to nothing. Keep raw values in `:root` if other declarations must read them |
 
 `--spacing` is the one **multiplier** namespace: declare it once and every integer utility generates itself (`p-3` compiles to `padding: calc(var(--spacing) * 3)`, and so does `p-17`). Every other namespace is enumerated, so only the keys you declare exist. `--spacing()` is also available as a function inside your own CSS: `margin: --spacing(4)`.
@@ -130,20 +130,21 @@ Three rules about `@theme` that fail silently when broken:
 
 ## 3. OKLCH theme tokens
 
-Authoritative pattern: primitives in a plain `@theme` (so they are emitted as CSS variables *and* generate `bg-blue-500`-style utilities), semantics in `@theme inline` (because their values reference those variables). Tailwind v4 uses OKLCH as the default colorspace; sRGB-only browsers get a fallback automatically.
+Authoritative pattern: primitives in a plain `@theme` (so they are emitted as CSS variables *and* generate `bg-brand-500`-style utilities), semantics in `@theme inline` (because their values reference those variables). Tailwind v4 uses OKLCH as the default colorspace; sRGB-only browsers get a fallback automatically.
 
 ```css
 @import "tailwindcss";
 
-/* Primitives: plain @theme. Emitted as CSS vars, so the semantics below can read them. */
+/* Primitives: plain @theme. Emitted as CSS vars, so the semantics below can read them.
+   Hue 95 is the section-2 worked example, not a recommendation: derive it from the POV brief. */
 @theme {
-  --color-blue-50:  oklch(0.97 0.02 250);
-  --color-blue-100: oklch(0.93 0.04 250);
-  --color-blue-200: oklch(0.86 0.08 250);
-  --color-blue-300: oklch(0.78 0.12 250);
-  --color-blue-500: oklch(0.58 0.20 250);
-  --color-blue-600: oklch(0.48 0.20 250);
-  --color-blue-900: oklch(0.20 0.10 250);
+  --color-brand-50:  oklch(0.97 0.02 95);
+  --color-brand-100: oklch(0.93 0.04 95);
+  --color-brand-200: oklch(0.86 0.08 95);
+  --color-brand-300: oklch(0.78 0.12 95);
+  --color-brand-500: oklch(0.58 0.20 95);
+  --color-brand-600: oklch(0.48 0.20 95);
+  --color-brand-900: oklch(0.20 0.10 95);
 
   --color-gray-50:  oklch(0.98 0 0);
   --color-gray-100: oklch(0.95 0 0);
@@ -159,8 +160,8 @@ Authoritative pattern: primitives in a plain `@theme` (so they are emitted as CS
   --color-text:           light-dark(var(--color-gray-900), var(--color-gray-50));
   --color-text-muted:     light-dark(oklch(0.45 0 0),       oklch(0.65 0 0));
   --color-border:         light-dark(var(--color-gray-200), oklch(0.30 0 0));
-  --color-accent:         light-dark(var(--color-blue-500), var(--color-blue-300));
-  --color-accent-hover:   light-dark(var(--color-blue-600), var(--color-blue-200));
+  --color-accent:         light-dark(var(--color-brand-500), var(--color-brand-300));
+  --color-accent-hover:   light-dark(var(--color-brand-600), var(--color-brand-200));
 }
 
 :root { color-scheme: light dark; }
@@ -170,7 +171,7 @@ Authoritative pattern: primitives in a plain `@theme` (so they are emitted as CS
 
 Every `var()` in that block resolves to a primitive declared above it. Referencing an undefined theme variable is the easiest mistake to make when hand-authoring a ramp, and it fails silently: the utility emits a value the browser cannot parse, so the property falls back to its inherited or initial value and the surface renders unstyled.
 
-Alternative for what `light-dark()` cannot express (shadows, images, opacities, lengths). Note what is *not* here: no `@theme` nested inside the media query. Theme variables must be top level, and Tailwind ignores a nested block entirely.
+Alternative for what `light-dark()` cannot express (shadows, images, opacities, lengths). Note what is *not* here: no `@theme` nested inside the media query. Theme variables must be top level. Tailwind hoists the nested declarations into `:root` and drops the media query or selector, so the nested value overwrites the top-level token unconditionally: a dark `@theme` inside `@media (prefers-color-scheme: dark)` puts the dark colour in `:root` for every user, with no error.
 
 ```css
 /* Raw values, scoped. These are plain custom properties, not theme tokens. */
@@ -351,7 +352,7 @@ Run `npx @tailwindcss/upgrade` for a mostly-mechanical migration. Manual checkli
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-  --color-brand: oklch(0.58 0.20 250);
+  --color-brand: oklch(0.58 0.20 95);   /* hue from the POV brief; 95 = the worked example in section 2 */
 }
 ```
 
@@ -372,8 +373,8 @@ Run `npx @tailwindcss/upgrade` for a mostly-mechanical migration. Manual checkli
 | `transition-all duration-300` | Animates layout/colors during theme switch (jank) | List explicit properties: `transition-[transform,background-color]` |
 | Class string >300 chars on a single element | Unreadable; impossible to diff | Extract to a `tv()` variant or component class |
 | Forgetting `darkMode` strategy in v4 | Default is `prefers-color-scheme`; class-based needs custom variant | Define `@custom-variant dark` once |
-| `@theme` nested inside `@media` or a selector | Theme variables must be top level; Tailwind ignores the nested block, so the palette silently never applies | Raw values in the scoped selector, one top-level `@theme inline` mapping |
-| `@theme` (not `inline`) whose values contain `var()` | Resolves at the point of definition rather than of use; wrong values in nested theme scopes | `@theme inline` for any token built from other variables |
+| `@theme` nested inside `@media` or a selector | Theme variables must be top level; Tailwind hoists the nested declarations into `:root` and drops the media query or selector, so the nested value overwrites the top-level token unconditionally: a dark `@theme` inside `@media (prefers-color-scheme: dark)` puts the dark colour in `:root` for every user, with no error | Raw values in the scoped selector, one top-level `@theme inline` mapping |
+| `@theme` (not `inline`) whose `var()` target a scope re-declares | Resolves at the point of definition rather than of use; wrong values in nested theme scopes (a root-only reference is fine either way) | `@theme inline` for any token built from scoped variables |
 | A `var(--color-...)` in a theme block that is never defined | The declaration is invalid at computed-value time; the surface renders unstyled with no error | Define every primitive the semantics read, above them in the file |
 | `npx tailwindcss --content ...` | v3 invocation: wrong package, and `--content` no longer exists | `npx @tailwindcss/cli -i in.css -o out.css`, sources via `@source` |
 | Custom classes hand-written into `@layer utilities` | Variants do not compose with them | `@utility name { ... }` |

@@ -135,7 +135,9 @@ A density claim without geometry is exactly the kind of "the layout feels empty"
 note that gets dismissed as taste, which is how this class survived review in
 the first place.
 
-`scripts/measure_density.js` prints all of it for a live page. Or inline:
+`${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` (evaluated through the browser tool) prints the utilisation, page-economy, copy, action-distance
+and slack-hoarding numbers for a live page; the duplicate-list, 400px control-separation,
+prose-above-data, admin-above-task and action-rank rows are checked by hand. Or inline:
 
 ```js
 // Viewport utilisation and page economy
@@ -190,10 +192,10 @@ it lands on TASTE, which does not survive triage in a large review.
 Waste is a quality defect with a measurement, not a stylistic preference. Rank
 it by **how much of the operator's screen or time it costs**:
 
-- Over a third of the viewport, or a page more than twice as long as it needs
-  to be, or an action a person cannot associate with its object: **HIGH**.
-- A noticeable but bounded cost, such as a section that should be folded or a paragraph
-  that should be two: **MEDIUM**.
+- Utilisation under 60% (the table above), or an action a person cannot associate
+  with its object: **HIGH**.
+- A noticeable but bounded cost, such as a page over 2x viewport height with nothing
+  disclosed, a section that should be folded, or a paragraph that should be two: **MEDIUM**.
 - "I would have laid this out differently" with no measurement: **TASTE**, and
   it belongs in the taste bucket. That boundary is what keeps the rest credible.
 

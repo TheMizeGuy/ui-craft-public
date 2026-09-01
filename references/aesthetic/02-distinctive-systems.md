@@ -35,7 +35,7 @@ Each system is summarized in the same shape so they're comparable.
 | Typography | Custom Inter Display Variable with tightened tracking. UI text at 13-14px with tight line-height |
 | Density | Tightest in class. List rows around 32px. Sidebar items stacked dense |
 | Brand color | Single restrained purple, used heavily in marketing, almost never in product UI |
-| Motion | 100-180ms, custom cubic-bezier(0.4, 0, 0.2, 1). No bounce. Snappy by default |
+| Motion | 100-180ms, short ease-out (their curves are close to the Material standard `cubic-bezier(0.4, 0, 0.2, 1)`; the differentiator is the duration and restraint, not the curve). No bounce. Snappy by default |
 | Command bar | Cmd+K-first navigation. Half the product is the command bar |
 | Status colors | Desaturated. The greens and yellows are about 60% saturation of what shadcn defaults give you |
 | Animation | Hover springs on cards (subtle, very short), cycle effect on workflow status |
@@ -65,7 +65,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Borrowable principles**: Dual POV (marketing vs product). View Transitions for page changes. Tabular numerals on all numeric data. Restraint as a default.
 
-**Untouchable / over-imitated**: Geist Sans + Geist Mono unmodified -- every Vercel-deployed AI project ships with this; it now reads as "deployed via Vercel CLI" not "designed by humans". The dark-hero-with-light-mesh is the strongest single-component clone signal in 2026. Black-and-white minimalism is the AI default for "premium" -- it has lost meaning.
+**Untouchable / over-imitated**: Geist Sans + Geist Mono unmodified -- every Vercel-deployed AI project ships with this; it now reads as "deployed via Vercel CLI" not "designed by humans". The dark-hero-with-light-mesh is a recognisable Vercel-clone signal when it arrives with the rest of the stack (Geist + black-and-white + mesh); the catalogue's corpus data rates mesh gradients alone as weak, and ranks the frosted sticky nav as the strongest single-component fingerprint. Black-and-white minimalism is the AI default for "premium" -- it has lost meaning.
 
 **POV template fit**: Marketing = Editorial Magazine (Template B); Product = Tactical Operator (Template A).
 

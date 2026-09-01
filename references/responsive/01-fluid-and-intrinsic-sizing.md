@@ -55,26 +55,26 @@ preferred = intercept + slope * 100vw
 The CSS form expresses `intercept` in `rem` and `slope` as `vw` (multiply the
 slope by 100 because `1vw` is one percent of the viewport, not one pixel).
 
-Worked example, 16px at a 360px viewport growing to 20px at 1280px:
+Worked example, 16px at a 360px viewport growing to 20px at 1440px:
 
 ```
-slope     = (20 - 16) / (1280 - 360) = 0.0043478 px per px  ->  0.435vw
-intercept = 16 - 0.0043478 * 360     = 14.435px             ->  0.902rem
+slope     = (20 - 16) / (1440 - 360) = 0.0037037 px per px  ->  0.370vw
+intercept = 16 - 0.0037037 * 360     = 14.667px             ->  0.917rem
 ```
 
 ```css
-/* 16px @ 360  ->  20px @ 1280 */
-font-size: clamp(1rem, 0.902rem + 0.435vw, 1.25rem);
+/* 16px @ 360  ->  20px @ 1440 */
+font-size: clamp(1rem, 0.917rem + 0.370vw, 1.25rem);
 ```
 
-Check it: at 360px, `14.435 + 0.435% * 360 = 16.0`. At 1280px,
-`14.435 + 0.435% * 1280 = 20.0`. Both anchors land exactly, and the clamp holds
+Check it: at 360px, `14.667 + 0.370% * 360 = 16.0`. At 1440px,
+`14.667 + 0.370% * 1440 = 20.0`. Both anchors land exactly, and the clamp holds
 the ends flat outside them.
 
 Generator (paste into any console, no dependencies):
 
 ```js
-const fluid = (minPx, maxPx, minVw = 360, maxVw = 1280, root = 16) => {
+const fluid = (minPx, maxPx, minVw = 360, maxVw = 1440, root = 16) => {
   const slope = (maxPx - minPx) / (maxVw - minVw);
   const intercept = minPx - slope * minVw;
   return `clamp(${(minPx / root).toFixed(3)}rem, ` +
@@ -82,13 +82,13 @@ const fluid = (minPx, maxPx, minVw = 360, maxVw = 1280, root = 16) => {
          `${(maxPx / root).toFixed(3)}rem)`;
 };
 
-fluid(16, 20);   // clamp(1.000rem, 0.902rem + 0.435vw, 1.250rem)
-fluid(24, 40);   // clamp(1.500rem, 1.109rem + 1.739vw, 2.500rem)
-fluid(32, 56);   // clamp(2.000rem, 1.413rem + 2.609vw, 3.500rem)
+fluid(16, 20);   // clamp(1.000rem, 0.917rem + 0.370vw, 1.250rem)
+fluid(24, 40);   // clamp(1.500rem, 1.167rem + 1.481vw, 2.500rem)
+fluid(32, 56);   // clamp(2.000rem, 1.500rem + 2.222vw, 3.500rem)
 ```
 
 A negative first term in the output means the range is too aggressive for the
-anchors: `fluid(24, 96)` returns `clamp(1.5rem, -0.261rem + 7.826vw, 6rem)`,
+anchors: `fluid(24, 120)` returns `clamp(1.5rem, -0.5rem + 8.889vw, 7.5rem)`,
 which is legal CSS and a warning sign. The rem term is what survives zoom (next
 section), so a negative one leaves the value entirely at the mercy of the
 viewport. Widen the anchor range or reduce the size jump.

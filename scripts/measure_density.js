@@ -11,6 +11,12 @@
  *
  * Thresholds and the reasoning behind each: references/review/05-density-and-economy.md
  *
+ * Covers: viewport utilisation (HIGH and MEDIUM bands), page economy (screens vs
+ * disclosures, section share), copy length, row-action distance, and slack-hoarding
+ * CANDIDATES (pointers, never verdicts). Checked by hand, not here: duplicate entity
+ * lists, controls more than 400px apart, prose above the primary data, administrative
+ * content above the task, primary/destructive action rank.
+ *
  * Usage (Playwright / CDP / devtools console) — evaluate this file's contents,
  * then call it. It returns a plain object and also prints a readable report.
  *
@@ -32,6 +38,8 @@ function measureDensity(options = {}) {
     proseLimit = 30,
     // Utilisation below this, with no second column, is a HIGH finding.
     utilisationFloor = 60,
+    // Utilisation between the floor and this, with no justification, is MEDIUM.
+    utilisationMedium = 75,
     // A row action further than this from its row's identity is HIGH.
     actionGapLimit = 800,
   } = options;
@@ -120,7 +128,13 @@ function measureDensity(options = {}) {
     findings.push({
       severity: 'HIGH',
       what: `Viewport utilisation ${utilisation}% — ${viewport - contentWidth}px of ${viewport}px unused`,
-      note: 'Correct only if the content is prose at a reading measure. For tabular or dashboard content the cap itself is the defect. Centring is not a fix.',
+      note: 'Correct only with a second column, a sidebar, or prose at a reading measure. For tabular or dashboard content the cap itself is the defect. Centring is not a fix.',
+    });
+  } else if (utilisation < utilisationMedium) {
+    findings.push({
+      severity: 'MEDIUM',
+      what: `Viewport utilisation ${utilisation}% — ${viewport - contentWidth}px of ${viewport}px unused`,
+      note: 'Unjustified 60-75%. A second column, a sidebar, or prose at a reading measure justifies it; tabular or dashboard content does not.',
     });
   }
   if (screens > 2 && disclosures === 0) {
@@ -153,7 +167,7 @@ function measureDensity(options = {}) {
   }
   for (const h of hoarders) {
     findings.push({
-      severity: 'HIGH',
+      severity: 'CANDIDATE',
       what: `Column "${h.column}" takes ${h.pctOfTable}% of its table (${h.width}px)`,
       note: 'Check against the maximum content it can hold. An unsized column in a table-layout:fixed absorbs all remaining width.',
     });

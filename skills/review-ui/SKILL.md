@@ -1,7 +1,7 @@
 ---
 name: review-ui
 description: |-
-  Use this skill when the user asks to review any UI for quality: visual defects, alignment, spacing, typography, color, responsiveness, motion, accessibility, task flow, and AI-generated aesthetic tells. Works across web, iOS, Android, desktop, live URLs, and screenshots. Triggers: "review this UI", "check the UI quality", "review my screen", "is this good quality", "check alignment", "review the design", "audit this interface", "does this look right", "does this look AI-generated?", "is this accessible?", "can a user actually finish this flow?", "find UI problems", "comprehensive UI review", "thorough UI audit", "review-ui". Standard mode dispatches 3-5 specialists chosen by scope and platform, then merges findings with inline verifier rules. For maximum coverage (all 7 dimensions + verifier + CI artifact), use improve-ui.
+  Use this skill when the user asks to review any UI for quality: visual defects, alignment, spacing, typography, color, responsiveness, motion, accessibility, task flow, and AI-generated aesthetic tells. Works across web, iOS, Android, desktop, live URLs, and screenshots. Triggers: "review this UI", "check the UI quality", "review my screen", "is this UI good quality", "check alignment", "review the design", "audit this interface", "does this screen look right", "does this look AI-generated?", "is this accessible?", "can a user actually finish this flow?", "find UI problems", "comprehensive UI review", "thorough UI audit", "review-ui". Standard mode dispatches 3-5 specialists chosen by scope and platform, then merges findings with inline verifier rules. For maximum coverage (all 7 dimensions + verifier + CI artifact), use improve-ui.
 argument-hint: '[path | file | directory | url | screenshot | "diff" | "staged" | "pr" | "all"]'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent, Artifact
 ---
@@ -10,11 +10,11 @@ allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent, Artifact
 
 Coordinate a UI quality review: determine scope, map the flows in scope, gather context, dispatch specialists, and present a merged report.
 
-**Read-only by default.** The review itself never modifies the reviewed project. The only file this skill writes unasked is the review ledger (Step 8). Fixes are applied in Step 9 and only after the user explicitly picks findings. The `Edit`/`Write` grant in the frontmatter exists so that step and the ledger write are executable; it is not licence to edit during review.
+**Read-only by default.** The review itself never modifies the reviewed project. The only files this skill writes unasked are the review ledger (Step 8) and, on a browser run, the evidence captures under `.claude/ui-craft/runs/<timestamp>/evidence/` (Step 6). Fixes are applied in Step 11 and only after the user explicitly picks findings. The `Edit`/`Write` grant in the frontmatter exists so that step and the ledger write are executable; it is not licence to edit during review.
 
 ## Execution mode
 
-The dispatched specialists are pinned to Opus 5 (`model: "opus"`) at dispatch, the coding/review floor (owner directive 2026-07-24); the orchestrator conducts on the session model. If the session model is already the strongest tier and scope is small (1-2 files, one dimension), run the review inline in the main context (foreground) instead of dispatching, following the same process the specialists use. Reviewer agents stay read-only regardless of dispatch mode; inline execution never grants write access.
+Reviews are dispatched, never run inline in the orchestrating session. Every specialist runs as a Fable 5.1 subagent: pin `model: "fable"` on each call and put the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` first in each prompt (the standing lane for UI/UX, frontend, and design work, owner directive 2026-09-01; a policy-gated harness checks for that line, and it costs nothing where nothing checks). If the harness rejects the `fable` alias, re-dispatch the same prompt with `model: "opus"` (Opus 5), the floor for UI work. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: scope, context, prompts, the merge, and the ledger. Run a specialist's process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -55,7 +55,7 @@ Filter to UI-relevant files: components, pages, layouts, styles. Skip pure utili
 
 ### Check for a prior ledger
 
-Before gathering context, check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps the resolved scope, load it as the diff baseline for Step 7's delta section; otherwise ignore it.
+Before gathering context, check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps the resolved scope, load it as the diff baseline for Step 7's delta section; otherwise do not use it as a baseline, but Step 8 still carries its entries forward.
 
 ## Step 2: Detect platform
 
@@ -146,12 +146,12 @@ When only screenshots are provided (no code, no running app, no URL):
 
 | Specialist | Notes |
 |---|---|
-| `ui-craft:ui-visual-reviewer` | Full visual review on screenshots; flow findings limited to what the screen sequence shows |
+| `ui-craft:ui-visual-reviewer` | Full visual review on screenshots; task-flow, navigation and error-recovery rows reported as not assessed, never clean |
 | `ui-craft:ui-accessibility-reviewer` | Limited: contrast, target size estimation, semantic guesses. Findings marked lower confidence. |
 | `ui-craft:ui-anti-slop-auditor` | Catalogue tells are visible in a render; dispatch when the surface is aesthetic-bearing |
 
 Do NOT dispatch: responsive (can't resize), motion (can't observe), perf/runtime (can't measure), typescript (no code). Tell the user which dimensions could not be reviewed:
-> "Screenshot-only review covers visual quality, estimated accessibility, and AI-tell detection. Responsive behavior, motion quality, runtime performance, and type safety require code access or a running application."
+> "Screenshot-only review covers visual quality, estimated accessibility, and AI-tell detection. Task flow, navigation and error recovery are reported as not assessed. Responsive behavior, motion quality, runtime performance, and type safety require code access or a running application."
 
 ## Step 5: Construct prompts
 
@@ -175,20 +175,20 @@ A report failing any criterion gets ONE re-dispatch naming the failed item; a se
 
 **Browser evidence has exactly one owner per run: you.** Specialists share a single Playwright browser, and several of them resize the viewport. If they run concurrently, one agent's 320px resize silently invalidates another's geometry measurement, and every spatial finding then trips the unverified-evidence cap.
 
-1. If a browser tool and a URL are both available, capture the matrix yourself BEFORE dispatching: for each width in `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`, one screenshot plus one geometry dump (bounding boxes and computed styles for the primary content), written under `.claude/ui-craft/runs/<ISO timestamp>/evidence/`. Pass those absolute paths into every specialist prompt as read-only evidence, and instruct specialists not to drive the browser themselves.
-2. Dispatch all chosen specialists in parallel using the Agent tool. Send multiple Agent calls in a single message. Pin `model: "opus"` on each call:
+1. If a browser tool and a URL are both available, capture the matrix yourself BEFORE dispatching: for the default capture set in `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md` (320, 900, the widest realistic width, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), one screenshot plus one geometry dump (bounding boxes and computed styles for the primary content), written under `.claude/ui-craft/runs/<ISO timestamp>/evidence/`. Pass those absolute paths into every specialist prompt as read-only evidence, and instruct specialists not to drive the browser themselves.
+2. Dispatch all chosen specialists in parallel using the Agent tool. Send multiple Agent calls in a single message. Pin `model: "fable"` on each call and open every prompt with the attestation line from Execution mode:
 
 ```
-Agent({ subagent_type: "ui-craft:ui-visual-reviewer", model: "opus",
-  prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
+Agent({ subagent_type: "ui-craft:ui-visual-reviewer", model: "fable",
+  prompt: "FABLE-ESCALATION: ui-ux-frontend -- <dimension> review\n<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
   description: "Visual quality review" })
 
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "opus",
-  prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
+Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "fable",
+  prompt: "FABLE-ESCALATION: ui-ux-frontend -- <dimension> review\n<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
   description: "Accessibility review" })
 
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "opus",
-  prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
+Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "fable",
+  prompt: "FABLE-ESCALATION: ui-ux-frontend -- <dimension> review\n<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
   description: "Responsive review" })
 ```
 
@@ -204,7 +204,8 @@ Standard mode has no dedicated verifier agent, so the coordinator applies the ve
 2. Deduplicate and group using the deduplication and grouping rules in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` (same element + same issue = keep the more specific finding; cross-dimension contrast/clipping/reduced-motion overlaps merge into one).
 3. Validate severities against the severity-validation table in the same file (taste never at HIGH/CRITICAL; accessibility blockers never below HIGH; a finding that blocks a core task at any width in the default matrix, or scrolls primary content horizontally at 320px, never below HIGH).
 4. Enforce the geometry evidence rule (`${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md`, "Geometry evidence rule"): any spatial claim without geometry evidence keeps its canonical confidence class, gains the `[unverified: geometry measurement needed]` modifier on its Evidence line, and is capped at MEDIUM. Never rewrite its confidence class.
-5. Set the blocker flags from the merged findings: `accessibility_blocker`, `responsive_blocker`, `core_task_blocker`, `runtime_instability` (definitions in `04-verdicts-and-verification.md`). A set flag caps its dimension's verdict below the top tier.
+5. Set the blocker flags from the merged findings: `accessibility_blocker`, `responsive_blocker`, `core_task_blocker`, `runtime_instability` (definitions in `04-verdicts-and-verification.md`). A set flag caps its dimension at the 3rd token of its family, never the 1st or 2nd.
+5a. Derive each dispatched dimension's verdict token from its merged findings with the table in `04-verdicts-and-verification.md` § Verdict derivation (any CRITICAL: 4th token; any HIGH: 3rd; only MEDIUM/LOW: 2nd; only TASTE or none: 1st, except that a dimension with no findings in code-only or screenshot-only evidence mode takes the 2nd token with `(evidence: static, <what was not exercised>)` appended), then apply the blocker cap. Do not copy a specialist's proposed token.
 6. Re-rank by severity (CRITICAL first, TASTE last) and number sequentially.
 7. If a prior ledger matches this scope, compute the delta below and prepend it to the report.
 
@@ -239,7 +240,7 @@ A prior entry that is absent from this run only because the run did not cover it
 **Specialists:** <which were dispatched>
 **Dimensions not reviewed:** <undispatched specialists and why, or "none">
 **Evidence level:** <code + browser / code-only / screenshot-only>
-**Flows reviewed:** <task names from Step 2.5, or "single component, no flow">
+**Flows reviewed:** <task names from Step 2.5 | "single component, no flow" | "not assessed (screenshot-only): task flow, navigation and error recovery cannot be judged from static frames">
 
 ### Dimension Verdicts
 
@@ -281,7 +282,7 @@ After presenting the report, write (or overwrite) `.claude/ui-craft/last-review.
                "confidence": "...", "file": "...", "line": 1, "title": "...", "status": "open"}]}
 ```
 
-Carry forward any prior entry whose dimension is absent from `dimensions` this run, unchanged, so a narrow review never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
+Carry forward any prior entry whose dimension is absent from `dimensions` this run, unchanged and whether or not Step 1 loaded the ledger as a baseline, so a narrow review never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
 
 ## Step 9: Optional shareable artifact
 

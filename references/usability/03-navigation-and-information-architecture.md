@@ -55,7 +55,7 @@ vocabulary is the product's own invention, browse has to be good too.
 | Items in a group | 2 minimum | A group of one is not a group. Promote it |
 | Clicks to the most frequent destination for a returning user | 1 | MEDIUM at 3, HIGH at 4 or more |
 | Levels of hover or flyout menu | 2 | HIGH at 3, and it is also a motor-accessibility defect |
-| Routes reachable only by typing a URL | 0 for anything a user is expected to use | HIGH |
+| Routes reachable only by typing a URL | 0 for anything a user is expected to use | HIGH; CRITICAL when it is on the primary path |
 
 Depth and breadth trade against each other and both have costs. Each extra level
 costs a decision and an opportunity to guess wrong; each extra peer costs scan
@@ -257,7 +257,7 @@ accessibility one (it is announced as navigation).
 
 | Severity | Navigation and IA defects |
 |---|---|
-| CRITICAL | A destination reachable only by typing a URL that users are expected to use; back trapped so the user cannot leave; a deep link that lands on a crash or an empty shell; navigation impossible at a supported viewport |
+| CRITICAL | A destination on the primary path reachable only by typing a URL; back trapped so the user cannot leave; a deep link that lands on a crash or an empty shell; navigation impossible at a supported viewport |
 | HIGH | No current-location indicator anywhere; a detail view with no route back to its list; list state (scroll, filter, sort, page) lost on back; shareable state absent from the URL; three or more levels of hover menu; nav depth two levels past the threshold; two competing primary navigations over the same region; an auth redirect that discards the target |
 | MEDIUM | Nav depth one level past the threshold; more than 9 ungrouped peers; label drift between nav, title and heading; breadcrumb showing history instead of path; "Misc" or "Other" as a group name; hamburger on a wide desktop viewport with room for peers; actions inside a `<nav>` landmark |
 | LOW | Document title missing the section; breadcrumb missing on a 3-level hierarchy where the parent link exists; overflow menu order that shifts between visits |

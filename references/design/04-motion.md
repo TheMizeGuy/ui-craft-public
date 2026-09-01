@@ -18,7 +18,7 @@ The spring `linear()` palette and the three-curve maximum (§3), the stagger sys
 | Principle | What to look for |
 |---|---|
 | Purposeful | Motion communicates state change, spatial relationship, or feedback — not decoration |
-| Fast enough | Micro-interactions: 150-300ms. Page transitions: 200-500ms. Longer often feels sluggish |
+| Fast enough | Hover and press feedback: 50-120ms. Component state and micro-interactions: 100-200ms. Component enter and exit: 200-400ms. Page transitions: 200-400ms (150-300ms is the sweet spot for route changes); over 400ms reads as sluggish and is catalogue M3. The 360ms cap in section 10 is the ceiling for UI micro-interactions |
 | Natural curves | Spring physics > cubic-bezier for interactive elements. Ease-out for enter, ease-in for exit |
 | Interruptible | User input can cancel or reverse in-flight motion |
 | Non-blocking | UI remains usable during transitions; content accessible before animation completes |
@@ -38,17 +38,17 @@ import { animate } from "motion";
 // Spring (no duration; physics decides)
 animate("#card", { x: 100, opacity: 1 }, {
   type: "spring",
-  stiffness: 300,   // higher = stiffer/snappier
+  stiffness: 400,   // higher = stiffer/snappier; 400/30 is the section-3 snappy token
   damping: 30,      // higher = less oscillation
   mass: 1,          // higher = more inertia
 });
 
-// React: framer-motion / motion/react
+// React: framer-motion / motion/react. An arrival, so the section-3 snappy triad.
 import { motion } from "motion/react";
 <motion.div
   initial={{ y: 20, opacity: 0 }}
   animate={{ y: 0, opacity: 1 }}
-  transition={{ type: "spring", stiffness: 320, damping: 28 }}
+  transition={{ type: "spring", stiffness: 400, damping: 30 }}
 />
 ```
 
@@ -66,7 +66,8 @@ import { motion } from "motion/react";
 | Card or panel that follows pointer/gesture | Spring with velocity inheritance |
 | Page transition (FLIP/morph) | View Transitions API (see §4) |
 | Scroll progress indicator | Scroll-driven animation (see §5) |
-| Confirmation (toast), success animation | Spring `stiffness: 200, damping: 18` for satisfying overshoot |
+| Confirmation toast | `--spring-snappy` / `{ stiffness: 400, damping: 30 }` (section 3) |
+| Success or celebration moment | `--spring-bouncy` / `{ stiffness: 500, damping: 18 }` (section 3): rare, and never on everyday controls |
 | Destructive confirmation modal | Linear or ease — never bouncy |
 
 ### Spring physics reference (by use case)
@@ -77,7 +78,7 @@ Response/damping notation (0-1 scale) as an alternative mental model to stiffnes
 |---|---|---|---|
 | Micro-interaction (button press) | 0.6-0.8 | 0.6-0.8 | 100-200ms |
 | Component enter/exit | 0.4-0.6 | 0.5-0.7 | 200-400ms |
-| Page transition | 0.3-0.5 | 0.7-0.9 | 300-500ms |
+| Page transition | 0.3-0.5 | 0.7-0.9 | 200-400ms |
 | Drag release/snap | Variable | 0.5-0.7 | Context-dependent |
 
 ## 3. Native CSS easing functions
@@ -214,15 +215,15 @@ This table is the single statement of support for the features in this file. Sec
 |---|---|---|---|---|
 | View Transitions, same-document (`document.startViewTransition`) | 111+ | 18+ | 144+ | Feature-detect with `if (!document.startViewTransition)` |
 | View Transitions, cross-document (`@view-transition { navigation: auto }`) | 126+ | 18.2+ | Not shipped | Degrades to a normal navigation, so it is safe to ship unguarded |
-| Scroll-driven animations (`animation-timeline`, `scroll()`, `view()`) | 115+ | 26+ (Sept 2025) | 144+ | **Safari 18.x has no support.** Guard with `@supports (animation-timeline: view())` |
+| Scroll-driven animations (`animation-timeline`, `scroll()`, `view()`) | 115+ | 26+ (Sept 2025) | Nightly only (flagged), not in release | **Safari 18.x and Firefox release have no support.** Guard with `@supports (animation-timeline: view())` |
 | CSS `@starting-style` | 117+ | 17.5+ | 129+ | Entry animations for elements coming out of `display: none` |
-| CSS Anchor Positioning | 125+ | Not shipped | Not shipped | Tooltip and popover positioning; needs a JS fallback today |
+| CSS Anchor Positioning | 125+ | 26+ | 147+ | Tooltip and popover positioning; feature-detect with `@supports (anchor-name: --a)` and keep a JS fallback only while pre-26 Safari / pre-147 Firefox traffic matters |
 
 References: [MDN View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), [Chrome view-transition-types](https://developer.chrome.com/docs/web-platform/view-transitions).
 
 ## 5. Scroll-driven animations
 
-Animation timeline driven by scroll position, fully native CSS, runs on the compositor. Zero JS, zero main-thread cost. Support: see the § 4 status table. The one number worth repeating is that **Safari 18.x does not support this**, so every reveal-on-scroll must degrade to the visible state rather than to `opacity: 0`.
+Animation timeline driven by scroll position, fully native CSS, runs on the compositor. Zero JS, zero main-thread cost. Support: see the § 4 status table. The one fact worth repeating is that **Safari 18.x and Firefox release do not support this**, so every reveal-on-scroll must degrade to the visible state rather than to `opacity: 0`.
 
 ```css
 /* Reading-progress bar — scroll() ties to page scroll */
@@ -243,9 +244,12 @@ Animation timeline driven by scroll position, fully native CSS, runs on the comp
 
 /* Reveal-on-scroll: view() ties to the element entering the scrollport.
    Authored fill-safe: the element is visible by default and the hidden state
-   only exists where animation-timeline is supported. Without the @supports
-   guard, Safari 18.x renders .reveal at opacity 0 forever, because `both`
-   applies the from-state and the timeline never advances. */
+   only exists where animation-timeline is supported and the user allows
+   motion. A browser without animation-timeline drops that line and snaps
+   `reveal` to its `to` state; a supporting browser whose scroller never
+   scrolls has an inactive timeline and shows the base style. Both paths are
+   harmless only because the base style is the visible one, which is why the
+   base must never be `opacity: 0`. */
 .reveal { opacity: 1; translate: 0 0; }
 
 @supports (animation-timeline: view()) {
@@ -262,11 +266,15 @@ Animation timeline driven by scroll position, fully native CSS, runs on the comp
   to   { opacity: 1; translate: 0 0; }
 }
 
-/* Parallax hero — slower than scroll */
-.hero img {
-  animation: parallax linear;
-  animation-timeline: view();
-  animation-range: cover 0% cover 100%;
+/* Parallax hero -- slower than scroll. Decorative, so it lives under both guards. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero img {
+      animation: parallax linear;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
 }
 @keyframes parallax { to { translate: 0 -20%; } }
 ```
@@ -295,7 +303,8 @@ Stay on the compositor. 16.7ms per frame at 60fps; 8.3ms at 120fps.
 
 | Tier | Properties | Cost |
 |---|---|---|
-| Compositor only (prefer these) | `transform` (`translate()`, `scale()`, `rotate()`), `opacity`, `filter` (blur, brightness, etc.), `clip-path`, `backdrop-filter` | GPU only — free at scale |
+| Compositor only (prefer these) | `transform` (`translate()`, `scale()`, `rotate()`), `opacity`, `clip-path`, cheap non-blur `filter` (brightness, contrast, saturate) | GPU only -- free at scale |
+| Compositor-resident but expensive | `filter: blur()`, `backdrop-filter` | Stays off the main thread but costs GPU time per pixel per frame (`references/performance/03-css-perf.md`); animate only on small surfaces, never on every card |
 | Paint | `background-color`, `box-shadow`, `border-color`, `color` | Repaint, no layout |
 | Layout (avoid animating) | `width`, `height`, `min-*`, `max-*`, `top`, `right`, `bottom`, `left`, `margin`, `padding`, `border-width`, `font-size` | Full layout recalc per frame |
 
@@ -370,22 +379,24 @@ Better than disabling: replace movement with a crossfade. Replace springs with l
 | Functional transition (page/state) | Instant crossfade or simple opacity |
 | Loading/progress indicator | Keep, but simplify |
 | Scroll-driven parallax | Remove |
-| Micro-interaction feedback | Keep if < 100ms, remove if longer |
+| Micro-interaction feedback | Keep if non-spatial and < 150ms (`references/accessibility/03-motion-reduce.md` section 6); remove anything that displaces |
 
 ## 8. Micro-interaction patterns
+
+Every triad in this table is one of the three section-3 tokens. Loading thresholds, stated once: under 300ms, render nothing; 300-500ms, a delayed static placeholder, no shimmer; over 500ms, a shimmer or a real progress signal.
 
 | Pattern | CSS / behaviour |
 |---|---|
 | Button press | `transform: scale(0.96)` on `:active`, 80ms ease-out |
 | Card hover lift | `transform: translateY(-2px)`, 180ms `--ease-out-quint`, optional shadow grow |
 | Focus ring | `outline: 2px solid var(--accent); outline-offset: 2px;` on `:focus-visible` only |
-| Loading shimmer | Linear gradient + `background-position` animation; only if data takes >500ms |
+| Loading shimmer | Linear gradient + `background-position` animation; only over the 500ms threshold above |
 | Disabled state | `opacity: 0.55; cursor: not-allowed;` plus `pointer-events: none` if non-interactive |
-| Toggle / switch | Spring with `stiffness: 700, damping: 32` — snappy with slight settle |
+| Toggle / switch | `--spring-snappy` (`{ stiffness: 400, damping: 30 }`): explosive start, slight settle |
 | Checkbox check-mark draw | `stroke-dashoffset` animation 220ms |
-| Toast slide-in | Translate from off-screen, spring `stiffness: 320, damping: 28` |
+| Toast slide-in | Translate from off-screen on `--spring-snappy` (`{ stiffness: 400, damping: 30 }`) |
 | Outcome confirmation ("Copied!") | Hover/press states confirm the *input*; a chip that slides up over the control confirms the *outcome*. Copy buttons, save actions, and add-to-list controls need this second layer — translate up 4-8px + fade, auto-dismiss ~1.2s. Without it the user cannot tell the action landed |
-| Skeleton placeholder | Avoid if data is fast (<300ms). Use a delayed reveal, not a perpetual shimmer |
+| Skeleton placeholder | Only in the 300-500ms band above, as a delayed static placeholder; never a perpetual shimmer |
 | Modal entry | Backdrop fade 160ms linear; dialog scale `0.95 -> 1` + opacity, 220ms `--ease-out-quart` |
 
 ```css
@@ -438,7 +449,7 @@ Motion's `stagger()` for choreography across many items, gestures, or springs:
 import { animate, stagger } from "motion";
 
 animate(".list-item", { opacity: 1, y: 0 },
-  { delay: stagger(0.04, { from: "first" }), type: "spring", stiffness: 320, damping: 30 }
+  { delay: stagger(0.04, { from: "first" }), type: "spring", stiffness: 400, damping: 30 }   // --spring-snappy
 );
 ```
 
@@ -459,8 +470,8 @@ Two lanes, one budget. The 30-50ms increment above is the **web product-UI lane*
 | Motion that delays access to content | Content exists but user can't interact until animation finishes | HIGH | Make content accessible before animation completes |
 | Animating `width`/`height`/`top`/`left`/`margin` | Triggers layout recalculation every frame, causes jank | HIGH (perf-sensitive paths) | `transform`, `clip-path`, `inset` with compositor properties |
 | Loading spinners without timeout or fallback | Infinite spinners erode trust | HIGH | Timeout + error/retry state |
-| Decorative-only animations | Slower, distracting, no information communicated | MEDIUM-HIGH | Animate state changes only; static content stays static |
-| Parallax or scroll effects that fight the task / break scroll prediction | Distracts from content, vestibular triggers, fights browser scroll | MEDIUM-HIGH | Subtle (max 10-20% offset), wrap in reduced-motion guard |
+| Decorative-only animations | Slower, distracting, no information communicated | MEDIUM; HIGH when it delays access to content | Animate state changes only; static content stays static |
+| Parallax or scroll effects that fight the task / break scroll prediction | Distracts from content, vestibular triggers, fights browser scroll | MEDIUM; HIGH when unguarded by reduced-motion | Subtle (max 10-20% offset), wrap in reduced-motion guard |
 | Bouncy spring on destructive confirm | Trivializes serious action; content flashes past edges | MEDIUM | Linear or ease for confirms; springs on celebratory moments only |
 | Transitions > 500ms (800ms+) for micro-interactions | Feels sluggish, delays task completion | MEDIUM | Cap UI duration at 360ms; reserve longer for narrative motion |
 | Entrance animations on every page load | Repetitive, annoying on repeat visits | MEDIUM | Play once per session, or gate behind first-visit state |
@@ -469,12 +480,12 @@ Two lanes, one budget. The 30-50ms increment above is the **web product-UI lane*
 | Permanent `will-change` on every card | Eats GPU memory, 50 layers = stutter | MEDIUM | Apply just before animation, release after |
 | `transition: all` | Animates unintended properties (color, layout) on theme switch | MEDIUM | List explicit properties |
 | Scroll-jacking carousels | Removes user scroll control | MEDIUM | Native scroll-snap + scroll-driven animation |
-| Skeleton screens for sub-300ms loads | Adds perceived latency | LOW-MEDIUM | Just render the data; no shimmer |
-| Animations that restart when scrolling back | Performative, not functional | LOW-MEDIUM | Play-once via `animation-play-state` guard or `IntersectionObserver` |
-| Hover-only reveals on touch UI | Touch has no hover | LOW-MEDIUM | Tap-to-toggle or always-visible on touch via `(hover: hover)` MQ |
+| Skeleton screens for sub-300ms loads | Adds perceived latency | LOW; MEDIUM when systemic | Just render the data; no shimmer (thresholds in section 8) |
+| Animations that restart when scrolling back | Performative, not functional | LOW; MEDIUM when on the primary path | Play-once via `animation-play-state` guard or `IntersectionObserver` |
+| Hover-only reveals on touch UI | Touch has no hover | LOW; MEDIUM when the reveal hides a required control | Tap-to-toggle or always-visible on touch via `(hover: hover)` MQ |
 | Mixed motion personalities (springs here, dramatic curves there, snaps elsewhere) | Each fine alone; together the page reads committee-built | MEDIUM | Lock one personality; enforce the three-curve maximum (§3) |
-| Entrances from `scale(0)` | Nothing physical appears from nothingness; reads as a render glitch | LOW-MEDIUM | Start at `scale(0.9)`-`scale(0.97)` paired with opacity |
-| Only keyword easings (`ease`, `ease-in-out`) across a file | The browser's "nobody decided" curves; no motion was designed | LOW-MEDIUM | Name curves from the token palette; keyword easing kept only as a stated choice |
+| Entrances from `scale(0)` | Nothing physical appears from nothingness; reads as a render glitch | LOW; MEDIUM when on the primary path | Start at `scale(0.9)`-`scale(0.97)` paired with opacity |
+| Only keyword easings (`ease`, `ease-in-out`) across a file | The browser's "nobody decided" curves; no motion was designed | LOW; MEDIUM when the file also animates layout properties | Name curves from the token palette; keyword easing kept only as a stated choice |
 
 ### Motion tooling
 

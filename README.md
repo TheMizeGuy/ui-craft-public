@@ -1,6 +1,6 @@
 # ui-craft
 
-Consolidated UI engineering team for Claude Code. One plugin that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in depth, with Apple and Android review overlays for cross-platform work. Ten specialist agents (the nine dispatched specialists pinned to Opus 5 at dispatch, the team lead conducting on the session model, thinking always on) backed by a knowledge base of 57 reference files that ship inside the plugin. Four user-invoked skills. Findings are advisory: nothing in your source tree is edited until you approve it. Reviews do write their own state under `.claude/ui-craft/` in the reviewed repo without asking, and say so: the run-over-run ledger, plus a merged report on a full pass (see **Review ledger** below). A labeled regression corpus, a CI gate, and that ledger keep the catalogue and the auditor honest as they evolve (see **Toolkit** below).
+Consolidated UI engineering team for Claude Code. One plugin that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in depth, with Apple and Android review overlays for cross-platform work. Ten specialist agents (every one pinned to Fable 5.1 at dispatch, thinking always on; the invoking session orchestrates, gates, and applies approved fixes) backed by a knowledge base of 57 reference files that ship inside the plugin. Four user-invoked skills. Findings are advisory: nothing in your source tree is edited until you approve it. Reviews do write their own state under `.claude/ui-craft/` in the reviewed repo without asking, and say so: the run-over-run ledger, the browser evidence captures on a browser run, plus a merged report on a full pass (see **Review ledger** below). A labeled regression corpus, a CI gate, and that ledger keep the catalogue and the auditor honest as they evolve (see **Toolkit** below).
 
 ## What ui-craft is
 
@@ -76,18 +76,18 @@ See [USAGE.md](USAGE.md) for worked walkthroughs of each skill: typed input, wha
 | What you want | Skill | Specialists | Verifier | CI gate artifact |
 |---|---|---|---|---|
 | New UI built from a brief | `design-ui` | 1 (`ui-craft-architect`) | no; the taste checklist gates instead | no |
-| A quick, targeted check on one file or directory | `review-ui` | 2-3, chosen by scope and platform | no separate agent; the skill applies the verifier's rules inline | no, points at `improve-ui` |
+| A quick, targeted check on one file or directory | `review-ui` | 3-5 by rank: visual, accessibility and responsive always; anti-slop on aesthetic-bearing scope; motion, perf and TypeScript when the scope calls for them | no separate agent; the skill applies the verifier's rules inline | no, points at `improve-ui` |
 | "Is this actually good?" before shipping | `improve-ui` | up to 7, plus `ui-verifier` last | yes, a dedicated pass | yes, offered after the report |
 | Performance only: LCP/INP/CLS, bundle, rendering | `optimize-ui` | 1 (`ui-perf-engineer`) | no | no |
 
-`improve-ui` is the right default whenever the question is "is this good". `review-ui` is the cheaper subset: it dispatches 2-3 specialists, so any dimension it did not dispatch went unreviewed. Its report header names which ones, and only `improve-ui` produces an artifact the CI gate will accept.
+`improve-ui` is the right default whenever the question is "is this good". `review-ui` is the cheaper subset: it dispatches 3-5 specialists by rank, so any dimension it did not dispatch went unreviewed. Its report header names which ones, and only `improve-ui` produces an artifact the CI gate will accept.
 
 ### Get the strongest first run
 
 Two setup facts change what a review can tell you:
 
 - **Geometry evidence.** Without Playwright MCP on web, or a running app with an accessibility-tree snapshot on native, the reviewers have no bounding boxes to measure. Every unmeasured spatial claim (alignment, spacing, target size, overflow) then carries an `[unverified: geometry measurement needed]` modifier on its Evidence line and is capped at MEDIUM severity, however bad it looks. A code-only run is the default, so this is what a first run looks like unless you provide one of those.
-- **The TypeScript 7 typecheck gate.** The real gate runs `node node_modules/ts7/bin/tsc --noEmit`, which needs `"ts7": "npm:typescript@~7.0.2"` in the reviewed project's devDependencies (see `references/typescript/01-ts6-essentials.md`). Where that alias is absent the skills fall back to `node node_modules/typescript/bin/tsc --noEmit`, and where neither exists they report the gate as skipped rather than pretending it passed.
+- **The TypeScript 7 typecheck gate.** The real gate runs TypeScript 7 by path, resolving the compiler by version (the first of `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, `node_modules/typescript/bin/tsc` whose `--version` prints `Version 7.`), so both the fleet's `"ts7": "npm:typescript@~7.0.2"` alias and Microsoft's documented `@typescript/native` plus `@typescript/typescript6` (`tsc6`) layout pass (see `references/typescript/01-ts6-essentials.md`). Where no compiler prints `Version 7.` the skills fall back to the TypeScript 6 compiler for the review and report the missing TS7 gate; where none exists they report the gate as skipped rather than pretending it passed.
 
 ### Design a new UI: `/ui-craft:design-ui`
 
@@ -103,7 +103,7 @@ Dispatches `ui-craft-architect`, which writes down the task flow before any toke
 /ui-craft:review-ui src/components/
 ```
 
-Detects scope and platform, then adaptively dispatches 2-3 specialists: always `ui-visual-reviewer` and `ui-accessibility-reviewer`, plus `ui-responsive-reviewer` by default on web. `ui-motion-reviewer`, `ui-anti-slop-auditor`, `ui-perf-engineer` and `ui-typescript-engineer` join only when the scope calls for them (animation present, an explicit "does this look AI?", a stated performance concern, a TypeScript project). Returns merged, deduplicated, severity-tagged findings under a verdict table carrying one row per dispatched dimension, verified inline against the verifier's rules before presentation. The header names the dimensions it did not review and why. For every applicable dimension plus a dedicated verifier pass, use `improve-ui`.
+Detects scope and platform, then dispatches specialists by rank, three to five per run: `ui-visual-reviewer`, `ui-accessibility-reviewer` and `ui-responsive-reviewer` always (responsive is excused only on screenshot-only scope), `ui-anti-slop-auditor` on any aesthetic-bearing surface, and `ui-motion-reviewer`, `ui-perf-engineer` and `ui-typescript-engineer` when the scope calls for them (animation present, a performance concern or a measurable runtime, a TypeScript project). Above five, the first five by rank run and the uncovered dimensions are named, with `improve-ui` recommended for the full pass. Returns merged, deduplicated, severity-tagged findings under a verdict table carrying one row per dispatched dimension, verified inline against the verifier's rules before presentation. The header names the dimensions it did not review and why. For every applicable dimension plus a dedicated verifier pass, use `improve-ui`.
 
 ### Full improvement pass: `/ui-craft:improve-ui`
 
@@ -111,7 +111,7 @@ Detects scope and platform, then adaptively dispatches 2-3 specialists: always `
 /ui-craft:improve-ui all
 ```
 
-Dispatches `ui-team-lead`, which coordinates up to 7 specialists (visual and usability, anti-slop, accessibility, motion, responsive, perf, typescript), then the verifier (always last, never in parallel), deduplicates across all of them, and returns a per-dimension verdict table plus a priority-ordered fix plan (quick wins, design pass, performance pass, type-safety pass). This is the full team-mode treatment, the one `/ui-craft:review-ui` runs a subset of, and the only path that can write a gate-valid CI artifact.
+Dispatches `ui-team-lead`, which coordinates up to 7 specialists (visual and usability, anti-slop, accessibility, motion, responsive, perf, typescript), then the verifier (always last, never in parallel), deduplicates across all of them, and returns a per-dimension verdict table plus a priority-ordered fix plan (quick wins, flow pass, design pass, motion + responsive pass, performance pass, type-safety pass). This is the full team-mode treatment, the one `/ui-craft:review-ui` runs a subset of, and the only path that can write a gate-valid CI artifact.
 
 ### Optimize performance: `/ui-craft:optimize-ui`
 
@@ -119,13 +119,13 @@ Dispatches `ui-team-lead`, which coordinates up to 7 specialists (visual and usa
 /ui-craft:optimize-ui src/app/page.tsx
 ```
 
-Dispatches `ui-perf-engineer` for a Core Web Vitals + bundle + rendering + hydration audit (web primary path, with SwiftUI/Compose rendering notes for cross-platform runtime concerns). Every finding carries quantified impact ("+800ms LCP", "+120KB JS"). It measures before it claims: the typecheck gate (`node node_modules/ts7/bin/tsc --noEmit`, falling back to `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent), the project build, and Lighthouse when the project has it configured.
+Dispatches `ui-perf-engineer` for a Core Web Vitals + bundle + rendering + hydration audit (web primary path, with SwiftUI/Compose rendering notes for cross-platform runtime concerns). Every finding carries quantified impact ("+800ms LCP", "+120KB JS"). It measures before it claims: the TypeScript 7 gate (the compiler resolved by version, never bare `tsc`), the project build, and Lighthouse when the project has it configured.
 
 The three review skills (`review-ui`, `improve-ui`, `optimize-ui`) accept the same scope argument: empty/`diff` (uncommitted + staged changes), `staged`, `pr` (diff vs main), a specific `<file>` or `<directory>`, or `all`. `review-ui` and `improve-ui` also accept a screenshot; `optimize-ui` needs source. `design-ui` takes a design brief instead: describe what to build, not where to look.
 
 ## Agents reference
 
-Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to Opus 5 at dispatch and the `ui-team-lead` orchestrator conducts on the session model. No agent carries `Edit`, and only `ui-team-lead` carries `Write`, for one file: `.claude/ui-craft/runs/<timestamp>/merged-report.md` in the reviewed repo. A seven-specialist report with code extracts routinely exceeds the ~60KB at which a subagent's final message truncates, so the file is the deliverable and the message is the pointer. Only `ui-team-lead` carries the `Agent` tool, needed to dispatch its own sub-specialists. No agent ever edits the reviewed project: applying findings or generated code is always done by the invoking session (the skill orchestrator) itself, and only after explicit user approval.
+Agent frontmatter carries no `model:` pin; every dispatched agent, the `ui-team-lead` included, is pinned to Fable 5.1 at dispatch (`model: "fable"` with the `FABLE-ESCALATION: ui-ux-frontend` attestation line first in its prompt; `opus` only where a harness rejects the alias), and the invoking session orchestrates. No agent carries `Edit`, and only `ui-team-lead` carries `Write`, for one file: `.claude/ui-craft/runs/<timestamp>/merged-report.md` in the reviewed repo. A seven-specialist report with code extracts routinely exceeds the ~60KB at which a subagent's final message truncates, so the file is the deliverable and the message is the pointer. Only `ui-team-lead` carries the `Agent` tool, needed to dispatch its own sub-specialists. No agent ever edits the reviewed project: applying findings or generated code is always done by the invoking session (the skill orchestrator) itself, and only after explicit user approval.
 
 | Agent | Purpose |
 |---|---|
@@ -219,7 +219,7 @@ Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to 
 |---|---|
 | `01-point-of-view.md` | POV discovery worksheet, AI-default-looks calibration, 3 full templates with complete token sets |
 | `02-distinctive-systems.md` | 12 case studies (Linear, Vercel, Stripe, Apple, Things, Arc, Figma, Notion, Raycast, Bear, Cron, Stripe Press) |
-| `03-taste-checklist.md` | 64 audit questions across 21 sections, including a responsive and adaptive audit, plus smell tests |
+| `03-taste-checklist.md` | The pre-ship taste gate: per-section audit questions (including a responsive and adaptive audit and a flow audit), each row tagged code-checkable or browser-only so a code-only pass can report NOT ASSESSED, plus smell tests |
 | `04-style-taxonomy.md` | Seed vocabulary: 10 style families, domain conventions, the eight landing structures, font-pairing seeds, icon discipline, motion intensity ladder, AI-surface patterns |
 | `05-brand-direction-and-reference-generation.md` | The two pre-design lanes: implementation-ready reference-image generation (one image per section, composition-anchor variety, negative prompting) and brand-mark direction (symbol from meaning, the reduction ladder, the hard constraints, generated-logo bans, frozen geometry) |
 
@@ -231,7 +231,7 @@ Agent frontmatter carries no `model:` pin; dispatched specialists are pinned to 
 | `02-color-jobs-and-validation.md` | The five color jobs, the six checks, the validator workflow, snap-to-passing for any design system, the reference palette instance |
 | `03-marks-interaction-figures.md` | Mark specs, surface gap/ring spacers, labels/legend, stat tile/meter/hero figures, texture, tooltips, filters |
 | `04-anti-patterns.md` | The chart failure catalog: dual axes, recolor-on-filter, rainbow ramps, tooltip-gated values, and the rest |
-| `scripts/validate_palette.js` (repo root) | Runnable six-checks palette validator: lightness band, chroma floor, CVD separation (Machado 2009), normal-vision floor, surface contrast; node CLI or in-page module |
+| `scripts/validate_palette.js` (repo root) | Runnable validator for the four computable palette checks plus the normal-vision floor (checks 1 and 6 are structural and reported as not evaluated): lightness band, chroma floor, CVD separation (Machado 2009), normal-vision floor, surface contrast; node CLI or in-page module |
 
 ### performance/ (7 files)
 
@@ -268,11 +268,11 @@ Three operational surfaces added in 0.1.2 that keep the catalogue, the auditor, 
 
 ### Regression corpus
 
-`tests/corpus/` holds 10 labeled fixtures (5 drawn from anti-slop's MIT-licensed test corpus, 5 new) pairing an HTML/CSS surface with its ground-truth findings. Scoring is a deliberate two-step loop, not an automatic run: dispatch `ui-anti-slop-auditor` over `tests/corpus/fixtures/`, capture its findings as a canonical JSON array, then run `node tests/harness/score-review.mjs <findings.json>` to compare that array against the labels and compute recall. The script is a pure comparator; it never opens a fixture or invokes an agent. A run below 0.8 recall fails. The loop is meant to run on every change to `references/catalogue/01-ai-tells.md` or `agents/ui-anti-slop-auditor.md`; `tests/harness/README.md` § The two-step loop is the runbook. Zero-dependency (Node >=18, no npm packages).
+`tests/corpus/` holds 21 labeled fixtures (5 drawn from anti-slop's MIT-licensed test corpus, 16 authored, five of them clean controls) pairing an HTML/CSS surface with its ground-truth findings. Scoring is a deliberate two-step loop, not an automatic run: dispatch `ui-anti-slop-auditor` over `tests/corpus/fixtures/`, capture its findings as a canonical JSON array, then run `node tests/harness/score-review.mjs <findings.json>` to compare that array against the labels and compute recall. The script is a pure comparator; it never opens a fixture or invokes an agent. A run fails below 0.8 recall, below 0.8 precision, or when a clean control exceeds its tolerance. The loop is meant to run on every change to the two catalogue files, the auditor or visual-reviewer bodies, the finding shape, or a dispatching skill (the canonical trigger list is `tests/harness/README.md` § When to run this); `tests/harness/README.md` § The two-step loop is the runbook. Zero-dependency (Node >=18, no npm packages).
 
 ### CI gate
 
-`ci/` ships the CI artifact schema, `ui-craft-gate.sh`, `selftest.sh`, and an adoption guide for wiring the gate into a pipeline. Only a full `improve-ui` pass can produce a gate-valid artifact, because the schema requires six verdicts (visual, responsive, motion, accessibility, runtime, anti-AI aesthetic) and `review-ui` dispatches only 2-3 specialists. `improve-ui` offers the write after presenting its report, never automatically, to a configurable directory (default `.claude/ui-craft-artifacts/`); `review-ui` points at `improve-ui` instead of writing a partial one. `ui-craft-gate.sh` then exits non-zero unless a schema-valid artifact bound to the reviewed sha exists, every verdict it carries plus `overall` is GREEN, and it lists no CRITICAL finding. The reviewed sha is the last commit that touched a UI-adjacent path rather than `HEAD`, so committing the artifact does not invalidate it while the next real UI change does. `ci/selftest.sh` runs the gate end to end against a throwaway repo and asserts the exit code of every documented path, including that happy path. There is no soft pass: YELLOW fails too, as does a missing, malformed, or sha-mismatched artifact. `ci/README.md` has the full policy. See **Data contracts** in [ARCHITECTURE.md](ARCHITECTURE.md) for the artifact schema.
+`ci/` ships the CI artifact schema, `ui-craft-gate.sh`, `selftest.sh`, and an adoption guide for wiring the gate into a pipeline. Only a full `improve-ui` pass can produce a gate-valid artifact, because the schema requires six verdicts (visual, responsive, motion, accessibility, runtime, anti-AI aesthetic) and `review-ui` dispatches an adaptive 3-5 subset with no verifier. `improve-ui` offers the write after presenting its report, never automatically, to a configurable directory (default `.claude/ui-craft-artifacts/`); `review-ui` points at `improve-ui` instead of writing a partial one. `ui-craft-gate.sh` then exits non-zero unless a schema-valid artifact bound to the reviewed sha exists, every verdict it carries plus `overall` is GREEN, `blocker_findings` is empty, and no CRITICAL finding sits in either array. The reviewed sha is the last commit that touched a UI-adjacent path rather than `HEAD`, so committing the artifact does not invalidate it while the next real UI change does. `ci/selftest.sh` runs the gate end to end against a throwaway repo and asserts the exit code of every documented path, including that happy path. There is no soft pass: YELLOW fails too, as does a missing, malformed, or sha-mismatched artifact. `ci/README.md` has the full policy. See **Data contracts** in [ARCHITECTURE.md](ARCHITECTURE.md) for the artifact schema.
 
 ### Review ledger
 
@@ -282,7 +282,7 @@ Three operational surfaces added in 0.1.2 that keep the catalogue, the auditor, 
 
 ## Requirements
 
-- Claude Code with plugin support. Dispatched specialists run on Opus 5 (pinned at dispatch, thinking always on); the `ui-team-lead` orchestrator conducts on the session model.
+- Claude Code with plugin support and access to the `fable` model alias (Fable 5.1). Dispatched agents are pinned to it at dispatch, thinking always on, and fall back to `opus` where the alias is unavailable; the invoking session orchestrates.
 - The toolkit surfaces (`tests/harness/`, `ci/`, `scripts/`) need Node >= 18; the CI gate additionally needs `bash`, `python3` and `git`. No npm packages, ever. The four skills and ten agents need none of this.
 - Optional: **GoodMem MCP** for cross-run learnings, written to the goodmem Learnings space when goodmem is configured. Without it, agents work entirely from the reference library.
 - Optional: **Serena MCP** for semantic code navigation in TypeScript/React codebases.

@@ -1,7 +1,7 @@
 ---
 name: improve-ui
 description: |-
-  Use this skill when the user wants the full UI treatment: a comprehensive multi-specialist pass covering visual + usability/flow + accessibility + responsive + motion + performance + type safety + anti-AI aesthetics in one review, plus (for improvement asks) a prioritized fix plan. Triggers: "improve this UI", "make this better", "make this god tier", "polish these components", "refactor the UI", "level up the design", "make this look like a human team built it", "full UI pass", "comprehensive UI review", "thorough UI audit", "improve everything". Dispatches the ui-craft:ui-team-lead orchestrator, which coordinates every applicable specialist in parallel plus a dedicated verifier, deduplicates findings, and produces a unified per-dimension-verdict report ordered by impact. This is the heavy-hitter, and the only skill that writes the CI verdict artifact.
+  Use this skill when the user wants the full UI treatment: a comprehensive multi-specialist pass covering visual + usability/flow + accessibility + responsive + motion + performance + type safety + anti-AI aesthetics in one review, plus (for improvement asks) a prioritized fix plan. Triggers: "improve this UI", "make this UI better", "make this god tier", "polish these components", "refactor the UI", "level up the design", "make this look like a human team built it", "full UI pass", "comprehensive UI review", "thorough UI audit", "improve the whole interface". Dispatches the ui-craft:ui-team-lead orchestrator, which coordinates every applicable specialist in parallel plus a dedicated verifier, deduplicates findings, and produces a unified per-dimension-verdict report ordered by impact. This is the heavy-hitter, and the only skill that writes the CI verdict artifact.
 argument-hint: '[path | file | directory | url | screenshot | "staged" | "diff" | "pr" | "all"]'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent, Artifact
 ---
@@ -14,12 +14,9 @@ You are coordinating a comprehensive multi-specialist UI pass. This is the plugi
 
 ## Execution mode
 
-Two legal paths, and both pin a model explicitly:
+One path, dispatched. The team lead runs as a `general-purpose` subagent pinned `model: "fable"` (Fable 5.1) with the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` first in its prompt (Step 4): the standing lane for UI/UX, frontend, and design work, owner directive 2026-09-01; a policy-gated harness checks for that line, and it costs nothing where nothing checks. Its specialists are dispatched the same way, `model: "fable"` plus the attestation line on every call. If the harness rejects the `fable` alias, re-dispatch the same prompt with `model: "opus"` (Opus 5), the floor for UI work. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrating session never runs the team lead's process inline (a deep session's context degrades the merge); the one exception is a context with no Agent tool at all, and then the report header says so.
 
-1. **Dispatched (default).** The team lead runs as a `general-purpose` subagent pinned `model: "opus"` (Step 4). Subagents cap at Opus 5, and an omitted `model` inherits the session model, which the model-policy guard denies. Its specialists are pinned `model: "opus"` too, the coding/review floor (owner directive 2026-07-24).
-2. **Inline.** If the session model is already the strongest tier and the pass is important or complex, run the team lead's process yourself in the main context (foreground). This is the only path on which the session model conducts the merge.
-
-The specialist reviewers stay read-only on either path; the verifier pass is never skipped.
+The specialist reviewers stay read-only; the verifier pass is never skipped.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -51,7 +48,7 @@ Warning thresholds:
 
 ### Check for a prior ledger
 
-Before pre-flight context gathering, check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps the resolved scope, load it and pass its findings into the team lead prompt (Step 3) as the delta baseline; otherwise ignore it.
+Before pre-flight context gathering, check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps the resolved scope, load it and pass its findings into the team lead prompt (Step 3) as the delta baseline; otherwise do not use it as a baseline, but Step 5 still carries its entries forward.
 
 ## Step 2: Pre-flight context (parallel, comprehensive)
 
@@ -132,7 +129,7 @@ PRIOR LEDGER: <findings from `.claude/ui-craft/last-review.json` if one was load
 PLUGIN REFERENCES: ${CLAUDE_PLUGIN_ROOT}/references/ is the full knowledge base.
 
 TASK:
-1. Read ARCHITECTURE.md for the reference-to-agent mapping.
+1. Read ${CLAUDE_PLUGIN_ROOT}/ARCHITECTURE.md for the reference-to-agent mapping.
 2. Dispatch every applicable specialist in parallel, skipping any whose dimension the
    PLATFORM or EVIDENCE LEVEL makes unreviewable (your Phase 2 matrix states which):
    - ui-visual-reviewer: visual quality, usability and task flow, affordance, state completeness
@@ -166,7 +163,7 @@ DELTA SEMANTICS (match on `id` + `file`):
 
 HARD RULES:
 - Dispatch real agents. Don't simulate their output.
-- Dispatched specialists pin `model: "opus"` (Opus 5). Never Haiku.
+- Dispatched specialists pin `model: "fable"` (Fable 5.1) and open every prompt with `FABLE-ESCALATION: ui-ux-frontend -- <reason>`; `model: "opus"` only if the harness rejects the alias. Never Haiku, never an omitted model.
 - Foreground execution.
 - Deduplicate cross-agent findings; the verifier pass is mandatory.
 - Confidence is one of the four canonical classes; there is no "Possible issue" class.
@@ -203,13 +200,13 @@ Do the placeholder substitution mechanically, in this order:
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: "opus",
+  model: "fable",
   description: "Full UI pass: N files",
-  prompt: <substituted ui-team-lead body> + "\n\n" + <the Step 3 prompt>
+  prompt: "FABLE-ESCALATION: ui-ux-frontend -- full multi-specialist UI pass\n\n" + <substituted ui-team-lead body> + "\n\n" + <the Step 3 prompt>
 })
 ```
 
-Foreground. `model: "opus"` is mandatory: an omitted model inherits the session model, which the model-policy guard denies, and the flagship pass then never starts.
+Foreground. `model: "fable"` with the attestation line is mandatory (`"opus"` only as the fallback when the harness rejects the alias): an omitted model inherits the session model, which a policy-gated harness denies, and the flagship pass then never starts.
 
 ## Step 5: Present results
 
@@ -238,9 +235,9 @@ Foreground. `model: "opus"` is mandatory: an omitted model inherits the session 
                   "confidence": "...", "file": "...", "line": 1, "title": "...", "status": "open"}]}
    ```
 
-   Carry forward, unchanged, any prior entry whose dimension is absent from `dimensions` this run, so a narrow pass never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
+   Carry forward, unchanged and whether or not Step 1 loaded the ledger as a baseline, any prior entry whose dimension is absent from `dimensions` this run, so a narrow pass never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
 
-8. **The CI verdict artifact: this skill is its only producer.** `review-ui` and `optimize-ui` never write one, because the gate schema requires six verdicts and neither of those runs a full pass with a verifier. `ci/verdict-artifact-schema.json` is canonical for the shape; `ARCHITECTURE.md` § Data contracts explains it. Read the schema rather than trusting the sketch below if the two ever disagree. Offer, don't force:
+8. **The CI verdict artifact: this skill is its only producer.** `review-ui` and `optimize-ui` never write one, because the gate schema requires six verdicts and neither of those runs a full pass with a verifier. `${CLAUDE_PLUGIN_ROOT}/ci/verdict-artifact-schema.json` is canonical for the shape; `ARCHITECTURE.md` § Data contracts explains it. Read the schema rather than trusting the sketch below if the two ever disagree. Offer, don't force:
 
    > "Write a CI verdict artifact to `.claude/ui-craft-artifacts/<short-sha-or-pr>.json` per `ci/verdict-artifact-schema.json` for repos using the ui-craft gate (see `ci/README.md`)?"
 
@@ -259,14 +256,14 @@ Foreground. `model: "opus"` is mandatory: an omitted model inherits the session 
     "overall": "GREEN|YELLOW|RED", "blocker_findings": [], "high_findings": []}
    ```
 
-   `schemaVersion` is the const in the schema (3 at time of writing); the gate hard-rejects any other value, so read it from the schema rather than assuming. `sha` is mandatory and is the gate's binding key; `pr` is optional and additional, never a substitute. SIX `verdicts` keys are required: `visual`, `responsive`, `motion`, `accessibility`, `runtime`, `antiAiAesthetic`. Only `typescriptSafety` and `usability` may be omitted, because only those two can be genuinely inapplicable. Finding arrays use the canonical finding shape (`id`, `dimension`, `severity`, `confidence`, `file`, `title`, optional `line`/`evidence`).
+   `schemaVersion` is the const in the schema (3 at time of writing); the gate hard-rejects any other value, so read it from `${CLAUDE_PLUGIN_ROOT}/ci/verdict-artifact-schema.json` rather than assuming. `sha` is mandatory and is the gate's binding key; `pr` is optional and additional, never a substitute. SIX `verdicts` keys are required: `visual`, `responsive`, `motion`, `accessibility`, `runtime`, `antiAiAesthetic`. Only `typescriptSafety` and `usability` may be omitted, because only those two can be genuinely inapplicable. Finding arrays use the canonical finding shape (`id`, `dimension`, `severity`, `confidence`, `file`, `title`, optional `line`/`evidence`).
 
    Map each dimension's four-point verdict token to a gate token: best token to GREEN, second to YELLOW, third or fourth to RED. Worked example for the visual family (STRONG / ADEQUATE / WEAK / BROKEN): STRONG is GREEN, ADEQUATE is YELLOW, WEAK and BROKEN are RED. The dimension-name mapping (`performance` to `runtime`, `anti-ai` to `antiAiAesthetic`, `typescript` to `typescriptSafety`) is in `ci/README.md`. `overall` is GREEN only when every present verdict is GREEN, and a CRITICAL finding fails the gate whichever array it sits in.
 
 ## Step 6: Post-application verification
 
 After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 6 first -- functionality before visuals, and any functional failure blocks the visual assessment -- then:
-1. If TypeScript: run the typecheck gate by path (`node node_modules/ts7/bin/tsc --noEmit`; `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent) to verify compilation. Never bare `tsc`, because both packages declare that bin and npm's link order on the collision is not guaranteed.
+1. If TypeScript: run the TypeScript 7 gate by path, resolving the compiler by version rather than by alias name: try `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, then `node_modules/typescript/bin/tsc`, and use the first whose `--version` prints `Version 7.` (Microsoft's side-by-side layout keeps TypeScript 6 at `node_modules/typescript/bin/tsc6`). Never bare `tsc`, because with two compilers installed the `.bin/tsc` link is arbitrary; redirect the output to a log and read the exit code, never infer the result from the output. Do this to verify compilation.
 2. Run the project's lint command.
 3. If Tailwind: check that `@theme` tokens are valid.
 4. Report any breakage with the fix, and offer to iterate.
@@ -276,7 +273,7 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 
 - Don't dispatch the team lead for a single-dimension review. Use `review-ui` (quality), `optimize-ui` (perf), or `design-ui` (new UI).
 - Don't dispatch without comprehensive project context; the team lead needs it for every sub-agent.
-- Don't dispatch without `model: "opus"`.
+- Don't dispatch without `model: "fable"` and its attestation line (or the `opus` fallback); never an omitted model.
 - Don't dispatch by the plugin-namespaced `ui-craft:ui-team-lead` type.
 - Don't trust the returned message over the run directory's merged report.
 - Don't summarize the report; show it verbatim.

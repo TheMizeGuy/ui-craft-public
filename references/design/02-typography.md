@@ -86,7 +86,7 @@ A globals.css whose entire type system is `--font-sans: <system stack>` with def
 
 | Family | Reason |
 |---|---|
-| Inter (body) | The most-used AI default. Acceptable only as Inter Display in a header *with* tightened tracking |
+| Inter (body) | The most-used AI default. Never the primary face. Two tolerated uses: Inter Display in a header with tightened tracking, and Inter as the utility/UI-label fallback behind a chosen face (catalogue T1) |
 | Roboto **as a chosen face** | Android system font; reads as "framework demo" when downloaded onto other platforms. Reaching it via the system stack's Android leg is in scope |
 | Arial | Generic, no point-of-view |
 | Helvetica | Same: overused, no design intent |
@@ -147,16 +147,16 @@ Tooling: [Type Scale](https://typescale.com), [Utopia](https://utopia.fyi).
 
 ### Size-count caps by surface
 
-The ratio gives you the steps; the surface caps how many you use. Landing pages and marketing sites: at most ~6 sizes, wide range (a 64/42/32/20/16/14 ladder is typical). Dashboards and dense product UI: the range shrinks hard — nothing above ~24px (24/20/18/16/14/12), because information density rises and oversized headings steal space from data. A dashboard H1 at landing-page scale is a defect, not a style choice.
+The ratio gives you the steps; the surface caps how many you use. Landing pages and marketing sites: at most ~6 sizes, wide range (a 64/42/32/20/16/14 ladder is typical). Dashboards and dense product UI: the range shrinks hard -- nothing above ~24px (headings and labels; data displays such as a dashboard's hero figure or stat-tile values are exempt and sized by `references/dataviz/03-marks-interaction-figures.md`) on a 24/20/18/16/14/12 ladder, because information density rises and oversized headings steal space from data. A dashboard H1 at landing-page scale is a defect, not a style choice.
 
 ### Display tightening
 
-Large text ships loose by default. On display sizes (roughly 32px+), tighten letter-spacing to **-2% to -3%** (`tracking [-0.02em..-0.03em]`) and drop line-height to **110-120%**. This single adjustment moves header text from "template" to "set with intent" — it is the highest-leverage microtypography move on hero and section headings. Body text stays at the foundry's tracking (see anti-patterns below); the tightening applies only as size grows.
+Large text ships loose by default. Tighten on the catalogue T8 ladder (`references/catalogue/01-ai-tells.md`), which is what the auditor detects by: at 48px+ tighten to **-0.02em**, at 72px+ to **-0.03em**, never below **-0.04em**; between 32 and 48px at most **-0.01em**; line-height **110-120%** on display sizes. This single adjustment moves header text from "template" to "set with intent" -- it is the highest-leverage microtypography move on hero and section headings. Body text stays at the foundry's tracking (see anti-patterns below); the tightening applies only as size grows.
 
 ```css
 .hero-title {
   font-size: clamp(2.5rem, 1.5rem + 4vw, 4rem);
-  letter-spacing: -0.025em;   /* -2.5% */
+  letter-spacing: -0.02em;    /* the 48px+ tier; -0.03em only from 72px */
   line-height: 1.15;          /* 110-120% for display, never body's 1.5 */
 }
 ```
@@ -206,8 +206,8 @@ Reference: [web.dev min-max-clamp](https://web.dev/articles/min-max-clamp).
 | Hero `<h1>` 56px+ | `opsz` 48-72 (display cut) |
 | Section heading 32-44px | `opsz` 28-36 |
 | Card title 18-24px | `opsz` 18-24 |
-| Body 14-18px | `opsz` 14 (text cut) |
-| Caption 11-13px | `opsz` 11 |
+| Body 16-18px (16px is the floor: catalogue T12) | `opsz` 14-16 (text cut) |
+| Caption / label 11-14px | `opsz` 11-14 |
 
 ```css
 /* Auto mode lets the browser pick opsz based on font-size */
@@ -222,7 +222,7 @@ Reference: [web.dev min-max-clamp](https://web.dev/articles/min-max-clamp).
 
 Fonts with strong `opsz`: Fraunces, Roboto Flex, Source Serif 4, Recursive, Inter Display.
 
-Check the build, not the family name. Source Serif 4 is the cautionary case: the Google Fonts build ships one file per style carrying both axes (`SourceSerif4[opsz,wght].ttf`, `opsz` 8-60, `wght` 200-900), while Adobe's own GitHub release ships a weight-only variable font (`wght` 200-900, no `opsz`) alongside five *static* optical cuts named Caption, SmText, Text, Subhead, and Display. Self-host the second one and `font-optical-sizing: auto` does nothing, with no error and no fallback: the page renders and the axis is absent. Confirm the axes in the binary you are actually shipping (Wakamai Fondue, or `fonttools ttx -t fvar`) rather than trusting the family name. Optical sizing is a property of the file, not the typeface.
+Check the build, not the family name. Source Serif 4 ships two variable packages that both carry the axes: Google Fonts' `SourceSerif4[opsz,wght].ttf` and Adobe's `VAR/SourceSerif4Variable-Roman.ttf` (`wght` 200-900, `opsz` 8-60, default 20). What lacks the axis is any of Adobe's five *static* optical cuts (Caption, SmText, Text, Subhead, Display) or a third-party subset that stripped `opsz`. Self-host one of those and `font-optical-sizing: auto` does nothing, with no error and no fallback: the page renders and the axis is absent. Confirm the axes in the binary you are actually shipping (Wakamai Fondue, or `fonttools ttx -t fvar`) rather than trusting the family name. Optical sizing is a property of the file, not the typeface.
 
 ## 6. Web font loading
 
@@ -232,23 +232,30 @@ Check the build, not the family name. Source Serif 4 is the cautionary case: the
 | `font-display: optional` | Best CWV | Some users never see the web font |
 | `<link rel="preload" as="font" type="font/woff2" crossorigin>` | 1-2 critical fonts | More than 2 wastes bandwidth |
 | `next/font` (Next.js) | Next.js app | Self-hosts, subsets, generates `@font-face`, sets `size-adjust` |
-| `@font-face` with `size-adjust` and `ascent-override` | Match system font metrics | Eliminates layout shift on swap |
+| A second `@font-face` for the local fallback face carrying `size-adjust` and `ascent-override` | Match the fallback's metrics to the web font | Eliminates layout shift on swap |
 | Self-host on same origin | Always (over Google CDN) | Enables HTTP/3, Cache-Control, no third-party DNS |
 | WOFF2 only | Always | 30% smaller than WOFF; >99% support; drop TTF/EOT |
 | Subset by `unicode-range` | Multilingual sites | Latin-only is ~30 KB vs ~150 KB full |
 
 ```css
+/* The web font: no metric overrides here */
 @font-face {
   font-family: "DM Sans";
   src: url("/fonts/dm-sans-variable.woff2") format("woff2-variations");
   font-weight: 100 900;
   font-display: swap;
   font-style: normal;
+}
+/* The metric-matched FALLBACK face: the overrides live here (Fontaine / next/font generate these numbers) */
+@font-face {
+  font-family: "DM Sans Fallback";
+  src: local("Arial");
   size-adjust: 100.06%;
   ascent-override: 92%;
   descent-override: 24%;
   line-gap-override: 0%;
 }
+:root { --font-body: "DM Sans", "DM Sans Fallback", system-ui, sans-serif; }
 ```
 
 ```html
@@ -264,9 +271,9 @@ Tools: [Fontaine](https://github.com/unjs/fontaine) for fallback metrics, [glyph
 | Property | Use | Browser |
 |---|---|---|
 | `text-wrap: balance` | Headlines (multi-line `<h1>`/`<h2>`) — equalize line lengths | Chrome 114+, Safari 17.5+, Firefox 121+ |
-| `text-wrap: pretty` | Paragraphs — prevents orphans, balances last 3-4 lines | Chrome 117+, Firefox 124+ |
+| `text-wrap: pretty` | Paragraphs -- prevents orphans, balances last 3-4 lines | Chrome 117+, Safari 26+; Firefox not shipped (degrades to `wrap`) |
 | `hyphens: auto` + `lang="..."` | Justified or narrow body — prevents river/jagged | All evergreen |
-| `hanging-punctuation: first last` | Pull quotes/headings | Safari 18+, Chrome 132+ |
+| `hanging-punctuation: first last` | Pull quotes/headings | Safari 10+ (partial: `force-end` ignored); Chrome and Firefox not shipped -- progressive enhancement only |
 | `text-spacing-trim: trim-start` | CJK content — removes opening punctuation indent | Chrome 123+ |
 | `font-feature-settings: "kern"` | Already on by default | All evergreen |
 

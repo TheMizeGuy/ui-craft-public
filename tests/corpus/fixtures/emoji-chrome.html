@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploys</title>
+<style>
+  :root {
+    --ink: oklch(0.21 0.014 250);
+    --paper: oklch(0.985 0.004 250);
+    --rule: oklch(0.88 0.008 250);
+    --moss: oklch(0.52 0.12 145);
+    --radius: 4px;
+  }
+  body { margin: 0; background: var(--paper); color: var(--ink); line-height: 1.5;
+         font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+         padding: clamp(1rem, 0.5rem + 2.5vw, 3rem); }
+  main { width: min(100%, 42rem); margin: 0 auto; }
+  h1 { font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem); letter-spacing: -0.02em; margin: 0 0 1rem; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--rule); }
+  th { font-weight: 600; }
+  td.when { font-variant-numeric: tabular-nums; }
+  ul.checks { padding: 0; margin: 1.25rem 0; list-style: none; }
+  ul.checks li { padding: 0.25rem 0; }
+  button { font: inherit; padding: 0.55rem 1rem; border: 1px solid var(--moss); border-radius: var(--radius);
+           background: var(--moss); color: oklch(0.99 0.002 145); }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Deploys, last 24 hours</h1>
+    <table>
+      <thead><tr><th>Service</th><th>State</th><th>Finished</th></tr></thead>
+      <tbody>
+        <tr><td>api</td><td><span aria-hidden="true">&#x1F7E2;</span> Healthy</td><td class="when">09:41</td></tr>
+        <tr><td>worker</td><td><span aria-hidden="true">&#x1F7E1;</span> Degraded</td><td class="when">08:12</td></tr>
+        <tr><td>ingest</td><td><span aria-hidden="true">&#x1F534;</span> Failed</td><td class="when">07:58</td></tr>
+      </tbody>
+    </table>
+    <ul class="checks">
+      <li><span aria-hidden="true">&#x2705;</span> Migrations applied</li>
+      <li><span aria-hidden="true">&#x2705;</span> Smoke tests passed</li>
+      <li><span aria-hidden="true">&#x26A0;&#xFE0F;</span> Cache warm-up skipped</li>
+    </ul>
+    <button type="button"><span aria-hidden="true">&#x1F680;</span> Deploy api again</button>
+  </main>
+</body>
+</html>

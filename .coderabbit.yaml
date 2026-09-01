@@ -50,8 +50,8 @@ reviews:
       in the same change. A catalogue edit that silently drops a tell is a
       recall regression — flag it and ask for the re-scored harness output
       (`node tests/harness/score-review.mjs <findings.json>`, gate recall >= 0.8).
-    - Schema versioning: the CI verdict artifact schema (currently v2) and the
-      review-ledger schema (currently v1) are versioned independently. ANY field
+    - Schema versioning: the CI verdict artifact schema (currently v3) and the
+      review-ledger schema (currently v2) are versioned independently. ANY field
       addition, rename, or type change must increment that schema's
       `schemaVersion`. Never reshape either in place.
     - No emojis in shipped content — skills, agents, references, or docs. This
@@ -64,8 +64,7 @@ reviews:
       tooling directories (vault, plugin sources, harness config), and no
       goodmem space UUIDs or memory-ID citations. A public reader can act on
       none of them, and each one names private tooling.
-    - CI: Namespace runner labels only (`nscloud-*`), never `ubuntu-latest` or
-      `macos-*`; third-party actions stay SHA-pinned.
+    - CI: third-party actions stay SHA-pinned.
 
     Do NOT comment on:
     - `tests/corpus/fixtures/*.html` quality. Those files are DELIBERATELY bad —
@@ -76,10 +75,6 @@ reviews:
       dependencies (Node stdlib only, node >= 18) is a deliberate constraint.
     - Prose style, line length, or heading conventions in `references/**` —
       these are knowledge-base documents, not code comments.
-    - The two reference files carrying narrative provenance phrasing
-      (`references/catalogue/01-ai-tells.md`,
-      `references/design/06-shadcn-customization.md`); they are already tracked
-      as mirror-scrub items in CLAUDE.md.
 
   auto_review:
     enabled: true

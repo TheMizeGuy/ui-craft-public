@@ -154,8 +154,7 @@ stuck.
 ## 5. Dead ends
 
 A dead end is a screen from which the user's task cannot progress and no onward
-action is offered. It is the most common flow defect and the easiest to detect,
-which is a bad combination for a plugin that currently detects neither.
+action is offered. It is the most common flow defect and the easiest to detect.
 
 Every screen answers four questions. Missing the fourth is the dead end:
 
@@ -285,7 +284,7 @@ at the input.
 | Requirement | Detail |
 |---|---|
 | Query and filters live in the URL | A result set a user can reach is a result set they can share and return to |
-| Debounce | 50 to 100ms for local filtering, 150 to 250ms when each keystroke hits the server. Under 50ms wastes requests, over 300ms feels broken |
+| Debounce | 50 to 100ms for local filtering, 150 to 250ms when each keystroke hits the server. Under 50ms wastes requests, over 300ms feels broken (validation and availability checks debounce longer: `references/usability/02-forms-and-error-recovery.md` section 1) |
 | Result count stated and announced | Visible count plus an `aria-live="polite"` region, so the change is perceivable without sight |
 | Zero results names the query | "No results for `invoive`" beats "No results", because it shows the typo |
 | Zero results offers a relaxation | Clear one filter, clear all, widen the scope, or create the missing thing. At least one, always |
@@ -305,8 +304,9 @@ state has not reviewed search.
 
 ## 10. How to review a flow rather than a screen
 
-Three modes, mirroring `references/review/02-evidence-pipeline.md`. State which
-one was used, because the confidence differs.
+Three modes, mapping onto `references/review/02-evidence-pipeline.md` (its
+browser-assisted and full-evidence rows are both Mode A here). State which one
+was used, because the confidence differs.
 
 **Mode A, driven (browser or device available).** Walk the flow end to end,
 capturing each step, then run the break tests below at every step. Highest
@@ -330,9 +330,10 @@ grep -rn "onSubmit\|action=\|useMutation\|useActionState" src | grep -v node_mod
 ```
 
 **Mode C, screenshots only.** Flow claims are limited to what the frames show in
-sequence. The correct flow verdict is "not assessed", never "clean". Reporting a
-clean flow verdict from static frames is a false negative the plugin will be
-judged on, because it is exactly the defect class the frames cannot contain.
+sequence. The correct conclusion on the three flow rows is "not assessed", never
+"clean". Reporting them clean from static frames is a false negative the plugin
+will be judged on, because it is exactly the defect class the frames cannot
+contain.
 
 ### The break tests
 

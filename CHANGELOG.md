@@ -1,5 +1,121 @@
 # Changelog
 
+## 0.5.0 — 2026-09-01
+
+A full-plugin review against one standard: nothing the plugin ships may make
+the model reason or answer worse than it would without it. Ten reviewers, one
+per knowledge domain plus one for the agents and one for the skills and docs,
+read every file end to end with the same five lenses (reasoning harm,
+contradictions, wrong routing, capability zeroing, stale technical claims). The
+conductor gated roughly 230 evidence-backed findings and applied them, checked
+every stale technical claim against current documentation before changing it,
+and found that the two files every other file cites as canonical were the ones
+still carrying the retired rules. This release adds no new capability.
+
+- **Dispatch moves to the Fable 5.1 lane.** Every dispatched agent, the nine
+  specialists and the inlined `ui-team-lead` alike, is now pinned `model: "fable"`
+  with the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <reason>` first
+  in its prompt (standing owner directive 2026-09-01 for UI/UX, frontend and
+  design work); `model: "opus"` remains only as the fallback where a harness
+  rejects the alias. The inline execution modes are retired: the invoking session
+  orchestrates and never runs a specialist's or the team lead's process in its
+  own context, except when no Agent tool exists at all, and then the report
+  header says so. Agent frontmatter still carries no model pin.
+- **Canonical review files caught up with their consumers.**
+  `review/02-evidence-pipeline.md`, cited everywhere as the geometry evidence
+  rule, still prescribed the "Possible issue" confidence class that the skills,
+  the verifier and the CI schema reject; it now states the modifier-plus-MEDIUM-cap
+  rule, and the two agents that had copied the old wording (responsive, perf) plus
+  `performance/07` were corrected with it. `review/04-verdicts-and-verification.md`
+  now holds the blocker-flag definitions, the flag-to-dimension cap mapping (a set
+  flag caps its dimension at the 3rd token, never the 1st or 2nd, so a blocker is
+  RED at the gate, not YELLOW), the core-task and 320px never-below-HIGH row, and
+  the mechanical verdict-derivation table that only the verifier used to carry,
+  including its static-mode row: a dimension with no findings in code-only or
+  screenshot-only evidence takes the 2nd token, never the 1st. Density thresholds
+  are stated once (under 60% HIGH, 60-75% MEDIUM, page over 2x viewport MEDIUM)
+  and `scripts/measure_density.js` grades the MEDIUM band it previously skipped
+  and reports slack hoarders as candidates rather than HIGH findings.
+- **Corpus and catalogue.** The three compound labels (`fixed-desktop-shell`,
+  `vh-bottom-bar`, `token-drift`) were split so ground truth enumerates what the
+  fixture notes already described, which is what the 2026-07-27 baseline's
+  precision reading was waiting on. Six fixtures were added for tells the corpus
+  could not see: the current OKLCH shadcn init (`--radius: 0.625rem`, which the
+  HSL fingerprint never matched), a reduced-motion opt-in control, a slow page
+  transition (M3, now one threshold, 400ms, in the catalogue, the auditor and
+  `design/04`), emoji as interface chrome (new V12), an `anti-slop-allow` control,
+  and an icon-only button with no accessible name (new U13). The auditor's
+  concentration rule is scoped to style rows so single-instance hard defects
+  fire, it names one finding per span, honours the escape hatch, emits the
+  canonical finding block with the literal catalogue code on a `Tell:` line and
+  a `tellRef` machine field (the visual reviewer carries `tellRef` too, so the
+  harness README's "tellRef gap" is closed), and its summary block carries the
+  DISTINCTIVE / ADEQUATE / GENERIC / AI-DEFAULT verdict token with NOT ASSESSED
+  values on its pattern lines. Strongest-10 aliasing no longer gives five
+  constructs two severities; the catalogue's own colour prescriptions no longer
+  land inside the hue window it bans. A fresh blind baseline over all 21
+  fixtures (`tests/corpus/baseline-2026-09-01.json`: recall 0.828, precision
+  0.960, all five clean controls at zero, exit 0) supersedes the 2026-07-27 file,
+  which stays as history; four of its five misses are same-span folding and the
+  harness README records each one.
+- **Specialist templates match the machine contract.** All templates now use
+  the rubric's field names and carry `id`, `dimension`, `file`, `line`; the perf
+  and TypeScript engineers emit their verdict families (RESPONSIVE/... and
+  SOUND/...) instead of prose; the accessibility reviewer's flag is
+  `accessibility_blocker`, its findings are filed under `Accessibility
+  fundamentals`, and specialists propose flags that the verifier confirms. Tool
+  lists gained the browser actions the bodies already required (resize, click,
+  type, key press, back) and lost the vestigial Obsidian grant. The team lead's
+  plan gained the motion and responsive pass that `improve-ui` offers and a
+  "not measured" form for the CWV line, and learning candidates go into the
+  merged report rather than a memory write.
+- **Stale technical claims corrected, each against current docs.**
+  - Browser and measurement APIs: Playwright's removed
+    `page.accessibility.snapshot()` (now `ariaSnapshot` / `ariaSnapshotJSON`
+    with `boxes`); web-vitals LCP attribution `target`; CLS lifetime semantics.
+  - Frameworks: `useOptimistic` inside a transition; SWR `keepPreviousData` off
+    by default; Next.js 16's top-level `reactCompiler`; Tailwind v4 hoisting a
+    nested `@theme` rather than ignoring it; next-themes setting `color-scheme`;
+    `tw-animate-css`; the `apca-w3` export name.
+  - CSS platform support: scroll-driven animations not Baseline; the
+    content-visibility and View Transitions Baseline dates; anchor positioning
+    shipped in Safari and Firefox; `text-wrap: pretty` and `hanging-punctuation`
+    support.
+  - Fonts: Source Serif 4's Adobe build carrying `opsz`; font-metric overrides
+    on the fallback face.
+  - TypeScript: the TypeScript 7 gate resolved by version (Microsoft's
+    `@typescript/typescript6` layout ships `tsc6`) with the exit code read from
+    a log, and seven doctrine snippets that failed the plugin's own tsconfig
+    under TypeScript 7.0.2 and now compile.
+  - WCAG 2.2, re-read from the normative text: 2.5.8 spacing is a two-case rule;
+    2.2.1 has no 20-second threshold; 2.4.1 is satisfied by landmarks and
+    headings; the 3.3.8 personal-content exception is non-text only;
+    `aria-grabbed` is deprecated and a keyboard path alone does not satisfy
+    2.5.7; ADA Title II is WCAG 2.1 AA with the 2027 and 2028 dates.
+- **Taste gate and design references.** The pre-ship checklist can now say
+  NOT ASSESSED on browser-only rows, its purple window matches the catalogue's,
+  its severities cite catalogue section 18, and its remediations no longer
+  mandate mixing icon families or sanction floating labels. Hero and section
+  architectures no longer prescribe the uppercase eyebrow, pure-`vw` clamps,
+  sub-floor tracking or hex palettes; the spacing ladder freezes at the same
+  anchors as the type ladder; the APCA ladder in `design/01` carries the WCAG 2.x
+  floor it was cited for; `light-dark()` guidance names the class-toggle
+  exception; the styling-architecture token example generates the utilities it
+  uses and its layer order no longer puts a reset above utilities.
+- **Skills and docs.**
+  - `review-ui`'s stated policy (3-5 specialists by rank) is now what README,
+    USAGE, the CI guide and the gate banner describe, and the harness is
+    described as recall- and precision-gated.
+  - The `Submit` acceptance grep matches visible labels only; the viewport-unit
+    rule follows the owner (`svh` default, `lvh` heroes, `dvh` modals); the
+    ledger's carry-forward survives a non-overlapping run; the default display
+    range includes 1920.
+  - Trigger phrases bind to UI nouns, and bare paths handed to agents carry the
+    plugin root.
+  - ARCHITECTURE's reference-to-agent map is regenerated from the agent bodies,
+    and the CI schema's usability description no longer names an undefined
+    family (description only, no `schemaVersion` bump).
+
 ## 0.4.1 — 2026-08-24
 
 Corrections from an adversarial cohesion review of the 0.4.0 integration

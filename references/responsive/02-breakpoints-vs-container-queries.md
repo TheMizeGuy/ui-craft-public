@@ -180,9 +180,9 @@ Four practices that separate a considered breakpoint set from a copied one:
   `references/review/03-viewport-matrix.md` exists to test the result, not to
   generate the values.
 
-Height also matters and is almost always forgotten: `@media (height <= 32rem)` is
-the query that keeps a landscape phone or a short desktop window from losing a
-modal's action row. Details in
+Height also matters and is almost always forgotten: `@media (height <= 32rem)`
+(the value is owned by file 03, section 5) is the query that keeps a landscape
+phone or a short desktop window from losing a modal's action row. Details in
 `references/responsive/03-zoom-orientation-and-adaptive.md` section 5.
 
 ## 6. Migrating a viewport-styled component

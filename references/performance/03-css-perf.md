@@ -31,7 +31,7 @@ Characteristics:
 
 | Axis | Detail |
 |------|--------|
-| Browser support | Baseline Newly Available Sept 2025 (all major evergreen browsers) |
+| Browser support | Baseline Newly Available Sept 2024 (all major evergreen browsers) |
 | Impact | Order-of-magnitude initial-render reductions on long-scroll pages. web.dev's demo measures roughly 7x (hundreds of milliseconds down to tens). The gain is proportional to how much of the page starts offscreen, so measure your own page rather than quoting a number: a long article or feed sees most of it, a single-viewport landing page sees almost none |
 | Pitfall | Scroll-jump if `contain-intrinsic-size` estimate is wrong; use `auto 500px` (not a hard number) to let the browser learn |
 | When to use | Long scrolling lists, articles, comment threads, card grids below the fold |
@@ -91,7 +91,7 @@ Source: https://developer.mozilla.org/en-US/docs/Web/CSS/will-change, https://we
 
 ## Scroll-driven animations
 
-Native, off-main-thread. Zero JS, no jank. Baseline Newly Available 2024.
+Native, off-main-thread. Zero JS, no jank. Chromium 115+ and Safari 26+; NOT Baseline as of 2026-09 (Firefox still gates it behind a preference). Wrap in `@supports (animation-timeline: view())` and keep the observer path, or accept a no-motion fallback that leaves the end state visible.
 
 ```css
 /* Progress bar tied to document scroll */
@@ -124,14 +124,14 @@ Native, off-main-thread. Zero JS, no jank. Baseline Newly Available 2024.
 | `scroll(nearest)` / `scroll(self)` / `scroll(<axis>)` | Nearest ancestor scroll container |
 | `view()` | Element's position in viewport (entry, cover, contains, exit ranges) |
 
-Replaces `IntersectionObserver` + `requestAnimationFrame` for reveal-on-scroll, parallax hero, progress indicators, carousel auto-advance. Source: https://developer.mozilla.org/en-US/docs/Web/CSS/animation-timeline, https://developer.chrome.com/docs/css-ui/scroll-driven-animations.
+Replaces `IntersectionObserver` + `requestAnimationFrame` for reveal-on-scroll, parallax hero, progress indicators, carousel auto-advance where supported; keep the observer path for Firefox until it ships. Source: https://developer.mozilla.org/en-US/docs/Web/CSS/animation-timeline, https://developer.chrome.com/docs/css-ui/scroll-driven-animations.
 
 ## View Transitions
 
 Cross-fade between DOM states with one CSS rule; GPU-composited, off main thread.
 
 ```js
-// Same-document view transition (Baseline 2024+)
+// Same-document view transition (Baseline Newly Available Oct 2025; feature-detect for older Firefox)
 async function updatePhoto(newSrc) {
   if (!document.startViewTransition) {
     photo.src = newSrc;

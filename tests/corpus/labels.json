@@ -1,13 +1,13 @@
 {
   "meta": {
     "purpose": "Ground truth for the ui-craft regression corpus. Each fixture lists the findings a by-the-book review SHOULD produce, in the canonical finding shape (id, dimension, severity, title) plus a tellRef citing the catalogue section or tell ID it maps to. The scorer (tests/harness/score-review.mjs) matches emitted findings to these labels by tellRef first, then by (fixture, dimension) + fuzzy title overlap.",
-    "findingShape": "id, dimension (visual|anti-ai|accessibility|motion|responsive|performance|typescript), severity (CRITICAL|HIGH|MEDIUM|LOW|TASTE), title, tellRef, confidence (Hard defect|Quality defect|Pattern smell|Taste note per references/review/01-universal-rubric.md).",
+    "findingShape": "id, dimension (visual|anti-ai|accessibility|motion|responsive|performance|typescript|usability), severity (CRITICAL|HIGH|MEDIUM|LOW|TASTE), title, tellRef, confidence (Hard defect|Quality defect|Pattern smell|Taste note per references/review/01-universal-rubric.md).",
     "tellRefConvention": "A short catalogue code (V5, L6, L13, C18, S3, T1, W2, I7, C3, C5, D1, P1, P3), a ranked fingerprint (Strongest-10 #1), the cream-serif-sage emerging tell, or a catalogue section number (section 12, section 14, section 15) from references/catalogue/01-ai-tells.md. See that file for the tell definition and severity of each code.",
-    "cleanControlRule": "A clean control has expected == [] and maxIncidentalFindings == 1: the review may surface at most one incidental note before the control is treated as failed.",
+    "cleanControlRule": "A clean control has expected == [] and a per-fixture maxIncidentalFindings. The three older controls (small-avatar-clean, clean-intentional, fluid-adaptive-clean) carry 1: the review may surface at most one incidental note before the control is treated as failed. The two 2026-09-01 controls (reduced-motion-opt-in, allowed-choice) carry 0, because the single plausible incidental on each is exactly the regression the control exists to catch.",
     "severityIsInformational": "severity on a label records the catalogue's by-the-book class; the scorer matches on tellRef/title, not severity, so an auditor calling a tell one class higher or lower still counts as a hit.",
-    "dimensionCoverage": "anti-ai: 16 labels across 9 fixtures. responsive: 3 labels (fixed-desktop-shell L13, viewport-query-card P1, vh-bottom-bar P3) plus one clean responsive control (fluid-adaptive-clean). visual, accessibility, motion, performance and typescript still have no labels; adding them is tracked work, not a claim this corpus already covers them. Read any pooled recall number as 'recall over the labeled dimensions', never as coverage of the plugin's seven dimensions.",
+    "dimensionCoverage": "anti-ai: 23 labels across 13 fixtures. responsive: 6 labels across 3 fixtures (fixed-desktop-shell L13 x3, viewport-query-card P1, vh-bottom-bar P3 x2) plus one clean responsive control (fluid-adaptive-clean). Five clean controls in total: small-avatar-clean, clean-intentional and fluid-adaptive-clean at tolerance 1; reduced-motion-opt-in and allowed-choice (2026-09-01) at tolerance 0. The M3 and U13 labels added on 2026-09-01 carry dimension anti-ai because they are catalogue tells the ui-anti-slop-auditor walks (steps 10 and 11); they are not motion- or accessibility-dimension coverage. visual, accessibility, motion, performance, typescript and usability still have no labels; adding them is tracked work, not a claim this corpus already covers them. Read any pooled recall number as 'recall over the labeled dimensions', never as coverage of the plugin's seven dimensions.",
     "responsiveControlContract": "fluid-adaptive-clean.html is the guard against the failure mode where a reviewer 'fixes' an AI tell by deleting responsive behaviour. It uses every construct the catalogue prescribes -- clamp() type and padding ramps, width: min(), repeat(auto-fit, minmax()), @container, 100dvh, env(safe-area-inset-bottom), a viewport meta with viewport-fit=cover, and a visible :focus-visible ring -- and must produce ZERO findings. A run that flags any of those has learned the wrong lesson from Strongest-10 #9 and T14 and fails the gate here.",
-    "exampleFindingsFileIsPartial": "tests/harness/examples/sample-findings.json is a frozen 0.1.2-era example that predates the five fixtures added in 0.2.4 (fixed-desktop-shell, viewport-query-card, vh-bottom-bar, uncommitted-radius, fluid-adaptive-clean). It therefore scores 16 hits against 20 labels (recall 0.800, precision 1.000, both clean controls at zero) -- a partial run, not a detection regression. A by-the-book run over the whole corpus should score 20/20. When that example file is extended with the four new tell findings, the illustrative recall returns to 1.000.",
+    "exampleFindingsFileIsPartial": "tests/harness/examples/sample-findings.json is the hand-authored answer key: one finding per label, written against this file, so it is the ceiling the labels permit and never evidence of detection. It was extended on 2026-09-01 alongside the label split (fixed-desktop-shell, vh-bottom-bar and token-drift each gained the labels their notes already described) and again the same day for the five labels on the catalogue-review fixtures (shadcn-oklch-default x2, slow-page-transition, emoji-chrome, icon-only-button); it scores 29/29 (recall 1.000, precision 1.000, all five clean controls at zero). When a label is added here, extend the example in the same change or its recall drops by construction.",
     "droppedTells": [
       "frosted-nav-neon.html carries an anti-slop 'z-index-escalation' tell (.modal { z-index: 9999 }). ui-craft deliberately does NOT catalogue z-index stacking: references/catalogue/01-ai-tells.md section 19 closing note scopes framework-engineering anti-patterns (z-index, useEffect, font-loading, bundling) OUT of the visual-tell catalogue and into code review. It has no ui-craft catalogue home, so it is not an expected finding here."
     ],
@@ -17,11 +17,12 @@
       "frosted-nav-neon.html: icon-in-colored-circle -> V1; frosted-glass-nav -> L6; neon-glow -> C18. The fourth anti-slop signal, rounded-everything -> D1, was REMOVED as a label in 0.2.4: the fixture holds exactly one radius class, `rounded-full` on a non-interactive icon wrapper, and its only real control carries no radius at all. D1 is 'the same radius on every interactive control', and the catalogue's floor rule ('a lone utility-class hit is not a finding') explicitly clears that span -- the same rule labels.json already applies to the identical class on small-avatar-clean.html. The span is V1's. D1 now has a dedicated fixture, uncommitted-radius.html, that actually plants it.",
       "legacy-marketing-page.html: cream-serif-default -> cream-serif-sage combo (cream #faf8f5 + Instrument Serif present; two of three fire the combo); generic-font -> T1 (Inter); hype-copy -> W2 (vague benefit copy); stock-illustration -> I7 (unDraw flat-vector).",
       "missing-states.html and demo-ware: catalogue sections 12 (missing states) and 15 (demo-ware/happy-path) live in the AI-tell catalogue and are walked by the ui-anti-slop-auditor, so they carry dimension 'anti-ai' here. The ui-visual-reviewer would classify the same issue under its 'State completeness' dimension; because scoring is tellRef-first, either producer scores as a hit.",
-      "The three responsive fixtures added in 0.2.4 cite the catalogue's existing web-platform codes rather than new ones: L13 (fixed-pixel shell that cannot resize) for fixed-desktop-shell.html, P1 (viewport media queries for component layout, where a container query belongs) for viewport-query-card.html, and P3 (100vh plus a bottom bar with no safe-area inset) for vh-bottom-bar.html. All three carry dimension 'responsive'; the ui-anti-slop-auditor reaches them through its step 8 and the ui-responsive-reviewer through its own dimension, and tellRef-first matching scores either producer."
+      "The three responsive fixtures added in 0.2.4 cite the catalogue's existing web-platform codes rather than new ones: L13 (fixed-pixel shell that cannot resize) for fixed-desktop-shell.html, P1 (viewport media queries for component layout, where a container query belongs) for viewport-query-card.html, and P3 (100vh plus a bottom bar with no safe-area inset) for vh-bottom-bar.html. All three carry dimension 'responsive'; the ui-anti-slop-auditor reaches them through its step 8 and the ui-responsive-reviewer through its own dimension, and tellRef-first matching scores either producer.",
+      "The six fixtures added on 2026-09-01 by the catalogue review pin four detection changes, one doctrine correction, and one rule the corpus had never exercised. shadcn-oklch-default.html plants the current-generation (Tailwind v4) shadcn init fingerprint, which is OKLCH neutrals at --radius: 0.625rem rather than the pre-v4 HSL trio the auditor used to key on, plus one unmodified Card (S1 for the token block, S3 for the Card: two spans, two labels, mirroring shadcn-card-kit.html's two-span shape). slow-page-transition.html plants one 650ms cross-document page transition against the catalogue's single 400ms M3 threshold. emoji-chrome.html plants emoji as interface chrome (V12, a new row) written as HTML character references so the repo's no-emoji scrub gate stays at zero while the rendered DOM is identical. icon-only-button.html plants one <button> holding only an <svg> with no accessible name (U13, a new row, CRITICAL). reduced-motion-opt-in.html and allowed-choice.html are clean controls at tolerance 0: the first gates its only decorative motion behind prefers-reduced-motion: no-preference with no reduce block (the pattern references/design/04-motion.md section 7 prescribes, which the old M6 wording flagged as CRITICAL), the second is presence-single.html with its V5 span marked anti-slop-allow (the escape hatch the auditor's Hard rules now honour)."
     ],
     "provenance": {
       "copied": "gradient-hero.html, shadcn-card-kit.html, frosted-nav-neon.html, legacy-marketing-page.html, small-avatar-clean.html originate from anti-slop/anti-slop/scripts/test/corpus/design/ (same owner, MIT). Labels derived from that corpus's labels.json, translated to ui-craft catalogue IDs. In 0.2.4 each gained one line, a <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">, so that the responsive doctrine added in the same release does not co-fire on fixtures whose planted tell is unrelated to sizing. Nothing else in them changed; they are otherwise still verbatim.",
-      "authored": "presence-single.html, cream-serif-sage.html, token-drift.html, missing-states.html, clean-intentional.html, and (0.2.4) fixed-desktop-shell.html, viewport-query-card.html, vh-bottom-bar.html, uncommitted-radius.html, fluid-adaptive-clean.html are new for ui-craft.",
+      "authored": "presence-single.html, cream-serif-sage.html, token-drift.html, missing-states.html, clean-intentional.html, and (0.2.4) fixed-desktop-shell.html, viewport-query-card.html, vh-bottom-bar.html, uncommitted-radius.html, fluid-adaptive-clean.html, and (2026-09-01, the catalogue review) shadcn-oklch-default.html, slow-page-transition.html, emoji-chrome.html, icon-only-button.html, reduced-motion-opt-in.html, allowed-choice.html are new for ui-craft.",
       "revisedIn024": "clean-intentional.html was rewritten: its body font moved off a Berkeley/Sohne Mono stack onto the platform system sans, digits now align with font-variant-numeric: tabular-nums, and a real log pane keeps the mono face where mono belongs. The old version applied mono to labels, stats and timestamps, which is exactly tell T13 -- so the 'must produce ZERO findings' control was itself a T13 violation and any auditor faithful to the 2026-07-17 mono directive failed the gate on it. token-drift.html and missing-states.html had their incidental six-digit hex converted to OKLCH (C15 is CRITICAL and was co-firing unlabeled on both, and token-drift's --surface: #ffffff was also C2); the planted tells are untouched, since token drift is about hardcoded off-token values, not about hex notation."
     }
   },
@@ -30,25 +31,74 @@
       "file": "gradient-hero.html",
       "source": "copied:anti-slop",
       "expected": [
-        { "id": "anti-ai-gradient-hero-text", "dimension": "anti-ai", "severity": "HIGH", "title": "Gradient text on hero heading", "tellRef": "V5", "confidence": "Pattern smell" },
-        { "id": "anti-ai-purple-gradient-hero", "dimension": "anti-ai", "severity": "HIGH", "title": "Banned purple-to-blue gradient on hero", "tellRef": "C5", "confidence": "Pattern smell" }
+        {
+          "id": "anti-ai-gradient-hero-text",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Gradient text on hero heading",
+          "tellRef": "V5",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-purple-gradient-hero",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Banned purple-to-blue gradient on hero",
+          "tellRef": "C5",
+          "confidence": "Pattern smell"
+        }
       ]
     },
     {
       "file": "shadcn-card-kit.html",
       "source": "copied:anti-slop",
       "expected": [
-        { "id": "anti-ai-shadcn-default-card", "dimension": "anti-ai", "severity": "CRITICAL", "title": "Unmodified shadcn Card primitive", "tellRef": "S3", "confidence": "Pattern smell" },
-        { "id": "anti-ai-card-shadow-border-radius-combo", "dimension": "anti-ai", "severity": "HIGH", "title": "rounded + shadow-sm + border on every card", "tellRef": "Strongest-10 #1", "confidence": "Pattern smell" }
+        {
+          "id": "anti-ai-shadcn-default-card",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Unmodified shadcn Card primitive",
+          "tellRef": "S3",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-card-shadow-border-radius-combo",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "rounded + shadow-sm + border on every card",
+          "tellRef": "Strongest-10 #1",
+          "confidence": "Pattern smell"
+        }
       ]
     },
     {
       "file": "frosted-nav-neon.html",
       "source": "copied:anti-slop",
       "expected": [
-        { "id": "anti-ai-icon-in-tinted-circle", "dimension": "anti-ai", "severity": "HIGH", "title": "Icon in a tinted circle background", "tellRef": "V1", "confidence": "Pattern smell" },
-        { "id": "anti-ai-frosted-glass-nav", "dimension": "anti-ai", "severity": "HIGH", "title": "Frosted-glass sticky navigation bar", "tellRef": "L6", "confidence": "Pattern smell" },
-        { "id": "anti-ai-neon-glow-shadow", "dimension": "anti-ai", "severity": "HIGH", "title": "Neon/colored glow box-shadow on CTA", "tellRef": "C18", "confidence": "Pattern smell" }
+        {
+          "id": "anti-ai-icon-in-tinted-circle",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Icon in a tinted circle background",
+          "tellRef": "V1",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-frosted-glass-nav",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Frosted-glass sticky navigation bar",
+          "tellRef": "L6",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-neon-glow-shadow",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Neon/colored glow box-shadow on CTA",
+          "tellRef": "C18",
+          "confidence": "Pattern smell"
+        }
       ]
     },
     {
@@ -56,10 +106,38 @@
       "source": "copied:anti-slop",
       "note": "The T1 label reads 'sans companion on content copy', not 'primary face': this fixture's primary IS a serif (Instrument Serif on body) and Inter is set only on .subtitle. The operative distinction, which cream-serif-sage.html sits on the other side of: Inter on a UI control label is permitted by T1 as a utility fallback; Inter carrying content copy in a design that has already declared a display face is the tell. Severity defers to catalogue section 18, which classes T1 CRITICAL; the HIGH recorded here is informational only and the scorer never matches on it.",
       "expected": [
-        { "id": "anti-ai-cream-serif-combo", "dimension": "anti-ai", "severity": "HIGH", "title": "Cream background + serif display (tasteful-default combo)", "tellRef": "cream-serif-sage", "confidence": "Pattern smell" },
-        { "id": "anti-ai-generic-font", "dimension": "anti-ai", "severity": "CRITICAL", "title": "Inter as the sans companion on content copy", "tellRef": "T1", "confidence": "Pattern smell" },
-        { "id": "anti-ai-hype-copy", "dimension": "anti-ai", "severity": "HIGH", "title": "Vague hype benefit copy", "tellRef": "W2", "confidence": "Quality defect" },
-        { "id": "anti-ai-stock-illustration", "dimension": "anti-ai", "severity": "MEDIUM", "title": "unDraw flat-vector stock illustration", "tellRef": "I7", "confidence": "Pattern smell" }
+        {
+          "id": "anti-ai-cream-serif-combo",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Cream background + serif display (tasteful-default combo)",
+          "tellRef": "cream-serif-sage",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-generic-font",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Inter as the sans companion on content copy",
+          "tellRef": "T1",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-hype-copy",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Vague hype benefit copy",
+          "tellRef": "W2",
+          "confidence": "Quality defect"
+        },
+        {
+          "id": "anti-ai-stock-illustration",
+          "dimension": "anti-ai",
+          "severity": "MEDIUM",
+          "title": "unDraw flat-vector stock illustration",
+          "tellRef": "I7",
+          "confidence": "Pattern smell"
+        }
       ]
     },
     {
@@ -74,7 +152,14 @@
       "source": "authored",
       "note": "Exactly ONE presence-flaggable fingerprint (V5 gradient text on a hero word) on an otherwise committed, clean editorial page. The gradient uses a warm terra->amber ramp, not the AI purple/blue palette, so C3/C5 must NOT fire; only V5 is expected.",
       "expected": [
-        { "id": "anti-ai-gradient-hero-text", "dimension": "anti-ai", "severity": "HIGH", "title": "Gradient text on a hero word", "tellRef": "V5", "confidence": "Pattern smell" }
+        {
+          "id": "anti-ai-gradient-hero-text",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Gradient text on a hero word",
+          "tellRef": "V5",
+          "confidence": "Pattern smell"
+        }
       ]
     },
     {
@@ -82,15 +167,37 @@
       "source": "authored",
       "note": "The tasteful-default combination in full: cream #faf8f5 background + Instrument Serif display + sage #15573a accent (all three of the combo present). Two accepted incidentals, both deliberate: the Inter button font-family (Inter as a UI-label fallback is permitted per T1), and the six-digit hex notation, which stays because the catalogue documents this tell by its literal hexes and converting them to OKLCH would weaken the very signature the fixture exists to plant.",
       "expected": [
-        { "id": "anti-ai-cream-serif-sage-combo", "dimension": "anti-ai", "severity": "HIGH", "title": "Cream + serif + sage tasteful-default combination", "tellRef": "cream-serif-sage", "confidence": "Pattern smell" }
+        {
+          "id": "anti-ai-cream-serif-sage-combo",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Cream + serif + sage tasteful-default combination",
+          "tellRef": "cream-serif-sage",
+          "confidence": "Pattern smell"
+        }
       ]
     },
     {
       "file": "token-drift.html",
       "source": "authored",
-      "note": "A CSS custom-property token system (--brand, --space-300, --radius) is defined in the same file, then the .save/.hint block bypasses it with hardcoded off-token colors and off-scale values (padding 11px/17px, radius 5px, margin 9px). Colors are OKLCH throughout so C15 does not co-fire: the tell is bypassing the token, not the notation.",
+      "note": "A CSS custom-property token system (--brand, --space-300, --radius) is defined in the same file, then the .save/.hint block bypasses it with hardcoded off-token colors and off-scale values (padding 11px/17px, radius 5px, margin 9px). Colors are OKLCH throughout so C15 does not co-fire: the tell is bypassing the token, not the notation. Split into two labels on 2026-09-01: the off-token colour and the off-scale spacing/radius are the two drifts this note describes, both under catalogue section 14.",
       "expected": [
-        { "id": "anti-ai-hardcoded-values-vs-tokens", "dimension": "anti-ai", "severity": "HIGH", "title": "Hardcoded values bypass the file's own token system", "tellRef": "section 14", "confidence": "Hard defect" }
+        {
+          "id": "anti-ai-hardcoded-color-bypasses-token",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Hardcoded color bypasses the file's own brand token",
+          "tellRef": "section 14",
+          "confidence": "Hard defect"
+        },
+        {
+          "id": "anti-ai-off-scale-spacing-and-radius",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Off-scale spacing and radius values bypass the defined tokens",
+          "tellRef": "section 14",
+          "confidence": "Hard defect"
+        }
       ]
     },
     {
@@ -98,8 +205,22 @@
       "source": "authored",
       "note": "A data UI (invoice table) with only the populated happy path: no empty, loading, or error state, and a Refresh button whose onclick is an empty TODO (demo-ware). Section 12 (missing states) and section 15 (demo-ware) both fire.",
       "expected": [
-        { "id": "anti-ai-missing-states", "dimension": "anti-ai", "severity": "HIGH", "title": "Data UI ships happy-path only (no empty/loading/error states)", "tellRef": "section 12", "confidence": "Hard defect" },
-        { "id": "anti-ai-demo-ware-refresh", "dimension": "anti-ai", "severity": "HIGH", "title": "Non-functional Refresh control (empty handler)", "tellRef": "section 15", "confidence": "Hard defect" }
+        {
+          "id": "anti-ai-missing-states",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Data UI ships happy-path only (no empty/loading/error states)",
+          "tellRef": "section 12",
+          "confidence": "Hard defect"
+        },
+        {
+          "id": "anti-ai-demo-ware-refresh",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Non-functional Refresh control (empty handler)",
+          "tellRef": "section 15",
+          "confidence": "Hard defect"
+        }
       ]
     },
     {
@@ -107,15 +228,45 @@
       "source": "authored",
       "note": "Six interactive controls (text input, select, textarea, three chips, submit button) all carrying border-radius: 8px, the shadcn --radius default, with no radius identity stated anywhere. This is what D1 actually describes, and it is what frosted-nav-neon.html never contained. Everything else is committed: OKLCH tokens on a non-AI hue, the platform system sans, fluid padding, real copy, a visible focus ring.",
       "expected": [
-        { "id": "anti-ai-uncommitted-radius", "dimension": "anti-ai", "severity": "MEDIUM", "title": "Uncommitted 8px radius on every interactive control", "tellRef": "D1", "confidence": "Quality defect" }
+        {
+          "id": "anti-ai-uncommitted-radius",
+          "dimension": "anti-ai",
+          "severity": "MEDIUM",
+          "title": "Uncommitted 8px radius on every interactive control",
+          "tellRef": "D1",
+          "confidence": "Quality defect"
+        }
       ]
     },
     {
       "file": "fixed-desktop-shell.html",
       "source": "authored",
-      "note": "A page composed for one canvas: no viewport meta at all, a container at a hard width: 1200px (not max-width), a grid asserting grid-template-columns: repeat(3, 360px), and px type and padding throughout. Below 1200px it overflows horizontally; above it, it never uses the room. The remediation the review must name is width: min(100% - 2rem, 72rem) plus repeat(auto-fit, minmax(18rem, 1fr)) plus the viewport meta, never a second fixed width.",
+      "note": "A page composed for one canvas: no viewport meta at all, a container at a hard width: 1200px (not max-width), a grid asserting grid-template-columns: repeat(3, 360px), and px type and padding throughout. Below 1200px it overflows horizontally; above it, it never uses the room. The remediation the review must name is width: min(100% - 2rem, 72rem) plus repeat(auto-fit, minmax(18rem, 1fr)) plus the viewport meta, never a second fixed width. Split into three labels on 2026-09-01 so ground truth enumerates the three defects this note already describes (the 2026-07-27 blind run reported all three and was scored as two false positives). All three live under catalogue L13, whose definition names the fixed width, the fixed grid tracks, and the absent viewport meta. The viewport-meta label deliberately sits last: the scorer binds explicit-tellRef pairs in label order before it tries the fuzzy title path, so a run that files the missing meta under another code still lands on this label instead of stealing an L13 match from the first two.",
       "expected": [
-        { "id": "responsive-fixed-pixel-shell", "dimension": "responsive", "severity": "HIGH", "title": "Fixed-pixel page shell that cannot resize", "tellRef": "L13", "confidence": "Hard defect" }
+        {
+          "id": "responsive-fixed-pixel-shell",
+          "dimension": "responsive",
+          "severity": "HIGH",
+          "title": "Fixed-pixel page shell that cannot resize",
+          "tellRef": "L13",
+          "confidence": "Hard defect"
+        },
+        {
+          "id": "responsive-fixed-grid-tracks",
+          "dimension": "responsive",
+          "severity": "HIGH",
+          "title": "Grid asserts fixed pixel column tracks",
+          "tellRef": "L13",
+          "confidence": "Hard defect"
+        },
+        {
+          "id": "responsive-missing-viewport-meta",
+          "dimension": "responsive",
+          "severity": "HIGH",
+          "title": "No viewport meta tag in the document head",
+          "tellRef": "L13",
+          "confidence": "Hard defect"
+        }
       ]
     },
     {
@@ -123,15 +274,37 @@
       "source": "authored",
       "note": "The container-query failure in its purest form. The page shell is genuinely fluid (clamp padding, min() width, a flexible rail), but the .firing component switches to a two-column layout on @media (min-width: 60rem) while living in BOTH a ~16rem rail and a wide main column. At a 1200px window the rail copy gets the wide-column layout it has no room for. The remediation is container-type: inline-size on the host plus @container (min-width: 22rem), never deleting the query.",
       "expected": [
-        { "id": "responsive-viewport-query-for-component", "dimension": "responsive", "severity": "MEDIUM", "title": "Component laid out by a viewport media query instead of a container query", "tellRef": "P1", "confidence": "Quality defect" }
+        {
+          "id": "responsive-viewport-query-for-component",
+          "dimension": "responsive",
+          "severity": "MEDIUM",
+          "title": "Component laid out by a viewport media query instead of a container query",
+          "tellRef": "P1",
+          "confidence": "Quality defect"
+        }
       ]
     },
     {
       "file": "vh-bottom-bar.html",
       "source": "authored",
-      "note": "A mobile task surface at height: 100vh with a position: fixed bottom action bar that has no env(safe-area-inset-bottom) padding and no viewport-fit=cover. On iOS with the toolbar visible the last ~60-100px of the 100vh shell sits under browser chrome and the two primary buttons are partly unreachable; on a notched device the bar also runs into the home indicator. The remediation is 100dvh (or 100svh) plus padding-bottom: max(0.75rem, env(safe-area-inset-bottom)), never a fixed pixel height.",
+      "note": "A mobile task surface at height: 100vh with a position: fixed bottom action bar that has no env(safe-area-inset-bottom) padding and no viewport-fit=cover. On iOS with the toolbar visible the last ~60-100px of the 100vh shell sits under browser chrome and the two primary buttons are partly unreachable; on a notched device the bar also runs into the home indicator. The remediation is 100dvh (or 100svh) plus padding-bottom: max(0.75rem, env(safe-area-inset-bottom)), never a fixed pixel height. Split into two labels on 2026-09-01: the 100vh shell and the bar with no safe-area padding are two defects with two remediations, both under catalogue P3, whose remediation row covers the bar pinned to the shell's bottom edge.",
       "expected": [
-        { "id": "responsive-vh-and-safe-area", "dimension": "responsive", "severity": "MEDIUM", "title": "100vh surface with a bottom bar that ignores dvh and the safe-area inset", "tellRef": "P3", "confidence": "Hard defect" }
+        {
+          "id": "responsive-vh-full-height-shell",
+          "dimension": "responsive",
+          "severity": "MEDIUM",
+          "title": "100vh full-height shell on a mobile surface",
+          "tellRef": "P3",
+          "confidence": "Hard defect"
+        },
+        {
+          "id": "responsive-bottom-bar-no-safe-area-inset",
+          "dimension": "responsive",
+          "severity": "MEDIUM",
+          "title": "Fixed bottom action bar ignores the safe-area inset",
+          "tellRef": "P3",
+          "confidence": "Hard defect"
+        }
       ]
     },
     {
@@ -147,6 +320,88 @@
       "note": "Second clean control with a distinctive committed POV (tactical operator: warm-coal OKLCH surface, single amber signal accent, rounded-none, fluid clamp() type and padding, concrete real copy). Not shadcn, not cream-serif. It also proves the sanctioned T13 boundary: readable UI text and the numeric readouts use the platform system sans with font-variant-numeric: tabular-nums for digit alignment, while the mono face appears only inside the <pre> log pane, which is genuine machine output. Mono-on-readout would be T13; tabular-nums-on-sans is clean. Must produce ZERO findings.",
       "expected": [],
       "maxIncidentalFindings": 1
+    },
+    {
+      "file": "shadcn-oklch-default.html",
+      "source": "authored",
+      "note": "The current-generation shadcn fingerprint. The :root block is the Tailwind v4 `shadcn init` neutral scaffold value for value (OKLCH neutrals, --radius: 0.625rem, --input and --ring at their defaults), and the one Card carries the default rounded + border + shadow-sm + p-6 composition. Two spans, two labels: the untouched token block (S1, the first of the S1/S2/S3 'default shadcn unmodified' codes; a finding citing S1/S2/S3 or section 4 still lands here through the embedded-tellRef or fuzzy-title path) and the unmodified Card (S3). OKLCH notation is not evidence of a tuned theme, which is the regression this fixture exists to catch: an auditor keyed on the pre-v4 HSL trio reports this page as 'OKLCH custom' and passes it. The pure-white --background is part of the token-block span, not a separate C2 finding, and the system font stack, fluid sizing, viewport meta and focus ring are clean so nothing else co-fires.",
+      "expected": [
+        {
+          "id": "anti-ai-shadcn-oklch-default-tokens",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Untouched shadcn OKLCH init token block",
+          "tellRef": "S1",
+          "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-shadcn-default-card",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Unmodified shadcn Card primitive",
+          "tellRef": "S3",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "slow-page-transition.html",
+      "source": "authored",
+      "note": "One planted construct: the cross-document view transition (@view-transition { navigation: auto }) sets the root animation to 650ms, over the catalogue's single 400ms M3 threshold. The transition is gated behind prefers-reduced-motion: no-preference, which is the correct pattern, so M6 must not fire; everything else (system stack, OKLCH, viewport meta, fluid sizing, focus ring, real copy) is clean. Dimension is anti-ai because M3 is a catalogue motion tell walked by the ui-anti-slop-auditor's step 10; the ui-motion-reviewer would file the same defect under its own dimension, and tellRef-first matching scores either producer. Severity LOW is section 18's class for M3.",
+      "expected": [
+        {
+          "id": "anti-ai-slow-page-transition",
+          "dimension": "anti-ai",
+          "severity": "LOW",
+          "title": "Cross-document page transition runs 650ms",
+          "tellRef": "M3",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "emoji-chrome.html",
+      "source": "authored",
+      "note": "Emoji as interface chrome in the three shapes V12 names: coloured-circle emoji as status dots in a table, check-mark and warning emoji as list bullets, and a rocket as a button icon, all outside prose. The emoji are written as HTML character references (&#x1F7E2; and so on) rather than literal code points so the repo's no-emoji scrub gate stays at zero; the rendered DOM is identical, and V12's detection cue names both notations. Each emoji span is aria-hidden with the state carried by adjacent text, so C14/U9 (colour as the only signal) and U13 do not co-fire, and one V12 finding covers all three shapes (one finding per defect).",
+      "expected": [
+        {
+          "id": "anti-ai-emoji-as-interface-chrome",
+          "dimension": "anti-ai",
+          "severity": "MEDIUM",
+          "title": "Emoji used as status dots, list bullets and a button icon",
+          "tellRef": "V12",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "icon-only-button.html",
+      "source": "authored",
+      "note": "One <button> whose only content is an inline <svg> with no aria-label, no visually hidden text and no <title>, so its accessible name is empty. The hit target is 2.75rem square and a :focus-visible ring is present, so target-size and focus tells do not co-fire; everything else is clean. Dimension is anti-ai because U13 is a catalogue micro tell walked by the ui-anti-slop-auditor's step 11; the ui-accessibility-reviewer would file the same defect under accessibility (WCAG 4.1.2), and tellRef-first matching scores either producer. Severity CRITICAL is section 18's class for U13.",
+      "expected": [
+        {
+          "id": "anti-ai-icon-only-button-no-accessible-name",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Icon-only button has no accessible name",
+          "tellRef": "U13",
+          "confidence": "Hard defect"
+        }
+      ]
+    },
+    {
+      "file": "reduced-motion-opt-in.html",
+      "source": "authored",
+      "note": "Clean motion control. The only decorative motion (a 280ms settle on the heading and a colour transition on the link) sits inside @media (prefers-reduced-motion: no-preference), and there is no (prefers-reduced-motion: reduce) block at all. That is the pattern references/design/04-motion.md section 7 prescribes (motion as the opt-in), so a finding of M6 against this page means the reviewer has read 'no reduce block' as 'no reduced-motion handling', which is the regression this control exists to catch. Everything else is clean: system stack, OKLCH, viewport meta, fluid sizing, a committed radius, a visible focus ring, real copy. Must produce ZERO findings; tolerance is 0, not the older controls' 1, because the one plausible incidental IS the regression.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "allowed-choice.html",
+      "source": "authored",
+      "note": "The escape-hatch control, the twin of presence-single.html: the same page with the same V5 gradient-text span, but the CSS rule that creates it is marked anti-slop-allow: <reason>. The catalogue's 'How to apply' block and file 02's 'Honor the escape hatch' rule make that line a stated decision, so the auditor lists it once under Scope and writes no finding. The gradient is warm terra to amber, so C3/C5 cannot fire either way. Must produce ZERO findings at tolerance 0: the single plausible incidental is the V5 finding the hatch exists to suppress.",
+      "expected": [],
+      "maxIncidentalFindings": 0
     }
   ]
 }

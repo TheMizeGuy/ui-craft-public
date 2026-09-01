@@ -180,7 +180,7 @@ When **not** to use nuqs: high-frequency state (slider drag, mouse position). UR
 RHF (uncontrolled by default) + Zod via `@hookform/resolvers/zod`. Wins on per-field render isolation, single source of truth, async validators, native `FormData`.
 
 ```tsx
-import { useForm, SubmitHandler, useFieldArray, Controller } from "react-hook-form";
+import { useForm, type SubmitHandler, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -197,14 +197,14 @@ type FormValues = z.input<typeof Schema>;    // what the form holds
 type Submitted  = z.output<typeof Schema>;   // what the API receives (defaults applied)
 
 function SignUp() {
-  const { register, handleSubmit, control, formState: { errors, isSubmitting, isDirty } } = useForm<FormValues>({
+  const { register, handleSubmit, control, formState: { errors, isSubmitting, isDirty } } = useForm<FormValues, unknown, Submitted>({
     resolver: zodResolver(Schema),
     defaultValues: { email: "", age: 18, contacts: [{ name: "", phone: "" }], role: "user" },
     mode: "onBlur",
     reValidateMode: "onChange",
   });
   const contacts = useFieldArray({ control, name: "contacts" });
-  const onSubmit: SubmitHandler<FormValues> = async (raw) => api.signUp(Schema.parse(raw));
+  const onSubmit: SubmitHandler<Submitted> = (data) => api.signUp(data); // handleSubmit delivers the resolver's parsed output
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -286,12 +286,15 @@ import { useShallow } from "zustand/react/shallow";
 interface UISlice    { sidebarCollapsed: boolean; toggleSidebar(): void; }
 interface ThemeSlice { theme: "light" | "dark" | "system"; setTheme(t: ThemeSlice["theme"]): void; }
 type AppStore = UISlice & ThemeSlice;
+interface Persisted { theme: ThemeSlice["theme"]; sidebarCollapsed: boolean }
 
-const createUISlice: StateCreator<AppStore, [], [], UISlice> = (set) => ({
+// The mutator list mirrors the middleware stack below, so `set` gains the devtools action-name argument
+type Mw = [["zustand/devtools", never], ["zustand/persist", unknown]];
+const createUISlice: StateCreator<AppStore, Mw, [], UISlice> = (set) => ({
   sidebarCollapsed: false,
-  toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed }), false, "ui/toggleSidebar"),
 });
-const createThemeSlice: StateCreator<AppStore, [], [], ThemeSlice> = (set) => ({
+const createThemeSlice: StateCreator<AppStore, Mw, [], ThemeSlice> = (set) => ({
   theme: "system",
   setTheme: (theme) => set({ theme }),
 });
@@ -303,11 +306,12 @@ export const useAppStore = create<AppStore>()(
       name: "app-store",
       version: 2,
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ theme: s.theme }),  // don't persist transient UI
-      migrate: (persisted, version): AppStore => {
-        let s = persisted as Record<string, unknown>;
-        if (version < 2 && "darkMode" in s) s = { ...s, theme: s.darkMode ? "dark" : "light" };
-        return s as AppStore;
+      partialize: (s): Persisted => ({ theme: s.theme, sidebarCollapsed: s.sidebarCollapsed }),  // don't persist transient UI
+      migrate: (persisted, fromVersion): Persisted => {
+        // Narrow to a declared partial shape; a cast to the store type fails TS2352 and only compiles through the banned double cast
+        const s = persisted as Partial<Persisted> & { darkMode?: boolean };
+        const theme = fromVersion < 2 && s.darkMode !== undefined ? (s.darkMode ? "dark" : "light") : (s.theme ?? "system");
+        return { theme, sidebarCollapsed: s.sidebarCollapsed ?? false };
       },
     },
   ), { name: "AppStore" }),
@@ -435,11 +439,11 @@ When `localStorage`/Zustand `persist` schema changes, existing users carry old s
 persist(initializer, {
   name: "app-store",
   version: 3,
-  migrate: (persisted, fromVersion) => {
-    let s = persisted as Record<string, unknown>;
-    if (fromVersion < 2) s = { ...s, theme: (s.darkMode ? "dark" : "light"), darkMode: undefined };
-    if (fromVersion < 3) s = { ...s, sidebarCollapsed: false }; // new field default
-    return s as AppStore;
+  migrate: (persisted, fromVersion): Persisted => {
+    const s = persisted as Partial<Persisted> & { darkMode?: boolean };
+    const theme = fromVersion < 2 && s.darkMode !== undefined ? (s.darkMode ? "dark" : "light") : (s.theme ?? "system");
+    const sidebarCollapsed = fromVersion < 3 ? false : (s.sidebarCollapsed ?? false); // new field default
+    return { theme, sidebarCollapsed };
   },
 });
 ```
@@ -470,7 +474,7 @@ Same pattern applies to URL state (`parseAsJson<T>(schema)` — version inside t
 | Storing form values in Zustand | Lose validation/dirty/touched; use RHF |
 | Filter/tab/sort in `useState` | URL doesn't reflect; use `nuqs` |
 | `useEffect` to derive state | Compute in render; `useMemo` if expensive |
-| `useMemo` everywhere "for performance" | Overhead exceeds benefit on cheap values; React Compiler (React 19) handles most cases |
+| `useMemo` everywhere "for performance" | Overhead exceeds benefit on cheap values; the React Compiler (the separate `babel-plugin-react-compiler` 1.x; React 17+ with the runtime shim, built-in runtime in 19) handles most cases when it is installed; without it, memoization stays manual |
 | Provider value rebuilt every render | `useMemo` it, or split state and dispatch contexts |
 | Forgetting `signal` in `queryFn` | Stale responses overwrite new ones on rapid key changes |
 | Forgetting `enabled` on dependent queries | First render fires the query with `undefined` and crashes the fetcher |
@@ -478,4 +482,4 @@ Same pattern applies to URL state (`parseAsJson<T>(schema)` — version inside t
 
 ## References
 
-- TanStack Query v5 (`tanstack.com/query/v5`), Zustand v5 (`github.com/pmndrs/zustand` — curried `create<S>()(...)` required with middleware), nuqs (`nuqs.47ng.com`), React Hook Form 7.x (`react-hook-form.com/ts`), Zod 4.x (`zod.dev`), React 19 (`react.dev/blog/2024/12/05/react-19`)
+- TanStack Query v5 (`tanstack.com/query/v5`), Zustand v5 (`github.com/pmndrs/zustand` — curried `create<S>()(...)` required with middleware), nuqs (`nuqs.dev`), React Hook Form 7.x (`react-hook-form.com/ts`), Zod 4.x (`zod.dev`), React 19 (`react.dev/blog/2024/12/05/react-19`)

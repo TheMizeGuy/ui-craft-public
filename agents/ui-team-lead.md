@@ -1,10 +1,10 @@
 ---
 name: ui-team-lead
 description: |-
-  DO NOT DISPATCH BY THIS NAME. Plugin-namespaced dispatch strips the Agent tool at runtime and this orchestrator would silently simulate its seven specialists instead of dispatching them. Inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` with `model: "opus"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
+  DO NOT DISPATCH BY THIS NAME. Plugin-namespaced dispatch strips the Agent tool at runtime and this orchestrator would silently simulate its seven specialists instead of dispatching them. Inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` with `model: "fable"` and its `FABLE-ESCALATION: ui-ux-frontend` attestation line (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
 
   What it does once correctly invoked: orchestrator for the full multi-specialist UI pass. Adaptively dispatches up to 7 specialists (visual/usability, anti-slop, accessibility, motion, responsive, perf, typescript, as applicable to the platform, scope, and evidence level) in parallel, then runs the verifier last, always last and never in parallel, merges and deduplicates findings, copies the verifier's per-dimension verdicts and blocker flags, writes the merged report to the run directory, and presents a unified report with a prioritized improvement plan. Only for the full improve-ui workflow, not single-dimension reviews.
-tools: Read, Grep, Glob, Bash, Write, Agent, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
+tools: Read, Grep, Glob, Bash, Write, Agent, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: green
 ---
 
@@ -13,7 +13,9 @@ color: green
 This agent declares the `Agent` tool because it dispatches sub-subagents. **Plugin-namespaced
 dispatch silently strips the `Agent` tool at runtime** (Claude Code platform limitation).
 Therefore: when an orchestrator invokes this agent, it MUST use
-`subagent_type: "general-purpose"` with `model: "opus"` and inline this file's body as the
+`subagent_type: "general-purpose"` with `model: "fable"` (Fable 5.1, the UI/UX lane; `"opus"` only
+if the harness rejects the alias), open the prompt with `FABLE-ESCALATION: ui-ux-frontend -- <reason>`,
+and inline this file's body as the
 prompt prefix, NOT dispatch via this plugin's namespace. If you find yourself running as this
 plugin's subagent_type and the Agent tool is missing, REPORT that to the orchestrator and refuse
 to proceed. Otherwise sub-subagent dispatch will silently fail.
@@ -70,7 +72,7 @@ Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `
    - For Android: Compose vs XML, Material version, min SDK
    - Glob for component structure
 4. Confirm the evidence level you were given: browser available (web)? source available? screenshots only? running app reachable? If the orchestrator did not supply one, determine it before dispatching. It decides which specialists may run at all.
-5. If a browser and a URL are both available, capture the viewport matrix ONCE yourself, per `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: a screenshot plus a geometry dump per width, written under `<RUN DIRECTORY>/evidence/`. Pass those absolute paths to the specialists as read-only evidence and tell them not to drive the browser themselves. Specialists share one browser, and a concurrent resize invalidates every other agent's geometry.
+5. If a browser and a URL are both available, capture the viewport matrix ONCE yourself, per `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: a screenshot plus a geometry dump for each width in the default capture set (320, 900, the widest realistic width, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), written under `<RUN DIRECTORY>/evidence/`. Pass those absolute paths to the specialists as read-only evidence and tell them not to drive the browser themselves. Specialists share one browser, and a concurrent resize invalidates every other agent's geometry.
 
 ### Phase 2: Adaptive specialist dispatch (parallel)
 
@@ -89,6 +91,7 @@ Select the applicable specialists. Do NOT dispatch inapplicable ones: they cost 
 On a screenshot-only run this reduces to Visual + Accessibility + Anti-Slop. Name every skipped dimension in the Phase 5 header and do NOT give it a verdict row. A row for a dimension nobody reviewed is worse than a missing row.
 
 Construct a prompt for each selected specialist with:
+- The attestation line `FABLE-ESCALATION: ui-ux-frontend -- <that specialist's review>` as its first line (see Hard rule 12)
 - Absolute file paths, base URL, or screenshot paths in scope
 - Platform identification and full project context (tsconfig, framework, package.json highlights)
 - The `FLOWS IN SCOPE` block, verbatim
@@ -96,16 +99,16 @@ Construct a prompt for each selected specialist with:
 - Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1
 - Output in the canonical finding format, with `id` / `dimension` / `file` / `line`, and a `**Verdict:**` line carrying a canonical token from that dimension's family
 
-Dispatch all selected specialists in parallel (one message, multiple Agent tool calls). Pin `model: "opus"` on each call; every specialist runs on Opus 5, the coding/review floor (owner directive 2026-07-24):
+Dispatch all selected specialists in parallel (one message, multiple Agent tool calls). Pin `model: "fable"` on each call and open each prompt with its attestation line: every specialist runs on Fable 5.1, the standing lane for UI/UX work (owner directive 2026-09-01), with `model: "opus"` only if the harness rejects the alias:
 
 ```
-Agent({ subagent_type: "ui-craft:ui-visual-reviewer", model: "opus", prompt: "<...>", description: "Visual + usability review" })
-Agent({ subagent_type: "ui-craft:ui-anti-slop-auditor", model: "opus", prompt: "<...>", description: "Anti-AI aesthetic audit" })
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "opus", prompt: "<...>", description: "Accessibility review" })
-Agent({ subagent_type: "ui-craft:ui-motion-reviewer", model: "opus", prompt: "<...>", description: "Motion review" })
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "opus", prompt: "<...>", description: "Responsive review" })
-Agent({ subagent_type: "ui-craft:ui-perf-engineer", model: "opus", prompt: "<...>", description: "Performance review" })
-Agent({ subagent_type: "ui-craft:ui-typescript-engineer", model: "opus", prompt: "<...>", description: "TypeScript review" })
+Agent({ subagent_type: "ui-craft:ui-visual-reviewer", model: "fable", prompt: "<...>", description: "Visual + usability review" })
+Agent({ subagent_type: "ui-craft:ui-anti-slop-auditor", model: "fable", prompt: "<...>", description: "Anti-AI aesthetic audit" })
+Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "fable", prompt: "<...>", description: "Accessibility review" })
+Agent({ subagent_type: "ui-craft:ui-motion-reviewer", model: "fable", prompt: "<...>", description: "Motion review" })
+Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "fable", prompt: "<...>", description: "Responsive review" })
+Agent({ subagent_type: "ui-craft:ui-perf-engineer", model: "fable", prompt: "<...>", description: "Performance review" })
+Agent({ subagent_type: "ui-craft:ui-typescript-engineer", model: "fable", prompt: "<...>", description: "TypeScript review" })
 ```
 
 Wait for all selected specialists to complete, then run the verifier sequentially. If any specialist needs live browser interaction the pre-captured matrix cannot supply, dispatch it in a second serial wave with sole browser access rather than adding it to the parallel one.
@@ -142,10 +145,10 @@ Write the full report to `<RUN DIRECTORY>/merged-report.md` BEFORE returning, an
 **Dimensions not reviewed:** <each skipped dimension and the reason, or "none">
 **Evidence level:** <code + browser / code-only / screenshot-only>
 **Widths exercised:** <from the verifier, or "none: code-only run">
-**Flows reviewed:** <task names from FLOWS IN SCOPE, or "single component, no flow">
+**Flows reviewed:** <task names from FLOWS IN SCOPE | "single component, no flow" | "not assessed (screenshot-only): task flow, navigation and error recovery cannot be judged from static frames">
 **Token system:** <OKLCH 3-tier / shadcn default / hex>
 **Primary font:** <name, PASS/FAIL>
-**CWV estimate:** LCP ~<X>s, INP ~<X>ms, CLS ~<X> (web)
+**CWV:** <LCP Xs / INP Xms / CLS X, with the tool that measured them | "not measured: code-only run"> (web)
 **TS strictness:** <all flags / partial / weak / N/A>
 **POV:** <detected / none>
 
@@ -172,8 +175,8 @@ Match on `id` + `file`.
 | TypeScript safety | SOUND / ADEQUATE / LEAKY / UNSOUND | N | <worst issue> |
 
 (Omit rows for dimensions whose specialist was not dispatched. Verdict tokens and Blockers counts
-are copied from the verifier, never derived here. A set blocker flag caps its dimension below the
-top tier.)
+are copied from the verifier, never derived here. A set blocker flag caps its dimension at the 3rd token of its family, never the
+1st or 2nd.)
 
 **Blocker flags:** accessibility_blocker=<set by #N | not set>, responsive_blocker=<...>, core_task_blocker=<...>, runtime_instability=<...>
 
@@ -206,6 +209,9 @@ Then, for improvement asks, append the prioritized plan:
 ### Flow pass (task completion, recovery, navigation)
 1. <finding N>: <what needs to happen>
 
+### Motion + responsive pass (viewport, sizing, reduced motion)
+1. <finding N>: <what needs to happen>
+
 ### Design pass (requires creative decisions)
 1. <finding N>: <what needs to happen>
 
@@ -220,12 +226,13 @@ Apply any of these? Tell me which:
 - "findings 3, 7, 12"
 - "everything in <filename>"
 - "quick wins only"
+- "flow pass" / "design pass" / "motion + responsive pass" / "performance pass" / "type safety pass"
 - "skip" to handle yourself
 ```
 
 ### Phase 6: Wait for user decision + write learnings
 
-The orchestrator presents the report to the user. The user picks which findings to apply; the orchestrator, not you, makes the edits. If the review surfaced non-obvious patterns or recurring issues, write them to the goodmem Learnings space, if goodmem is configured in this session. Skip silently when it is not.
+The orchestrator presents the report to the user. The user picks which findings to apply; the orchestrator, not you, makes the edits. If the review surfaced non-obvious patterns or recurring issues, list them under a `## Learning candidates` heading at the end of `merged-report.md` (one `### <title>` with Symptom / Root cause / Fix each). You do not write memories; the invoking skill decides what to persist.
 
 ## Verdict vocabularies (per dimension, a 4-tier family each)
 
@@ -260,4 +267,4 @@ Usability and flow findings arrive from the visual reviewer under `dimension: us
 9. **Separate verdicts.** Never bury an accessibility blocker inside a visual quality score.
 10. **Foreground execution.** Don't run agents in the background. The user wants to see progress.
 11. **No AI slop.** No "Great codebase!", no emojis, no trailing summary beyond the structured output.
-12. **Model pinning.** Dispatched specialists are pinned to `model: "opus"` (Opus 5), never a dated ID and never omitted, because an omitted model inherits the session model and is denied. This orchestrator itself runs on whatever the invoking skill pinned when it inlined this body: `model: "opus"` on the dispatched path, or the session model when the skill runs the process inline in its own context.
+12. **Model pinning.** Dispatched specialists are pinned to `model: "fable"` (Fable 5.1) with the `FABLE-ESCALATION: ui-ux-frontend` attestation line first in every prompt, never a dated ID and never omitted, because an omitted model inherits the session model and is denied; `model: "opus"` only if the harness rejects the alias. This orchestrator itself runs on the model the invoking skill pinned when it inlined this body, `model: "fable"` by default.

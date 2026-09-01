@@ -61,7 +61,7 @@ W3C DTCG (Design Tokens Community Group) format released 2025.10, the first stab
 
 ## 3. Three-tier token example
 
-Full code, all three layers, isolated rebrand. Tailwind v4 `@theme` syntax.
+Full code: three raw layers plus the `@theme inline` mapping that turns them into utilities, isolated rebrand. Tailwind v4 syntax.
 
 ```css
 /* tokens/primitives.css — raw values, never used by components */
@@ -84,28 +84,39 @@ Full code, all three layers, isolated rebrand. Tailwind v4 `@theme` syntax.
 /* tokens/semantic.css — intent layer; rebrand re-points these */
 @layer base {
   :root {
-    --color-accent-default:  var(--color-blue-500);
-    --color-accent-hover:    var(--color-blue-600);
-    --color-accent-active:   var(--color-blue-700);
-    --color-danger-default:  var(--color-red-500);
-    --color-surface:         var(--color-gray-50);
-    --color-fg:              var(--color-gray-900);
-    --color-on-accent:       var(--color-gray-50);
+    --accent:        var(--color-blue-500);
+    --accent-hover:  var(--color-blue-600);
+    --accent-active: var(--color-blue-700);
+    --danger:        var(--color-red-500);
+    --surface:       var(--color-gray-50);
+    --fg:            var(--color-gray-900);
+    --on-accent:     var(--color-gray-50);
   }
   [data-theme="dark"] {
-    --color-surface: var(--color-gray-900);
-    --color-fg:      var(--color-gray-50);
+    --surface: var(--color-gray-900);
+    --fg:      var(--color-gray-50);
   }
 }
 
 /* tokens/component.css — component-scoped bindings */
 @layer base {
   :root {
-    --button-primary-bg:        var(--color-accent-default);
-    --button-primary-bg-hover:  var(--color-accent-hover);
-    --button-primary-fg:        var(--color-on-accent);
+    --button-primary-bg:        var(--accent);
+    --button-primary-bg-hover:  var(--accent-hover);
+    --button-primary-fg:        var(--on-accent);
     --button-radius:            var(--radius-md);
   }
+}
+```
+
+```css
+/* tokens/theme.css: the ONLY block that generates utilities. Top level; inline because every value is a var(). */
+@theme inline {
+  --color-accent:       var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent:    var(--on-accent);
+  --color-surface:      var(--surface);
+  --color-fg:           var(--fg);
 }
 ```
 
@@ -151,7 +162,7 @@ v4 defaults, which are the baseline you inherit unless you replace them:
 }
 ```
 
-To replace a scale rather than extend it, clear the namespace first. Otherwise your custom names sit alongside the eleven defaults and reviewers cannot tell which are real:
+To replace a scale rather than extend it, clear the namespace first. Otherwise your custom names sit alongside the five defaults and reviewers cannot tell which are real:
 
 ```css
 @theme {
@@ -270,7 +281,7 @@ Multiplier namespaces vs enumerated namespaces. The distinction matters, and get
 - `--spacing` is a **multiplier**. One declaration generates every `p-N`, `m-N`, `gap-N`, `w-N`, `h-N` for any positive number: `p-3` compiles to `padding: calc(var(--spacing) * 3)`, and so do `p-17` and `pr-29`. You never enumerate spacing steps. Declaring `--spacing-1`, `--spacing-2`, `--spacing-4` and nothing else gives a design system with exactly three usable steps; every `p-3`, `gap-6`, `mt-10` an engineer writes afterwards resolves to nothing, with no build error and no lint failure. Enumerated `--spacing-<name>` keys are only for named non-multiple values (`--spacing-gutter: 1.375rem`).
 - `--color-*`, `--radius-*`, `--font-*`, `--text-*`, `--shadow-*`, `--ease-*`, `--breakpoint-*`, `--container-*` are **enumerated**. Only the keys you declare exist, so `rounded-md` requires a `--radius-md`.
 
-Best practice: define **semantic** tokens in `@theme` (so `bg-accent` reads as intent, not `bg-blue-500`); reference primitives only inside `@theme` itself. Components touch the semantic utility class. This means a designer renaming the brand color in Figma maps to one CSS edit.
+Best practice: define **semantic** tokens in `@theme` (so `bg-accent` reads as intent, not `bg-blue-500`); reference primitives only from `@theme inline`. Components touch the semantic utility class. This means a designer renaming the brand color in Figma maps to one CSS edit.
 
 | Pattern | Do | Don't |
 |---|---|---|
@@ -278,7 +289,7 @@ Best practice: define **semantic** tokens in `@theme` (so `bg-accent` reads as i
 | `@theme` value | `--color-accent: oklch(0.62 0.18 245)` | `--color-accent: var(--color-blue-500)` in a plain `@theme`. A token that references another variable needs `@theme inline`, or it resolves at the point of definition rather than the point of use |
 | Theme override | `[data-theme="dark"] { --color-accent: ... }` outside `@theme` | Branch inside `@theme`. Theme variables must be declared top level; Tailwind does not compile selectors or media queries nested inside `@theme`, so a nested block is silently ignored |
 
-If you keep a separate primitive layer (recommended for multi-brand), define primitives in regular `:root {}` and reference them in `@theme`.
+If you keep a separate primitive layer (recommended for multi-brand), define primitives in regular `:root {}` and map them in a top-level `@theme inline`.
 
 ## 6. CVA for variant management
 
@@ -367,18 +378,19 @@ export function cn(...inputs: ClassValue[]): string {
 CSS `@layer` gives you a deterministic priority order; later layers beat earlier layers regardless of selector specificity. Tailwind v4 already organizes itself into `theme`, `base`, `components`, `utilities`. Add custom layers safely:
 
 ```css
-@import "tailwindcss";          /* registers theme, base, components, utilities */
-
-@layer reset, app-base, components, utilities, overrides;
+/* Order statement FIRST: layer priority is fixed by first declaration, and @import "tailwindcss"
+   already declares theme, base, components, utilities (a later statement only appends new names). */
+@layer reset, theme, base, app-base, components, utilities, overrides;
+@import "tailwindcss";
 /* anything in `overrides` beats utilities, beats components, etc. */
 
 @layer app-base {
-  body { background: var(--color-surface); color: var(--color-fg); }
+  body { background: var(--surface); color: var(--fg); }
 }
 
 @layer overrides {
-  /* Surgical opt-out for one widget that must beat utilities */
-  .legacy-widget * { all: revert-layer; }
+  /* A one-off that must beat a utility is a real declaration; `all: revert-layer` only restores the lower layers */
+  .legacy-widget .price { font-variant-numeric: tabular-nums; }
 }
 ```
 
@@ -405,6 +417,8 @@ Three options, picked by whether the user can override the system preference.
 
 Recommended default for a two-mode theme: **`light-dark()` driven by `color-scheme`**, with `data-theme` used only as the storage hook the pre-script reads. One declaration per token, no paired override block, and nothing to keep in sync. Reach for a fully duplicated `[data-theme]` token set only when you have three or more modes (light / dark / high-contrast) or a `brand x theme` matrix (see § 11), where `light-dark()`'s two slots genuinely run out.
 
+Exception: projects toggling through a class (shadcn, next-themes with `enableColorScheme` off, `@custom-variant dark (&:is(.dark *))`) keep the duplicated `:root` / `.dark` block; see `references/design/06-shadcn-customization.md` § 2. `light-dark()` cannot follow a class.
+
 ```html
 <!-- inline pre-hydration script, blocking, in <head> -->
 <script>
@@ -418,6 +432,9 @@ Recommended default for a two-mode theme: **`light-dark()` driven by `color-sche
 ```
 
 ```css
+/* dark: utilities follow the same toggle as light-dark(); without this variant they follow the OS */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* One declaration per token. The pre-script's colorScheme assignment flips all of them. */
 :root {
   color-scheme: light dark;
@@ -437,7 +454,7 @@ function ThemeToggle() {
   return (
     <button onClick={() => {
       const next = theme === "dark" ? "light" : "dark";
-      document.documentElement.dataset.theme = next;
+      document.documentElement.dataset["theme"] = next; // noPropertyAccessFromIndexSignature
       document.documentElement.style.colorScheme = next;
       setTheme(next);
     }}>

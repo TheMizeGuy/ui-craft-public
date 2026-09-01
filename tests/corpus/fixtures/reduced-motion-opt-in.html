@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiln log</title>
+<style>
+  :root {
+    --ink: oklch(0.22 0.015 40);
+    --paper: oklch(0.985 0.005 80);
+    --rule: oklch(0.88 0.01 70);
+    --ember: oklch(0.6 0.16 30);
+    --radius: 3px;
+  }
+  body { margin: 0; background: var(--paper); color: var(--ink); line-height: 1.5;
+         font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+         padding: clamp(1rem, 0.5rem + 2.5vw, 3rem); }
+  main { width: min(100%, 46rem); margin: 0 auto; }
+  h1 { font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem); letter-spacing: -0.02em; font-weight: 650; margin: 0 0 0.5rem; }
+  .lede { color: oklch(0.45 0.02 40); margin: 0 0 1.5rem; max-width: 56ch; }
+  .segments { list-style: none; margin: 0; padding: 0; }
+  .segments li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-top: 1px solid var(--rule); }
+  .temp { font-variant-numeric: tabular-nums; color: var(--ember); font-weight: 600; }
+  a.notes { color: var(--ember); border-radius: var(--radius); text-decoration: underline; text-underline-offset: 3px; }
+  a.notes:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    h1 { animation: settle 280ms ease-out both; }
+    a.notes { transition: color 150ms ease-out; }
+  }
+  @keyframes settle { from { opacity: 0; transform: translateY(0.25rem); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Firing 214, cone 6 oxidation</h1>
+    <p class="lede">Ramp and hold schedule for the 12 May glaze firing, logged from the kiln controller at the end of each segment.</p>
+    <ul class="segments">
+      <li><span>Candle to 90 &deg;C, hold 2 h</span><span class="temp">90 &deg;C</span></li>
+      <li><span>Ramp 100 &deg;C/h to 600 &deg;C</span><span class="temp">600 &deg;C</span></li>
+      <li><span>Ramp 150 &deg;C/h to 1222 &deg;C, hold 10 min</span><span class="temp">1222 &deg;C</span></li>
+    </ul>
+    <p><a class="notes" href="/firings/214/notes">Read the cooling notes</a></p>
+  </main>
+</body>
+</html>

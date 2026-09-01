@@ -55,7 +55,8 @@ Rule: if a user can click it, a user must be able to keyboard-activate it. Nativ
 ```html
 <!-- OK: custom toggle -->
 <div role="switch" tabindex="0" aria-checked="false"
-     onkeydown="if (e.key === ' ' || e.key === 'Enter') toggle()">
+     onclick="toggle()"
+     onkeydown="if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); toggle(); }">
 </div>
 
 <!-- OK: roving tabindex within a listbox -->
@@ -112,7 +113,7 @@ Never ship `button:focus { outline: none }` without a `:focus-visible` replaceme
 
 | Spec | Minimum | Better |
 |---|---|---|
-| Thickness (2.4.13) | >= 2px perimeter | 2-3px |
+| Thickness (2.4.13, AAA; the AA floor is 2.4.7 visible + 1.4.11 3:1) | >= 2px perimeter (AAA target) | 2-3px |
 | Contrast (1.4.11) vs BOTH element and surrounding bg | >= 3:1 | APCA Lc 45+ |
 | Area | At least the area a 2px solid perimeter would cover | 2px solid or dashed |
 | Offset | 0 allowed | 2-3px `outline-offset` so ring sits outside the element |
@@ -142,9 +143,12 @@ Never ship `button:focus { outline: none }` without a `:focus-visible` replaceme
   outline-offset: 4px;
 }
 
-/* color-mix fallback for dynamic contrast */
+/* Theme-aware ring: one declaration, one value per color scheme (needs
+   color-scheme: light dark on :root). light-dark() switches the color; it
+   does not compute contrast. Check EACH value at 3:1 against its own surface. */
+:root { color-scheme: light dark; }
 .btn:focus-visible {
-  outline: 2px solid color-mix(in oklch, var(--ring) 100%, var(--surface) 0%);
+  outline-color: light-dark(oklch(45% 0.2 250), oklch(85% 0.15 250));
 }
 ```
 
@@ -418,7 +422,7 @@ Implications:
 | No `aria-modal="true"` or no `inert` on siblings | SR reads hidden page behind modal | Set `role="dialog"` + `aria-modal="true"` AND `inert` attribute on siblings |
 | Dropdown that doesn't restore focus to trigger on close | User lands somewhere random | Remember `document.activeElement` on open, `.focus()` it on close |
 | Custom button that only responds to click | Keyboard users can't activate | Use `<button>`, or add `onKeyDown` for Enter and Space AND `role="button"` AND `tabindex="0"` |
-| No skip link | 2.4.1 Bypass Blocks fail | `<a href="#main" class="skip-link">Skip to main</a>` |
+| No skip link AND no landmarks or per-section headings to jump by | 2.4.1 Bypass Blocks fail (a skip link is the strongest fix; landmarks + headings also satisfy it) | `<a href="#main" class="skip-link">Skip to main</a>` plus `<main>`/`<nav>` landmarks |
 | Route change without focus move | SR users don't know page changed | Move focus to `<main>` or first heading on route change |
 | Typing-ahead in listbox broken | Fails APG pattern | Implement type-ahead: key matches first option starting with that char |
 | Arrow keys don't move within widget | Tabs/Listbox/Menu should use arrows, not Tab | Roving tabindex or `aria-activedescendant` |

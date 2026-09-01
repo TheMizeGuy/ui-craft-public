@@ -50,6 +50,8 @@ everything around it followed the dark one. Nobody had reported it; it was simpl
 
 Use `color-mix(in oklab, …)` rather than `oklch(<triple> / a)` for alpha variants. `in oklab`
 interpolates perceptually and, more importantly, the value is a *reference*.
+`oklch(from var(--accent) l c h / 35%)` is the equivalent relative-colour form; both are references,
+and the design-ui gate accepts either.
 
 ## 3. Retinting a surface: solve, do not guess
 

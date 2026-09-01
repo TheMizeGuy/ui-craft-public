@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Route book</title>
+<style>
+  :root {
+    --ink: oklch(0.2 0.012 200);
+    --paper: oklch(0.98 0.004 200);
+    --rule: oklch(0.86 0.01 200);
+    --kelp: oklch(0.5 0.1 170);
+    --radius: 2px;
+  }
+  @view-transition { navigation: auto; }
+  @media (prefers-reduced-motion: no-preference) {
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 650ms; }
+  }
+  body { margin: 0; background: var(--paper); color: var(--ink); line-height: 1.5;
+         font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+         padding: clamp(1rem, 0.5rem + 2.5vw, 3rem); }
+  main { width: min(100%, 44rem); margin: 0 auto; }
+  nav { display: flex; gap: 1.25rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+  nav a { color: var(--ink); text-decoration: none; border-radius: var(--radius); }
+  nav a[aria-current="page"] { color: var(--kelp); font-weight: 600; }
+  nav a:focus-visible { outline: 2px solid var(--kelp); outline-offset: 3px; }
+  h1 { font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem); letter-spacing: -0.02em; margin: 0 0 0.5rem; }
+  p { max-width: 58ch; }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 1rem 0 0; }
+  dd { margin: 0; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Route book">
+      <a href="/routes/hob-sound" aria-current="page">Hob Sound</a>
+      <a href="/routes/skerry-pass">Skerry Pass</a>
+      <a href="/routes/north-ferry">North ferry</a>
+    </nav>
+    <h1>Hob Sound, inbound</h1>
+    <p>Leave the red buoy to starboard and hold 214 degrees until the chapel gable clears the pier head; the bar carries 1.8 m at low water.</p>
+    <dl>
+      <dt>Distance</dt><dd>3.4 nautical miles</dd>
+      <dt>Passage time</dt><dd>38 min at 5.5 kn</dd>
+    </dl>
+  </main>
+</body>
+</html>

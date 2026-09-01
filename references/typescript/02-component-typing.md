@@ -34,12 +34,12 @@ Why not `React.FC`:
 
 | Problem with `React.FC<P>` | Effect |
 |---|---|
-| Pre-React-18 silently added `children?: ReactNode` | Components that should reject children accepted them; lost in React 19 but the muscle memory remains harmful |
+| `@types/react` before 18 silently added `children?: ReactNode` | Components that should reject children accepted them; removed in the React 18 types, but the muscle memory remains harmful |
 | Cannot express call-signature generics: `const Select: React.FC<Props<T>>` is not legal | Forces wrapper-cast hacks for any list/select/combobox |
 | Hardcoded return type `ReactElement \| null` | Cannot return `string`, `number`, `Iterable<ReactNode>` directly even though React permits them |
 | Loses inference on default-prop destructuring | Default values widen instead of narrowing |
 
-React 19 removed the implicit `children` from `React.FC`, but none of the other three problems went away, so the recommendation is unchanged: declare a plain function.
+The React 18 types removed the implicit `children` from `React.FC`, but none of the other three problems went away, so the recommendation is unchanged: declare a plain function.
 
 ### `interface` vs `type` for props
 
@@ -63,7 +63,7 @@ type WithLoading<P> = P & { loading?: boolean };  // generic util, so it must be
 | `children: (ctx: T) => React.ReactNode` | Render-prop / function-as-children |
 | `children: string` | Text only |
 
-React 19 narrowed `ReactNode` so `{}` no longer matches; if a 5.x→6.x upgrade surfaces "type `{}` is not assignable to ReactNode", tighten the upstream return.
+The React 18 types removed `{}` from `ReactNode`; if a `@types/react` upgrade surfaces "type `{}` is not assignable to ReactNode", tighten the upstream return.
 
 ## Compound components
 
@@ -220,9 +220,9 @@ function mergeProps(slotProps: AnyProps, childProps: AnyProps): AnyProps {
         (slot  as (...a: unknown[]) => unknown)(...args);
       };
     } else if (key === "className" && typeof slot === "string" && typeof child === "string") {
-      out[key] = `${child} ${slot}`;
+      out[key] = `${slot} ${child}`;
     } else if (key === "style" && slot && child) {
-      out[key] = { ...(child as object), ...(slot as object) };
+      out[key] = { ...(slot as object), ...(child as object) };
     }
   }
   return out;
@@ -255,7 +255,7 @@ export function Button({ asChild, variant = "primary", className, ...rest }: But
 </Button>
 ```
 
-`asChild` keeps the `Button`'s style, event-merging, and ARIA but renders an `<a>`, which is what you want when a router `<Link>` must own the element. The merge helper layers child handlers under slot handlers and concatenates `className`/`style`.
+`asChild` keeps the `Button`'s style, event-merging, and ARIA but renders an `<a>`, which is what you want when a router `<Link>` must own the element. The merge helper runs the caller's handler before the slot's and lets the caller's `className`/`style` win (the Radix Slot order).
 
 ## Render prop / function-as-children
 

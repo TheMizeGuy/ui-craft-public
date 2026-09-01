@@ -257,8 +257,8 @@ these are the sight-flags.
 | Route change with no focus move and no scroll restoration | Keyboard and screen-reader users land nowhere; back navigation loses the reading position. No CWV covers either |
 | Filter, sort, or search change that jumps the list to the top | Loses the reading position on every refinement |
 | A background refresh that blanks data already on screen | Destroys a usable view to show a spinner. Distinguish "nothing yet" from "refreshing" |
-| Content arriving above the current reading position without reserved height | Moves what the user is reading. CLS may not even record it if it happens after the 5s window or off the initial viewport |
-| Reveal stagger totalling more than ~300ms | The user watches the interface assemble itself, which feels slower than showing it all at once |
+| Content arriving above the current reading position without reserved height | Moves what the user is reading. CLS may not even record it: a shift inside 500ms of a click, tap, or keypress carries `hadRecentInput` and is excluded, and area outside the current viewport does not count toward the impact fraction (scrolling is not recent input, so a scroll-triggered shift does count). The 5s figure is the maximum length of one session window, not a cutoff; CLS accumulates for the page's whole lifetime |
+| Reveal stagger with no item cap, or an entry sequence over ~800ms (`references/design/04-motion.md` owns the lane numbers) | The user watches the interface assemble itself, which feels slower than showing it all at once |
 
 ## Sources (canonical)
 

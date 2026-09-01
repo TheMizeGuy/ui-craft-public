@@ -2,7 +2,7 @@
 
 ## Review modes
 
-| Mode | When to use | Required evidence | Confidence |
+| Mode | When to use | Required evidence | Evidence strength |
 |---|---|---|---|
 | Screenshot-only | User provides screenshots, no code access | Screenshots + OCR + user-supplied context | Lower -- findings stay soft on geometry claims |
 | Code review | Source code available, no running app | Source files + static analysis | Medium -- can verify structure, not runtime |
@@ -20,7 +20,7 @@ ratios -- requires geometry evidence:
 
 | Surface | Acceptable geometry evidence |
 |---|---|
-| Web | DOM bounding boxes (`getBoundingClientRect`), layout metrics, computed styles via Playwright |
+| Web | DOM bounding boxes (`getBoundingClientRect`, or `page.ariaSnapshotJSON({ boxes: true })` for the whole tree in one call), layout metrics, computed styles via Playwright |
 | Apple | Element frames from `XCUIElementAttributes` / hierarchy snapshots |
 | Android | Compose layout bounds / semantics-tree geometry |
 | Screenshot-only | OCR box geometry; otherwise the claim stays soft |
@@ -29,9 +29,12 @@ A screenshot alone is never geometry evidence -- estimating distances from pixel
 unreliable (documented limited model spatial reasoning). Contrast claims follow the same
 rule: computed color values plus a calculated ratio, never screenshot color sampling.
 
-Without geometry evidence, cap the claim at confidence "Possible issue -- geometry
-measurement needed". The verifier downgrades or removes any spatial claim above that cap.
-Per-claim application: "Evidence rules for findings" below.
+Without geometry evidence the claim keeps its canonical confidence class
+(`references/review/01-universal-rubric.md` Layer 3; there is no "Possible issue" class),
+carries `[unverified: geometry measurement needed]` on its `Evidence:` line, and is capped at
+MEDIUM severity until it is measured. The verifier enforces the cap, or removes the claim when
+nothing supports it. Taking the measurement removes the modifier and restores the natural
+severity. Per-claim application: "Evidence rules for findings" below.
 
 ## Artifact bundle schema
 
@@ -109,7 +112,7 @@ If states cannot be provided, report says review coverage is incomplete.
 | Trace recording | `context.tracing.start()` ... `stop({ path })` |
 | Video recording | `recordVideo: { dir: 'videos/' }` in context |
 | Accessibility scan | `@axe-core/playwright` integration |
-| DOM snapshot | `page.content()` or `page.accessibility.snapshot()` |
+| DOM / accessibility snapshot | `page.content()`; `page.ariaSnapshot()` or `locator.ariaSnapshot()` (YAML); `page.ariaSnapshotJSON({ boxes: true })` returns the tree with a bounding box per element |
 | Computed styles | `page.evaluate(() => getComputedStyle(el))` |
 | Console/network | `page.on('console')`, `page.on('request')` |
 
@@ -149,14 +152,17 @@ Per-claim application of the canonical geometry evidence rule above, plus non-ge
 | "Alignment is off" | Layout metrics or OCR box geometry (never screenshot-only assertion) |
 | "Color contrast insufficient" | Computed color values + contrast ratio calculation |
 
-## Confidence calibration
+## Evidence status
 
-| Evidence level | Confidence |
+The confidence class never changes with evidence; the evidence status does. It rides on the
+`Evidence:` line as a modifier, and an unverified modifier caps the finding at MEDIUM.
+
+| Evidence level | Evidence status |
 |---|---|
-| Automation + screenshot + metrics agree | Strong claim |
-| Screenshot suggests issue, no corroborating data | "Likely issue -- needs verification" |
-| Code analysis suggests issue, no runtime evidence | "Code-level concern -- verify at runtime" |
-| Screenshot-only, spatial precision required | "Possible issue -- geometry measurement needed" |
+| Automation + screenshot + metrics agree | No modifier; natural severity |
+| Screenshot suggests issue, no corroborating data | `[unverified: geometry measurement needed]`, capped at MEDIUM |
+| Code analysis suggests issue, no runtime evidence | `[unverified: runtime measurement needed]`, capped at MEDIUM |
+| Screenshot-only, spatial precision required | `[unverified: geometry measurement needed]`, capped at MEDIUM |
 
 ## File-backed image reuse
 

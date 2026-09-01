@@ -72,7 +72,7 @@ Clamping is legitimate in exactly two places: a fixed-geometry chrome element wh
 | Asset catalog colors with variants | Named colors with Any/Dark plus High Contrast variants | Missing a High Contrast variant means Increase Contrast does nothing |
 | No hard-coded color literals in views | Tokens only | A `Color(red:green:blue:)` in a view body cannot be varied per theme |
 | Body text contrast | Against the actual backing surface, not the window background | **4.5:1** |
-| Large text (>= 24pt regular, or >= 19pt semibold/bold) | | **3:1** |
+| Large text (>= 24pt regular, or >= 19pt bold; semibold does not qualify under WCAG 1.4.3) | | **3:1** |
 | Icons, control borders, focus rings, chart marks | Against every adjacent color | **3:1** |
 | Both themes verified | Light AND dark, at both contrast settings | A palette that passes in light often fails in dark, because dark surfaces are elevated with tonal lightening |
 | Increase Contrast honored | `@Environment(\.colorSchemeContrast)` returns `.increased` | Strengthen borders and separators; do not just darken text |
@@ -235,9 +235,9 @@ Automation catches roughly a third of real issues on Apple platforms too. Never 
 | Touch targets below 44pt (60pt visionOS) | HIGH |
 | Color as the only state signal with no `differentiateWithoutColor` branch | HIGH |
 | Visible label not contained in the accessible name (Voice Control breaks) | HIGH |
-| Reduce Transparency not handled on custom glass or blurred surfaces | MEDIUM-HIGH |
-| Custom navigation replacing system patterns | MEDIUM-HIGH |
+| Reduce Transparency not handled on custom glass or blurred surfaces | MEDIUM; HIGH when text over the surface drops below 4.5:1 with the setting on |
+| Custom navigation replacing system patterns | MEDIUM; HIGH when the interactive back gesture or system back behaviour is lost |
 | Missing header traits, so the rotor cannot skim the screen | MEDIUM |
 | Phone layout on iPad with no adaptation | MEDIUM |
 | Large Content Viewer absent on small toolbar or tab items | MEDIUM |
-| Missing haptic feedback on significant actions | LOW-MEDIUM |
+| Missing haptic feedback on significant actions | LOW; MEDIUM when the haptic was the only feedback for the action |

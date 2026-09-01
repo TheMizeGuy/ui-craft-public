@@ -17,9 +17,9 @@ Scope discipline first, because this lens is easy to misuse. Engine-level findin
 **only worth raising when a measurement already points at them**: a LoAF entry blaming a
 specific function, a Performance-panel flame chart with a fat self-time frame, a heap
 snapshot showing retained detached nodes. Absent that evidence, an engine claim is a guess
-dressed as expertise, and the plugin's confidence classes exist to stop exactly that. Use
-`[Possible issue -- measure to confirm]` for anything in this file that is not backed by a
-captured profile.
+dressed as expertise. Keep the canonical confidence class (usually `Pattern smell`), append
+`[unverified: runtime measurement needed]` to the `Evidence:` line, and cap the finding at
+MEDIUM until a captured profile backs it.
 
 The numbers below are V8's (Chrome, Edge, Node, Electron). JavaScriptCore and SpiderMonkey
 use the same families of optimization with different thresholds, so the *shapes* of the
@@ -215,8 +215,9 @@ Ordered by how often each one is the actual cause in real UI code.
    large list?
 6. Are numeric arrays kept dense and numeric, without `new Array(n)` holes?
 7. Is any main-thread work over ~50ms that could be a worker, still on the main thread?
-8. Is any of the above supported by a captured profile? If not, it is a
-   `[Possible issue -- measure to confirm]`, not a defect.
+8. Is any of the above supported by a captured profile? If not, it keeps its canonical
+   class, carries `[unverified: runtime measurement needed]` on its `Evidence:` line, and is
+   capped at MEDIUM; it is not a defect.
 
 ## Sources (canonical)
 

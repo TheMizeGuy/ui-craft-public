@@ -108,7 +108,7 @@ Icons can also *replace* relational words: two location rows joined by a dotted 
 
 ## 4. Ghost buttons and padding ratios
 
-Sidebar and nav links are **ghost buttons**: buttons with no background until hover. Isolate one, center its content, give it a visible border or background, and it is the standard secondary CTA. Primary (filled) + secondary (ghost) side by side is the default two-action pattern.
+Sidebar and nav links are **ghost buttons**: buttons with no background until hover. Isolate one, center its content, give it a visible border or background, and it is the standard secondary CTA. In dialogs, forms and toolbars, primary (filled) + secondary (ghost) side by side is the standard two-action pattern. In a hero it is catalogue V6: one CTA (`references/design/10-hero-and-section-architectures.md` §3).
 
 | Rule | Detail |
 |---|---|

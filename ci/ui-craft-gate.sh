@@ -737,7 +737,7 @@ if [ -z "$FOUND_ARTIFACT" ]; then
   echo "     improve-ui is the pass that dispatches ui-team-lead's full"
   echo "     specialist fleet plus ui-verifier, so it is the only skill that"
   echo "     produces every verdict this gate requires. review-ui runs an"
-  echo "     adaptive 2-3 specialist subset and cannot fill the artifact."
+  echo "     adaptive 3-5 specialist subset and cannot fill the artifact."
   echo ""
   echo "  2. Save the verdict to the expected artifact path, matching"
   echo "     ci/verdict-artifact-schema.json. A minimal GREEN artifact:"

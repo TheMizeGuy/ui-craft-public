@@ -53,7 +53,7 @@ For every recorded defect, prescribe the replacement BEFORE editing, as a token 
 Ship the upgrade as ONE new stylesheet loaded LAST in the cascade (conventionally `gold.css`), containing the full prescription: tokens, typography, components, atmosphere, motion. Existing stylesheets are not deleted -- they are the safety net, and the new file overriding them means one removed import reverts the entire upgrade. Do not delete the old CSS until the owner confirms the override stable.
 
 Framework variants of the same move:
-- **Tailwind:** override the theme in the config (colors, fonts, radii, shadows) -- the design system changes at config level, not per component file.
+- **Tailwind v4:** override the theme tokens in the CSS entry: `@theme { --color-*: ...; --font-*: ...; --radius-*: ...; --shadow-*: ... }` (a v3 project, or a v4 project that still loads `@config`, overrides `theme.extend` in the config instead) -- the design system changes at token level, not per component file.
 - **CSS-in-JS:** a token layer on `:root` + a global-style override file; never edit existing styled-component definitions inline.
 - **MUI/Chakra/Ant:** the theme provider IS the override surface; work within its theming system rather than fighting component internals.
 - **Vanilla:** `gold.css` last in `<head>`; matching `!important` only where the existing sheet already forced it.

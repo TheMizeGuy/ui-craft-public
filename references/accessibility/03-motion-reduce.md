@@ -90,7 +90,7 @@ Framer/Motion exposes its own hook: `import { useReducedMotion } from 'motion/re
 
 ## 3. Default block (global safety net)
 
-Always include this at the base of the stylesheet as a floor. Specific `@media` queries below can override it on a per-component basis.
+Include this as a floor ONLY where nothing below substitutes motion. `!important` here beats every per-component rule regardless of specificity, so a substitute that must survive it needs its own `!important` (`animation: fade-in 50ms linear both !important`), and any loader that must keep spinning must be excluded from the selector: `*:not([data-motion="keep"]), *:not([data-motion="keep"])::before, *:not([data-motion="keep"])::after`. Prefer the token approach in section 7 without this block when substitution is the design.
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -124,10 +124,11 @@ Blocking motion leaves a jarring snap. Substituting keeps continuity with a simp
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Reduced-motion variant: instant crossfade, no translate */
+/* Reduced-motion variant: instant crossfade, no translate.
+   !important so the section 3 floor cannot flatten it to 0.01ms */
 @media (prefers-reduced-motion: reduce) {
   .card {
-    animation: fade-in 50ms linear both;
+    animation: fade-in 50ms linear both !important;
   }
   @keyframes fade-in {
     from { opacity: 0; }
@@ -263,7 +264,7 @@ gsap.to('.card', {
 Tailwind v3.3+ supports the `motion-reduce:` and `motion-safe:` variants out of the box:
 
 ```html
-<div class="transition-all duration-300 motion-reduce:duration-75 motion-reduce:transform-none">
+<div class="transition-[transform,opacity] duration-200 motion-reduce:duration-75 motion-reduce:transform-none">
   ...
 </div>
 ```
@@ -280,22 +281,43 @@ Tailwind v3.3+ supports the `motion-reduce:` and `motion-safe:` variants out of 
 | Muted autoplay is still animation | Reduced-motion users are harmed by visual motion, not just audio |
 
 ```tsx
+import { useRef, useState } from 'react';
+
 function HeroVideo({ src, poster }: Props) {
   const reduced = useReducedMotion();
+  const ref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(true);
 
-  return reduced ? (
-    <img src={poster} alt="" />
-  ) : (
-    <video
-      src={src}
-      poster={poster}
-      autoPlay
-      muted
-      loop
-      playsInline
-      controls={false}
-      aria-label="Hero background video"
-    />
+  if (reduced) return <img src={poster} alt="" />;
+
+  return (
+    <>
+      {/* Decorative background: hidden from assistive tech, no aria-label */}
+      <video
+        ref={ref}
+        src={src}
+        poster={poster}
+        autoPlay
+        muted
+        loop
+        playsInline
+        aria-hidden="true"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+      />
+      {/* The 2.2.2 mechanism: visible, keyboard-reachable, >= 24x24 CSS px (design to 44x44).
+          The label changes with the state, so no aria-pressed (a toggle's label must not change). */}
+      <button
+        type="button"
+        className="hero-video-toggle"
+        onClick={() => {
+          if (playing) ref.current?.pause();
+          else void ref.current?.play();
+        }}
+      >
+        {playing ? 'Pause background video' : 'Play background video'}
+      </button>
+    </>
   );
 }
 ```

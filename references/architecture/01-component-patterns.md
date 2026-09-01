@@ -162,21 +162,23 @@ How props merge with `Slot`:
 |---|---|
 | `className` | Concatenated (`yours ++ caller's`); pair with `tailwind-merge` for dedup |
 | `style` | Shallow merged; caller's keys win |
-| Event handlers (`onClick`, `onPointerDown`, ...) | Both run; caller's runs **first**, yours runs unless caller's called `event.preventDefault()` |
+| Event handlers (`onClick`, `onPointerDown`, ...) | Both run; caller's first, then yours, unconditionally. Check `event.defaultPrevented` in your own handler if the caller must be able to cancel it (Radix primitives do this in `composeEventHandlers`, not in Slot) |
 | `ref` | Composed via `useComposedRefs` — both refs receive the node |
 | Other props | Caller wins (last-write) |
 
 Roll-your-own minimal Slot when you can't take the dep:
 
 ```tsx
-function Slot({ children, ...slotProps }: { children: React.ReactNode } & Record<string, unknown>) {
-  if (!React.isValidElement(children)) return null;
+type AnyProps = Record<string, unknown>;
+function Slot({ children, ...slotProps }: { children: React.ReactNode } & AnyProps) {
+  if (!React.isValidElement<AnyProps>(children)) return null;   // React 19 types: name the props type, or cloneElement only accepts Partial<unknown>
+  const childProps = children.props;
   return React.cloneElement(children, {
     ...slotProps,
-    ...(children.props as object),
+    ...childProps,
     onClick: (e: React.MouseEvent) => {
-      (children.props as { onClick?: (e: React.MouseEvent) => void }).onClick?.(e);
-      if (!e.defaultPrevented) (slotProps.onClick as ((e: React.MouseEvent) => void) | undefined)?.(e);
+      (childProps["onClick"] as ((e: React.MouseEvent) => void) | undefined)?.(e);
+      (slotProps["onClick"] as ((e: React.MouseEvent) => void) | undefined)?.(e);
     },
   });
 }
@@ -301,7 +303,7 @@ function Measure({ children }: MeasureProps) {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const ref = useCallback((el: HTMLDivElement | null) => {
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setRect(entry.contentRect));
+    const ro = new ResizeObserver(([entry]) => { if (entry) setRect(entry.contentRect); }); // noUncheckedIndexedAccess: entry is T | undefined
     ro.observe(el);
     return () => ro.disconnect(); // React 19 ref cleanup
   }, []);

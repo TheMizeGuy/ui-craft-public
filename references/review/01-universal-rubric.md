@@ -66,7 +66,7 @@ The consequence for reviewers:
 | Tag | Use for | Examples |
 |---|---|---|
 | CRITICAL | Blocks use, accessibility, or basic trust | Hidden focus, unusable viewport, missing labels on core controls, impossible-to-read text, key path broken |
-| HIGH | Serious quality regression or likely user friction | Overlapping controls, broken reflow, confusing hierarchy, animation impedes use, color-only status; **and waste at the same scale**: over a third of the viewport unused, a page more than twice as long as its content needs, an action a person cannot associate with its object |
+| HIGH | Serious quality regression or likely user friction | Overlapping controls, broken reflow, confusing hierarchy, animation impedes use, color-only status; **and waste at the same scale**: viewport utilisation under 60% with no second column, sidebar or reading-measure reason, or an action a person cannot associate with its object (thresholds and the page-length rule: `references/review/05-density-and-economy.md`) |
 | MEDIUM | Noticeable quality gap | Generic visual system, weak emphasis, awkward spacing, missing secondary states, stiff transitions; a section that should be folded and is not; a paragraph in front of a control that should be a sentence |
 | LOW | Minor polish issue | Slightly heavy shadow, inconsistent icon weight, minor rhythm drift, subtle alignment offset |
 | TASTE | Non-blocking stylistic suggestion | Alternate font pairing, stronger visual personality, more distinctive treatment |
@@ -109,7 +109,7 @@ Recommended change: <specific fix, with code when it is short>
 |---|---|---|
 | `[SEVERITY]` | Always | Exactly one of CRITICAL, HIGH, MEDIUM, LOW, TASTE, in square brackets, spelled as in the severity scale above |
 | `[CONFIDENCE]` | Review paths | Exactly one of the four Layer 3 classes: Hard defect, Quality defect, Pattern smell, Taste note. Generation and design paths may omit it; review paths may not |
-| `<Dimension>` | Always | The Layer 1 row name, verbatim. This is what dedup and per-dimension verdicts key on, so a paraphrase silently creates a new dimension |
+| `<Dimension>` | Always | The Layer 1 row name, verbatim. This is what dedup and per-dimension verdicts key on, so a paraphrase silently creates a new dimension. Specialists whose dimension has no Layer 1 row use their verdict family's name verbatim: `Anti-AI aesthetic`, `Motion quality`, `Responsive quality`, `Runtime smoothness`, `TypeScript safety` (machine `dimension` values `anti-ai`, `motion`, `responsive`, `performance`, `typescript`) |
 | `<short title>` | Always | Under ten words. Names the defect, not the fix |
 | `Surface:` | Always | Screen, component, viewport or state where it appears. "Settings > Notifications, 390px, error state" |
 | `Location:` | Whenever source is in scope | Repo-relative `path:line` or `path:start-end`. When there is no source, one of `screenshot only`, `runtime only`, or the artifact id. This single field satisfies the file:line requirement; never invent a line number to fill it |
@@ -163,7 +163,7 @@ Why it matters: The interface reads as a template rather than a product, which
 is the single strongest signal users cite when they say something looks
 AI-generated.
 Evidence: Diff against the shadcn defaults is empty for all three components.
-Tell: S1 default shadcn unmodified
+Tell: S1/S2/S3 default shadcn unmodified
 Recommended change: Tune radius, border color and shadow against the POV brief;
 see references/design/06-shadcn-customization.md.
 ```

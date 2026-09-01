@@ -1,7 +1,7 @@
 ---
 name: design-ui
 description: |-
-  Use this skill when the user asks to design new UI: a screen, flow, page, component, or full product. Triggers: "design a [thing]", "build me a [screen/page/flow]", "create the UI for", "design the [dashboard/settings/onboarding/landing]", "make this look [distinctive/professional/not AI]". Dispatches the ui-craft:ui-craft-architect agent (pinned to Opus 5 at dispatch) which commits to a distinctive aesthetic POV, generates a token system (OKLCH + variable fonts + modular spacing + spring motion), and produces production-grade UI code that does not look AI-generated, then audits the fresh code with the responsive and accessibility reviewers before it is presented. TypeScript + React + Tailwind v4 is the primary output path; the design principles (POV, tokens, catalogue floor, taste gate) apply to any stack. Uses the internal anti-AI-tells catalogue as a hard floor and the taste checklist as a pre-ship gate.
+  Use this skill when the user asks to design new UI: a screen, flow, page, component, or full product. Triggers: "design a [thing]", "build me a [screen/page/flow]", "create the UI for", "design the [dashboard/settings/onboarding/landing]", "make this screen look [distinctive/professional/not AI]". Dispatches the ui-craft:ui-craft-architect agent (pinned to the Fable 5.1 lane at dispatch) which commits to a distinctive aesthetic POV, generates a token system (OKLCH + variable fonts + modular spacing + spring motion), and produces production-grade UI code that does not look AI-generated, then audits the fresh code with the responsive and accessibility reviewers before it is presented. TypeScript + React + Tailwind v4 is the primary output path; the design principles (POV, tokens, catalogue floor, taste gate) apply to any stack. Uses the internal anti-AI-tells catalogue as a hard floor and the taste checklist as a pre-ship gate.
 argument-hint: '<brief description of what to design>'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
 ---
@@ -14,7 +14,7 @@ You are coordinating new UI design on the user's behalf. Your job is to gather p
 
 ## Execution mode
 
-The dispatched `ui-craft-architect` is pinned to Opus 5 (`model: "opus"`) at dispatch, the coding/review floor (owner directive 2026-07-24); the orchestrator conducts on the session model. If the session model is already the strongest tier and the design task is important or complex, design inline in the main context (foreground) instead of dispatching, following the same knowledge sources and process as `ui-craft-architect`. The Step 5 audit runs either way.
+Design work is dispatched, never done inline in the orchestrating session. The `ui-craft-architect` and the Step 5 audit reviewers run as Fable 5.1 subagents: pin `model: "fable"` on every call and put the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` first in each prompt (the standing lane for UI/UX, frontend, and design work, owner directive 2026-09-01; a policy-gated harness checks for that line, and it costs nothing where nothing checks). If the harness rejects the `fable` alias, re-dispatch the same prompt with `model: "opus"` (Opus 5), the floor for UI work. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: it builds the prompt, gates the output, and applies approved files. Run the architect's process inline only when no Agent tool exists in the current context (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and follow its Knowledge sources table and process steps verbatim), and say so in the output header; the Step 5 audit runs either way.
 
 ## Stack awareness
 
@@ -27,7 +27,7 @@ The user passed a description (may be empty). Extract:
 - Any stated constraints ("dark theme", "minimal", "dense dashboard")
 - Any stated POV ("like Linear", "editorial", "tactical")
 - Any stated framework/platform (React, Next.js, Svelte, SwiftUI, static HTML, etc.)
-- The **display range** the design must survive. If the user did not say, take the default from `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: the narrowest width (320, the WCAG 1.4.10 reflow target), a modern mobile width (390), **900** (the width nobody designs at, where fluid failures live and nowhere else), a laptop width (1440), and the widest the product will realistically see (2560, where dead space becomes measurable). Plus any width where the product's existing breakpoints already fire.
+- The **display range** the design must survive. If the user did not say, take the default from `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: the narrowest width (320, the WCAG 1.4.10 reflow target), a modern mobile width (390), **900** (the width nobody designs at, where fluid failures live and nowhere else), a laptop width (1440), the most common desktop width (1920, where the density thresholds are calibrated), and the widest the product will realistically see (2560, where dead space becomes measurable). Plus any width where the product's existing breakpoints already fire.
 
 If the brief is empty or too vague to act on, ask one focused question: "What screen or flow should I design? Any aesthetic direction?" Do NOT proceed without knowing what to build.
 
@@ -62,7 +62,7 @@ BRIEF:
 CONSTRAINTS:
 <aesthetic direction, brand, framework/platform, existing tokens, any stated POV>
 
-DISPLAY RANGE: <the widths from Step 1, default 320 / 390 / 900 / 1440 / 2560>
+DISPLAY RANGE: <the widths from Step 1, default 320 / 390 / 900 / 1440 / 1920 / 2560>
 
 SEED CANDIDATES (advisory, only if Step 2.5 produced any, omit this block entirely otherwise):
 - Style family: <name from aesthetic/04-style-taxonomy.md>
@@ -84,11 +84,11 @@ PLUGIN REFERENCES: ${CLAUDE_PLUGIN_ROOT}/references/ , read the files listed in 
 prompt's reference table BEFORE designing.
 
 TASK:
-1. Read the relevant reference files (aesthetic/*, design/*, accessibility/01-03,
-   architecture/01+03, catalogue/01-ai-tells.md, review/03-viewport-matrix.md, and
-   responsive/01-fluid-and-intrinsic-sizing.md + responsive/02-breakpoints-vs-container-queries.md
-   for the sizing technique the responsive floor below assumes; dataviz/01-03 whenever the
-   design contains charts, stats, or a dashboard).
+1. Read every Always row of your Knowledge sources table (it includes usability/01-03,
+   accessibility/01-04, responsive/*, aesthetic/*, design/*, architecture/01+03 and the
+   catalogue), plus the conditional rows this brief triggers (dataviz/01-03 for charts, stats or
+   a dashboard; design/10 for a landing page; design/11 for an image spec; the platform overlay
+   for the target stack), and review/03-viewport-matrix.md for the display range.
 2. Inspect existing repo components and tokens if applicable.
 3. Commit to a POV. Write the 3-4 sentence statement.
 4. Generate the full token system (OKLCH color, font stack, fluid type scale, spacing, motion,
@@ -97,7 +97,8 @@ TASK:
 5. Design each requested component/screen with production-grade code (TypeScript + JSX on the
    primary path; the target stack's idiom otherwise).
 6. Run the taste audit (${CLAUDE_PLUGIN_ROOT}/references/aesthetic/03-taste-checklist.md) and
-   report PASS/FAIL per section.
+   report PASS / FAIL / NOT ASSESSED (needs browser: <what>) per section; a code-only pass never
+   reports PASS on a browser-only row.
 7. State the RESPONSIVE BEHAVIOR of every component you produced: what governs its width, what
    happens to it at each width in the DISPLAY RANGE, and which sizing decisions are deliberate
    fixed caps rather than fluid values. One short paragraph or table per component.
@@ -116,30 +117,30 @@ HARD RULES:
   regular-weight body text, `75+` larger or bold body text, `60+` headlines and large UI text,
   `45+` icons, borders and focus rings. Requirements go UP as text gets smaller and thinner.
   Every text pair must also clear the WCAG floor (`4.5:1`, or `3:1` for large text). Source of
-  truth: `references/design/01-color-oklch.md`.
+  truth: `${CLAUDE_PLUGIN_ROOT}/references/design/01-color-oklch.md` section 6 (the APCA ladder and the WCAG 2.x floor).
 - FLUID BY DEFAULT. No fixed pixel width or height on a layout container unless it is a
   deliberate, stated cap (a reading measure, a fixed-width sidebar rail, an icon box). Type and
   space come from the clamp() scale, not from per-breakpoint overrides.
 - CONTAINER QUERIES OVER VIEWPORT QUERIES on any component that can appear in more than one
   slot. A portable component sized by `sm:`/`md:`/`lg:` is wrong by construction: it responds to
   the window rather than to the space it was given.
-- `dvh`/`svh`, never `100vh`/`h-screen`, on any full-height surface. `100vh` is taller than the
+- `svh` by default, `lvh` on heroes and decorative fills, `dvh` only on modals and drawers that must track the visible area (responsive/01 section 7); never `100vh`/`h-screen` on any full-height surface. `100vh` is taller than the
   visible area on mobile browsers with dynamic toolbars, so the last row is cut off.
 - No emojis, no AI slop, no trailing summary.
 
 ACCEPTANCE CRITERIA (output is rejected if any fails):
 1. POV statement present, 3-4 sentences, names what the design does NOT do.
-2. Token block present; every color value is oklch(...); states derived via relative color syntax.
+2. Token block present; every color value is oklch(...); states derived via relative color syntax or `color-mix()`.
 3. Every requested component has a file path + complete code (no elided bodies).
 4. At least one full composition example in real code.
-5. Taste audit table present with PASS/FAIL per checklist section.
-6. Zero hits for: #6366f1, #14b8a6, #000000, #ffffff, "lorem", "Get started", "Submit", "TODO".
+5. Taste audit table present with PASS / FAIL / NOT ASSESSED per checklist section (NOT ASSESSED is the honest value for a browser-only row on a code-only pass).
+6. Zero hits for: #6366f1, #14b8a6, #000000, #ffffff, "lorem", "Get started", a visible control label reading exactly "Submit" (match `>Submit<` or `label="Submit"`; JSX props such as `onSubmit` do not count), "TODO".
 7. RESPONSIVE FLOOR, all four parts:
    a. A stated behavior for every component at every width in the DISPLAY RANGE, and no
       horizontal overflow of primary content at the narrowest width.
    b. Zero fixed pixel widths or heights on layout containers except those explicitly named as
       deliberate caps in the responsive-behavior section.
-   c. Zero `100vh` / `h-screen` on full-height surfaces (`dvh`/`svh` instead).
+   c. Zero `100vh` / `h-screen` on full-height surfaces (`svh`/`lvh`, or `dvh` on modals and drawers, instead).
    d. Zero viewport-breakpoint variants (`sm:`/`md:`/`lg:`) on portable components; those use
       `@container`. Page-level layout may still use viewport queries.
 ```
@@ -148,22 +149,22 @@ ACCEPTANCE CRITERIA (output is rejected if any fails):
 
 Use the Agent tool:
 - `subagent_type`: `"ui-craft:ui-craft-architect"`
-- `model`: `"opus"` (mandatory; an omitted model inherits the session model, which the model-policy guard denies)
+- `model`: `"fable"` (mandatory, see Execution mode; `"opus"` only when the harness rejects the alias; never omitted)
 - `description`: `"Design <brief summary>"`
-- `prompt`: the prompt from Step 3
+- `prompt`: `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` on the first line, then the prompt from Step 3
 - Foreground (NOT `run_in_background: true`)
 
 ## Step 5: Audit the fresh code before showing it
 
-Generated code is code. It gets reviewed before it is presented, not after it ships. Dispatch two reviewers in parallel on the architect's output, both `model: "opus"`, both read-only:
+Generated code is code. It gets reviewed before it is presented, not after it ships. Dispatch two reviewers in parallel on the architect's output, both `model: "fable"` with the attestation line first in their prompts, both read-only:
 
 ```
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "opus",
-  prompt: "<the generated component code verbatim, the DISPLAY RANGE, the stated responsive behavior>",
+Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "fable",
+  prompt: "FABLE-ESCALATION: ui-ux-frontend -- responsive audit of generated UI\n<the generated component code verbatim, the DISPLAY RANGE, the stated responsive behavior>",
   description: "Responsive audit of generated UI" })
 
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "opus",
-  prompt: "<the generated component code verbatim, the token values, the platform>",
+Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "fable",
+  prompt: "FABLE-ESCALATION: ui-ux-frontend -- accessibility audit of generated UI\n<the generated component code verbatim, the token values, the platform>",
   description: "Accessibility audit of generated UI" })
 ```
 
@@ -190,7 +191,7 @@ Any CRITICAL or HIGH finding from either reviewer goes back to the architect in 
 
 1. If the user asks to apply, YOU (the orchestrator) create the files using Write/Edit. Do not re-dispatch the agent.
 2. Then verify what you wrote, on the paths you touched:
-   - TypeScript: run the typecheck gate by path (`node node_modules/ts7/bin/tsc --noEmit`; `node node_modules/typescript/bin/tsc --noEmit` where the `ts7` alias is absent). Never bare `tsc`, because both packages declare that bin and npm's link order on the collision is not guaranteed.
+   - TypeScript: run the TypeScript 7 gate by path, resolving the compiler by version rather than by alias name: try `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, then `node_modules/typescript/bin/tsc`, and use the first whose `--version` prints `Version 7.` (Microsoft's side-by-side layout keeps TypeScript 6 at `node_modules/typescript/bin/tsc6`). Never bare `tsc`, because with two compilers installed the `.bin/tsc` link is arbitrary; redirect the output to a log and read the exit code, never infer the result from the output.
    - Run the project's lint command.
    - Tailwind v4: check that the new `@theme` tokens resolve.
 3. Report any breakage with the fix, and offer to iterate. Code that does not compile is not applied work.
@@ -208,7 +209,7 @@ This skill never writes a CI verdict artifact. `improve-ui` is the only producer
 
 - Don't dispatch without a brief; ask first.
 - Don't dispatch without project context if there IS a repo; the architect needs it.
-- Don't dispatch without `model: "opus"`.
+- Don't dispatch without `model: "fable"` and its attestation line (or the `opus` fallback); never an omitted model.
 - Don't ship a design whose only tested width is the one you imagined.
 - Don't summarize the agent output; show it raw.
 - Don't auto-apply; wait for explicit user approval.

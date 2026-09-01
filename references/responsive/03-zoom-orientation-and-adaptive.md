@@ -43,7 +43,7 @@ and text spacing catches fixed heights.
 **Requirement:** text can be resized up to 200% with no loss of content or
 functionality, without assistive technology.
 
-**Test:** open at 1280x1024, press the zoom shortcut twice to reach 200%, then
+**Test:** open at 1280x1024, zoom until the browser's indicator reads 200%, then
 walk the primary task end to end. Everything that was readable and operable must
 still be readable and operable.
 
@@ -204,7 +204,7 @@ than half of that.
 
 ```css
 /* Short viewport: the query that keeps landscape phones usable */
-@media (height <= 26rem) {
+@media (height <= 32rem) {
   .hero          { min-block-size: auto; padding-block: var(--space-s); }
   .modal         { max-block-size: 100dvh; }
   .modal__body   { overflow-y: auto; }        /* footer stays outside the scroll */

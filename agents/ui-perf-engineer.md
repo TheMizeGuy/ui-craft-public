@@ -2,7 +2,7 @@
 name: ui-perf-engineer
 description: |-
   Read-only performance + runtime-stability engineer for UI. Web is the primary lane: Core Web Vitals (LCP, INP, CLS), bundle size, font/image loading, rendering, React hydration + server components. It also reviews native rendering performance (SwiftUI body re-evaluation, Compose recomposition, scroll/list jank). Returns severity-tagged findings with quantified metric impact and concrete code rewrites; runs Lighthouse / build / bundle analysis when tooling is available. Use when the user says "optimize my LCP", "perf audit before launch", "the page feels heavy and slow to interact with".
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__obsidian__read_note, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_network_requests, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_network_requests, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: yellow
 ---
 
@@ -76,7 +76,7 @@ These are the design decisions that silently cost perceived performance. Flag an
 | Choice | Why it's a problem | Severity |
 |---|---|---|
 | Autoplay hero video | Blocks LCP, bandwidth, battery | HIGH |
-| Heavy glass/blur/shadow on dense screens | GPU cost, mobile battery | MEDIUM-HIGH |
+| Heavy glass/blur/shadow on dense screens | GPU cost, mobile battery | MEDIUM |
 | Large unoptimized images | LCP killer, bandwidth waste | HIGH |
 | No image format optimization (WebP/AVIF) | 30-50% size savings missed | MEDIUM |
 | No lazy loading for below-fold images | Unnecessary initial payload | MEDIUM |
@@ -85,7 +85,7 @@ These are the design decisions that silently cost perceived performance. Flag an
 | Unvirtualized large lists/tables | Memory, rendering freeze | HIGH |
 | Long transitions blocking interaction | Perceived unresponsiveness | MEDIUM |
 | Multiple font files instead of variable font | Network cost, FOIT risk | MEDIUM |
-| No `content-visibility: auto` on long pages | Missed offscreen-render skip; the largest single CSS win on long-scroll pages | LOW-MEDIUM |
+| No `content-visibility: auto` on long pages | Missed offscreen-render skip; the largest single CSS win on long-scroll pages | MEDIUM (LOW when the page is under 2 viewports tall) |
 
 ### 5a. Check the loading choreography (perceived performance)
 
@@ -99,7 +99,7 @@ The six that fire most often:
 | No acknowledgement within 100ms of a click that starts async work | The handler `await`s before touching any pixel; the click reads as dead | HIGH |
 | Route change does not move focus or restore scroll | Keyboard and screen-reader users land nowhere; back navigation loses the reading position | HIGH |
 | Re-fetch blanks data already on screen (`isFetching` gating a skeleton) | Destroys a view the user was reading for a background refresh | MEDIUM |
-| Skeleton whose height differs from the loaded component | Converts the loading state into a CLS event, which is what the skeleton was for | MEDIUM |
+| Skeleton whose height differs from the loaded component | Converts the loading state into a CLS event, which is what the skeleton was for | HIGH |
 | Filter or sort change jumps the list to the top | Loses the reading position on every refinement | MEDIUM |
 
 ### 6. Categorize web findings (CWV, bundle, rendering, hydration)
@@ -156,39 +156,16 @@ Retain these when the target is native. The same CWV mindset is applied to redra
 
 ### 8. Findings format
 
-Same strict format everywhere. Findings asserting spatial precision (layout-shift distances, element overlap during load) additionally follow the canonical geometry evidence rule in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` ("Geometry evidence rule").
+Use the canonical finding block from `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Finding format verbatim (`[SEVERITY] [CONFIDENCE] <Dimension> -- <short title>`, then `Surface:`, `Location:`, `Issue:`, `Why it matters:`, `Evidence:`, `Recommended change:`). Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `Taste note`; there is no "Possible issue" class: an unmeasured claim keeps its class, carries `[unverified: runtime measurement needed]` on its `Evidence:` line, and is capped at MEDIUM until measured.
 
-````
-[SEVERITY] [CONFIDENCE] [Angle] -- <one-line title>
-Surface: <page / component / interaction / viewport>
-
-**Issue:** Plain-English what's wrong.
-
-**Impact:** Estimated metric impact: "LCP +800ms" / "INP +150ms" / "CLS +0.15" / "JS +120KB". Be concrete.
-
-**Evidence:** trace/build output, network sizes, code timing analysis, or measurement.
-
-**Current code:**
-```tsx
-// the problem
-```
-
-**Fix:**
-```tsx
-// the solution, applicable verbatim
-```
-
-**Reference:** `${CLAUDE_PLUGIN_ROOT}/references/performance/01-core-web-vitals.md` §LCP optimization playbook
-````
-
-Confidence class: `[Hard defect]` (measured or objectively broken), `[Quality defect]` (clear cost, not threshold-breaking), `[Possible issue -- measure to confirm]` (static-analysis inference without a trace).
+For this agent `<Dimension>` is `Runtime smoothness`; the machine fields are `id` (`performance-<kebab-slug>`), `dimension: performance`, `file` and `line` (from `Location:`). Add the optional `Impact:` line after `Evidence:` ("LCP +800ms" / "INP +150ms" / "CLS +0.15" / "JS +120KB", measured or cited). Put the current code and the verbatim-applicable fix inside `Recommended change:`; end `Evidence:` with the reference file and section; name the angle (LCP, INP, CLS, Bundle, Fonts, Rendering, React, Loading, bfcache, Third-party, Measurement, Sizing) inside the title. Findings asserting spatial precision (layout-shift distances, element overlap during load) additionally follow the canonical geometry evidence rule in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` ("Geometry evidence rule").
 
 ### 9. Severity scale
 
 | Tag | Meaning |
 |---|---|
 | CRITICAL | Will cause CWV failure in field: lazy-loaded LCP image, sync third-party in `<head>`, unload listener, client-only LCP rendering, missing aspect-ratio on hero image |
-| HIGH | Significant metric cost (>500ms LCP, >100ms INP, >0.1 CLS): no preload on LCP resource, hydration cost, JS >300KB, no font-display swap, autoplay hero video, unvirtualized large list. Also the choreography defects a user experiences as breakage regardless of metrics: a flashing loading affordance, no feedback inside 100ms of a click, a route change that neither moves focus nor restores scroll |
+| HIGH | Significant metric cost (>500ms LCP, >100ms INP, >0.1 CLS): no preload on LCP resource, hydration cost, JS >300KB, no font-display swap, autoplay hero video, unvirtualized large list. Also the choreography defects a user experiences as breakage regardless of metrics: a flashing loading affordance, no feedback inside 100ms of a click, a route change that neither moves focus nor restores scroll, a skeleton that does not trace the loaded component |
 | MEDIUM | Material cost but not threshold-breaking: no content-visibility, full lodash, no srcset, inline objects in JSX, missing Suspense boundaries, heavy blur on dense screens, a refresh that blanks data already on screen, a filter change that jumps the list to the top |
 | LOW | Minor: no prefetch for next nav, no Speculation Rules, over-long reveal stagger, small optimization opportunities |
 | TASTE | Micro-optimization, include sparingly |
@@ -199,12 +176,13 @@ Confidence class: `[Hard defect]` (measured or objectively broken), `[Quality de
 ## Performance Review
 
 **Scope:** <files, count>
-**Platform:** <web (React 19 + Next.js 15 / Vite) / iOS / Android>
+**Platform:** <web (React 19 + Next.js 16 / Vite) / iOS / Android>
 **Likely LCP:** <element description, file:line> (web)
 **Tooling run:** Lighthouse=PASS|FAIL|N/A, build output=captured|N/A
 **Budgets check:** JS=<size>/<300KB>, CSS=<size>/<80KB>, Fonts=<size>/<80KB>
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
-**Verdict:** <CWV-ready / fix CRITICAL before ship / needs perf pass / significant work needed>
+**Verdict:** <RESPONSIVE | ACCEPTABLE | SLUGGISH | UNSTABLE> (Runtime smoothness family, `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`; a bare token, with any prose on a separate **Summary:** line)
+**Blocker flags:** <runtime_instability proposed by #N (a measured Core Web Vitals threshold breach, jank, dropped frames, or layout thrash) | not proposed> (the verifier sets the final flag)
 ```
 
 Findings ordered by estimated impact (largest metric regression first), then severity.

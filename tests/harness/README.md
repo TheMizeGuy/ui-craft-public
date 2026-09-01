@@ -121,8 +121,9 @@ recall of the plugin. Do not conflate them.
 | File | What it is |
 |---|---|
 | `examples/sample-findings.json` | The **answer-key ceiling**: a hand-authored findings file written against `labels.json`. It is the best score the labels permit, and its misses are label-granularity artifacts, not detection failures. No agent produced it, so it is not evidence of detection. |
-| `../corpus/baseline-2026-07-27.json` | The **current committed blind baseline**: a real run of the `ui-anti-slop-auditor` body over all 15 fixtures with every answer key kept out of context. This is the measured number, and the one a detection regression is judged against. Recall 0.900; see the dated baseline section below for why its precision reads 0.783. |
-| `../corpus/baseline-0.1.2.json` | **Superseded, kept as history.** The 0.1.2 blind run, captured against an 18-label corpus. It scores 0.750 today only because it predates five fixtures. Do not read that as a regression and do not gate on it. |
+| `../corpus/baseline-2026-09-01.json` | The **current committed blind baseline**: a real run of the `ui-anti-slop-auditor` body over every fixture in the 0.5.0 corpus with every answer key kept out of context. This is the measured number, and the one a detection regression is judged against. Its score and readings are in the dated section below. |
+| `../corpus/baseline-2026-07-27.json` | **Superseded, kept as history.** The 0.3.0 blind run over 15 fixtures. It scored recall 0.917 / precision 0.957 against the 24-label corpus after the 2026-09-01 label split (0.900 / 0.783 before it) and predates the six fixtures added the same day, so its recall against the current corpus is lower by construction. Do not gate on it. |
+| `../corpus/baseline-0.1.2.json` | **Superseded, kept as history.** The 0.1.2 blind run, captured against an 18-label corpus. It scores well below threshold today only because it predates eleven fixtures and the 2026-09-01 label split. Do not read that as a regression and do not gate on it. |
 
 At the 0.1.2 corpus (18 labels across 10 fixtures) the answer key scored 0.889
 and the blind run scored 0.833. Quoting 0.889 as "the" recall overstated measured
@@ -132,9 +133,9 @@ performance was 1 of 3, not 2 of 3.
 **Both files go stale when the corpus grows, and staleness looks exactly like a
 regression.** Adding fixtures or labels adds expectations neither file was
 written against, so both recalls drop through no fault of the auditor. Widening
-the corpus therefore carries an obligation: extend `baseline-0.1.2.json` with a
-fresh blind run over the new fixtures (or commit a new dated baseline and retire
-the old one), and extend `sample-findings.json` to cover the new labels. Until
+the corpus therefore carries an obligation: commit a fresh dated blind baseline
+over the whole corpus (retiring the previous one to history in this file), and
+extend `sample-findings.json` to cover the new labels. Until
 that happens, a sub-threshold score on either file means "the baseline is out of
 date", not "detection got worse", and the two must not be confused.
 
@@ -196,9 +197,12 @@ small minority of the corpus; a run with 200 junk findings on a tell fixture
 scored precision 0.07 and still exited 0. Both thresholds now enter the pass
 expression.
 
-**Clean controls** (`expected: []`, `maxIncidentalFindings: 1`) invert the test:
-any finding is an incidental, and the control fails if incidentals exceed the
-tolerance. Exit `0` requires recall AND precision AND every clean control within
+**Clean controls** (`expected: []` plus a per-fixture `maxIncidentalFindings`)
+invert the test: any finding is an incidental, and the control fails if
+incidentals exceed the tolerance. The three older controls carry tolerance 1;
+`reduced-motion-opt-in.html` and `allowed-choice.html` (2026-09-01) carry 0,
+because the single plausible incidental on each is exactly the regression the
+control exists to catch. Exit `0` requires recall AND precision AND every clean control within
 tolerance, so a flood of false positives on `small-avatar-clean.html` or
 `clean-intentional.html` fails the gate even at perfect recall.
 
@@ -228,26 +232,29 @@ copy for reading convenience, and the two must move together:
 same fixture, so a producer that drifts from this shape fails loudly (exit `2`)
 rather than scoring a number that means nothing.
 
-### The tellRef gap
+### The tellRef field
 
-`tellRef` is not emitted by any shipped agent. The harness's dispatch
-instructions above ask for it explicitly, which is why the measured runs score
-deterministically, but a production `review-ui` or `improve-ui` pass produces
-findings without it and therefore scores on the fuzzy path alone. Two
-consequences worth knowing before reading any number:
+Since 0.5.0 both catalogue-walking agents emit `tellRef` as a machine field:
+`agents/ui-anti-slop-auditor.md` carries the catalogue code on a `Tell:` line
+and in `tellRef`, and `agents/ui-visual-reviewer.md` carries `tellRef` whenever
+its catalogue scan matched a code. Before 0.5.0 no shipped agent emitted it, so
+the 0.1.2 and 0.3.0 baselines describe a dispatch that hand-injected a field no
+production run carried; the 2026-09-01 baseline is the first one scored against
+the shipped template. Two consequences still worth knowing before reading any
+number:
 
-- The scored artifact is not quite the shipped artifact. The 0.889 and 0.833
-  figures describe a dispatch that hand-injects a field no production run emits.
-- Because the fuzzy path is dimension-gated, a cross-producer claim like "the
-  visual reviewer would catch the same issue under its own dimension, and
-  tellRef-first scoring counts it either way" only holds while `tellRef` is
-  present. Without it, a `visual` finding cannot match an `anti-ai` label at all.
+- A finding with no catalogue home has no `tellRef` and scores on the fuzzy
+  path alone, which is dimension-gated. That is by design: the fuzzy path
+  exists for non-catalogue defects, not as a second chance for a tell the
+  auditor failed to name.
+- A producer that does not walk the catalogue (the accessibility, motion,
+  responsive, perf and TypeScript reviewers) never emits `tellRef`, so its
+  findings can only match labels in its own dimension. Cross-producer credit
+  ("the visual reviewer would catch the same issue under its own dimension")
+  holds only because the visual reviewer now carries the code.
 
-Closing the gap means adding one line to the finding template in
-`agents/ui-anti-slop-auditor.md` and `agents/ui-visual-reviewer.md`
-(`tellRef`: the catalogue code this maps to, or omit when the finding has no
-catalogue home). The CI artifact schema already permits the field
-(`definitions.finding` sets `additionalProperties: true`).
+The CI artifact schema permits the field (`definitions.finding` sets
+`additionalProperties: true`).
 
 ## Adding a fixture + label pair
 
@@ -256,7 +263,7 @@ catalogue home). The CI artifact schema already permits the field
    tell ID anywhere in the fixture: the reviewer must not see the answer.
 2. Add an entry to `../corpus/labels.json` under `fixtures`:
    - a tell fixture: `{ "file": "...", "source": "authored", "expected": [ { id, dimension, severity, title, tellRef, confidence } ] }`;
-   - a clean control: `{ "file": "...", "expected": [], "maxIncidentalFindings": 1 }`.
+   - a clean control: `{ "file": "...", "expected": [], "maxIncidentalFindings": 1 }` (use `0` when the one plausible incidental is the regression the control guards against).
    Every expected finding cites a `tellRef` from `references/catalogue/01-ai-tells.md`
    (a code like `V5`/`C18`, a ranked `Strongest-10 #N`, the `cream-serif-sage`
    emerging tell, or a `section N` number).
@@ -303,35 +310,93 @@ its recall against the current `labels.json` is lower by construction. See the
 staleness obligation under "Which number is the baseline" before reading a drop
 as a detection regression.
 
-## Blind baseline, 2026-07-27 (0.3.0 corpus)
+## Blind baseline, 2026-09-01 (0.5.0 corpus)
 
-`../corpus/baseline-2026-07-27.json` is a fresh blind run of the
-`ui-anti-slop-auditor` body over all 15 fixtures, captured with `labels.json`,
-`sample-findings.json` and the prior baseline all withheld from the reviewer.
-It supersedes `baseline-0.1.2.json` as the current detection measurement;
-the 0.1.2 file is kept as a historical record and scores 0.750 against the
-grown corpus purely because it predates five of its fixtures.
+`../corpus/baseline-2026-09-01.json` is a fresh blind run of the shipped
+`ui-anti-slop-auditor` body (the 0.5.0 template, which emits `tellRef` itself)
+over all 21 fixtures, captured with `labels.json`, `sample-findings.json`, both
+prior baselines and this file withheld from the reviewer. It supersedes
+`baseline-2026-07-27.json` as the current detection measurement.
+
+| Metric | Value | Reading |
+|---|---|---|
+| recall | **0.828** (24/29) | The detection signal against the 29-label corpus. Not comparable with 0.917 at 0.3.0: that run predates six fixtures and five labels, and scores 0.759 / 0.957 against the current corpus. |
+| precision | 0.960 (24/25) | One unmatched finding, accounted for below. |
+| clean controls | all five at zero | Includes the two tolerance-0 controls added the same day, `reduced-motion-opt-in.html` and `allowed-choice.html`. |
+
+25 findings across 16 fixtures; every one of the six fixtures added on
+2026-09-01 scored full (S1 and S3 on `shadcn-oklch-default.html`, M3 on
+`slow-page-transition.html`, V12 on `emoji-chrome.html`, U13 on
+`icon-only-button.html`), and the two new controls drew nothing, so the
+`anti-slop-allow` escape hatch and the reduced-motion opt-in pattern are both
+honoured by the shipped auditor.
+
+The five misses:
+
+- **Four are same-span folding, not detection failures.** C5 on
+  `gradient-hero.html` folds into V5, as at every earlier baseline. On
+  `fixed-desktop-shell.html` the reviewer reported one L13 finding naming the
+  1200px shell, the 360px tracks and the missing viewport meta together, which
+  matches one of the three labels; on `token-drift.html` one finding on the
+  Save button covers both the colour drift and the spacing and radius drift,
+  matching one of two. The 2026-07-27 reviewer reported those spans as
+  separate findings; the 0.5.0 auditor's one-finding-per-span rule folds them.
+  Both readings are by the book. The labels enumerate the defects so either
+  reporting style scores, and neither the labels nor the auditor is tuned to
+  the other.
+- **T1 (Inter as the sans companion) on `legacy-marketing-page.html`** is a
+  genuine miss, and was missed on 2026-07-27 too. Its headline is again filed
+  under W2 correctly this time, so the W5 false positive of the earlier run is
+  gone.
+
+The one unmatched finding is C15 (six-digit hex throughout) on
+`cream-serif-sage.html`. The fixture's own note accepts that incidental
+deliberately, because the catalogue documents the cream-serif-sage tell by its
+literal hexes and converting them would weaken the planted signature. The
+finding is correct against the catalogue and unlabeled by design; it is the
+whole precision gap, and labelling it would make the fixture test two things.
+
+The answer key (`examples/sample-findings.json`) still scores 29/29, so the
+ceiling the labels permit is unchanged and the gap between it and this run is
+the four folded spans plus T1.
+
+## Blind baseline, 2026-07-27 (0.3.0 corpus, superseded)
+
+`../corpus/baseline-2026-07-27.json` was the blind run of the
+`ui-anti-slop-auditor` body over the 15 fixtures of the 0.3.0 corpus, captured
+with `labels.json`, `sample-findings.json` and the prior baseline all withheld
+from the reviewer. It superseded `baseline-0.1.2.json` and is itself superseded
+by the 2026-09-01 run above; it is kept as a historical record and scores below
+threshold against the grown corpus purely because it predates six of its
+fixtures.
 
 Scored against the 0.3.0 corpus:
 
 | Metric | Value | Reading |
 |---|---|---|
-| recall | **0.900** (18/20) | Up from 0.833 at 0.1.2. This is the detection signal. |
-| precision | 0.783 (18/23) | Below the 0.8 line, but **label-granularity, not hallucination**. |
+| recall | **0.917** (22/24) | Up from 0.833 at 0.1.2. This is the detection signal. Read 0.900 (18/20) against the 0.3.0 labels; see the label split below. |
+| precision | 0.957 (22/23) | Read 0.783 (18/23) against the 0.3.0 labels, and that was **label granularity, not hallucination**; see the label split below. |
 | clean controls | all three at zero | Includes `fluid-adaptive-clean.html`. |
 
-The run therefore exits 1 on precision. That is understood and is not a
-detection regression. Four of the five unmatched findings are real defects that
-a fixture's own `note` field describes but its `expected` array does not
-enumerate: `fixed-desktop-shell.html` is labeled with one expectation while its
-note documents a missing viewport meta, a fixed `width: 1200px` and a fixed
-`repeat(3, 360px)` grid, and the blind reviewer correctly reported all three.
-Scoring counts the two it has no label for as false positives.
+Against the 0.3.0 labels this run exited 1 on precision, and that was label
+granularity, not a detection regression. Four of the five unmatched findings
+were real defects that a fixture's own `note` field described but its
+`expected` array did not enumerate: `fixed-desktop-shell.html` carried one
+expectation while its note documented a missing viewport meta, a fixed
+`width: 1200px` and a fixed `repeat(3, 360px)` grid, and the blind reviewer
+correctly reported all three; `vh-bottom-bar.html` and `token-drift.html` each
+carried one compound label for two distinct defects.
 
-**Known follow-up:** split the compound labels so ground truth enumerates what
-the fixture notes already describe, then re-score. Until that lands, judge
-detection on recall and read precision with this caveat. Do not "fix" the
-number by deleting correct findings from the baseline.
+**Label split, 2026-09-01.** Those three compound labels were split so ground
+truth enumerates what the fixture notes already described: 20 labels became
+24, `sample-findings.json` was extended to cover the new labels (it still scores
+24/24), and nothing in the baseline file itself changed. The run now exits 0.
+The two remaining misses are genuine auditor misses (T1 on
+`legacy-marketing-page.html`, and its headline filed under W5 rather than the
+labeled W2), and that W5 finding is the one remaining false positive. This is
+the ordinary way to close a label-granularity gap: enumerate the defects the
+fixture really contains, never delete correct findings from the baseline and
+never relabel a fixture to match a miss.
 
 Two independent results in this run confirm the 0.3.0 responsive work:
 

@@ -67,7 +67,7 @@ const NORMAL_FLOOR = 15.0; // OKLab ΔE×100, worst pair on the active pairlist,
 const CONTRAST_MIN = 3.0; // WCAG vs surface
 const DEFAULT_SURFACE = { light: "#fcfcfb", dark: "#1a1a19" };
 const ORDINAL_MIN_DL = 0.06; // min OKLCH ΔL between adjacent steps
-const ORDINAL_LIGHT_FLOOR = 2.0; // lightest step: WCAG contrast vs surface
+const ORDINAL_SURFACE_FLOOR = 2.0; // surface-end step (palest on light, darkest on dark): WCAG contrast vs surface
 
 // Machado, Oliveira & Fernandes (2009) CVD transforms at severity 1.0 (linear RGB).
 const MACHADO = {
@@ -89,12 +89,13 @@ const hex2srgb = (h) => { h = h.trim().replace(/^#/, ""); return [0, 2, 4].map(i
 // the surface, CLI and browser alike) passes these before any math:
 // unguarded, parseInt propagates NaN through every check and the run fails
 // OPEN. Normalization is spelled out rather than engine-native: JS trim()
-// and Python str.strip() differ at the edges (trim() strips U+FEFF;
+// and the retired source skill's Python str.strip() differ at the edges (trim() strips U+FEFF;
 // str.strip() strips U+001C-U+001F and U+0085), so the shared set is their
 // intersection -- ASCII whitespace plus the Unicode space/separator
 // characters both engines strip, which also covers the NBSP/em-space
 // padding picked up when copy-pasting hex lists from rendered pages. Keep
-// these three definitions in lockstep with the Python twin.
+// these three definitions together; they define the input contract for the
+// CLI, the browser entrypoint, and the exported functions.
 const WS_RUN = "[ \\t\\n\\v\\f\\r\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+";
 const stripWs = (v) => v.replace(new RegExp(`^${WS_RUN}|${WS_RUN}$`, "g"), "");
 const splitColors = (raw) => (raw || "").split(",").map(stripWs).filter(Boolean);
@@ -250,7 +251,8 @@ function validateOrdinal(palette, { mode = "light", surface, pairs } = {}) {
      checks FAIL a correct ramp by design (it spans the lightness band; light
      steps drop below the chroma floor). The ordinal checks instead verify the
      ramp reads *as a ramp*: one hue, monotone lightness with visible gaps
-     between steps, and a lightest step that still clears the surface. */
+     between steps, and a surface-end step (palest on light, darkest on dark)
+     that still clears the surface. */
   if (pairs != null) {
     // The ordinal checks walk adjacent steps by definition; there is no
     // pairlist to widen. Silently dropping the option would report a PASS for
@@ -276,19 +278,20 @@ function validateOrdinal(palette, { mode = "light", surface, pairs } = {}) {
   // Adjacent ΔL -- each step must be visibly distinct from its neighbour.
   const gaps = Ls.slice(1).map((l, i) => Math.abs(l - Ls[i]));
   // Filter on the RAW gap, then round for display -- filtering the rounded
-  // value passes raw gaps in [0.0595, 0.06) that the Python twin fails.
+  // value would pass raw gaps in [0.0595, 0.06) that the threshold rejects.
   const thin = gaps.map((g, i) => [palette[i], palette[i + 1], g]).filter(([, , g]) => g < ORDINAL_MIN_DL).map(([a, b, g]) => [a, b, +g.toFixed(3)]);
   if (thin.length) ok = false;
   report.push(["Adjacent ΔL", !thin.length,
     thin.length ? `steps too close: ${JSON.stringify(thin)}` : `all gaps >= ${ORDINAL_MIN_DL}`]);
 
-  // Lightest step vs surface -- the pale end must still read as a mark.
+  // Surface-end step vs surface -- the step nearest the surface (palest on
+  // light, darkest on dark) must still read as a mark.
   const byL = [...palette].sort((a, b) => oklch(a)[0] - oklch(b)[0]);
-  const lightest = mode === "light" ? byL[byL.length - 1] : byL[0];
-  const cr = contrast(lightest, surface);
-  if (cr < ORDINAL_LIGHT_FLOOR) ok = false;
-  report.push(["Light-end contrast", cr >= ORDINAL_LIGHT_FLOOR,
-    `${lightest} at ${cr.toFixed(2)}:1 vs surface` + (cr >= ORDINAL_LIGHT_FLOOR ? "" : ` -- below ${ORDINAL_LIGHT_FLOOR}:1 floor`)]);
+  const surfaceEnd = mode === "light" ? byL[byL.length - 1] : byL[0];
+  const cr = contrast(surfaceEnd, surface);
+  if (cr < ORDINAL_SURFACE_FLOOR) ok = false;
+  report.push(["Surface-end contrast", cr >= ORDINAL_SURFACE_FLOOR,
+    `${surfaceEnd} at ${cr.toFixed(2)}:1 vs surface` + (cr >= ORDINAL_SURFACE_FLOOR ? "" : ` -- below ${ORDINAL_SURFACE_FLOOR}:1 floor`)]);
 
   // Single hue -- an ordinal ramp is one hue; a hue jump means it's categorical.
   const hues = palette.map(okhue);
@@ -313,7 +316,7 @@ function printReport({ report, ok }, { mode, surface, ordinal, n }) {
   }
   if (ordinal) {
     console.log(`\n  → ${ok ? "ALL CHECKS PASS" : "FAILED -- fix the marked checks"}`
-      + "  (ordinal: one hue, monotone L, visible step gaps, light end clears surface)");
+      + "  (ordinal: one hue, monotone L, visible step gaps, surface-end step clears the surface)");
   } else {
     console.log(`\n  → ${ok ? "ALL COMPUTABLE CHECKS PASS" : "FAILED -- fix the marked checks"}`
       + "  (CVD in the 6-8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)");

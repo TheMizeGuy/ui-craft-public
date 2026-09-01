@@ -45,9 +45,9 @@ The rules behind the table:
 
 | Series | Treatment |
 |---|---|
-| 1-3 | color alone is comfortable for everyone; direct-label |
+| 1-3 | legend (always, for >= 2 series) plus direct labels; color alone is comfortable for everyone |
 | 4 | the CVD floor enters; direct labels become mandatory, not a courtesy |
-| 5-6 | soft cap; legend or small multiples |
+| 5-6 | soft cap; legend only (direct labels start to collide), or small multiples |
 | 7-8 | token ceiling; past it, fold the tail into "Other," facet into small multiples, or use composite encoding (hue x shape) |
 
 Never solve "too many series" by generating more hues. A generated 9th hue is indistinguishable from an existing one under CVD and breaks every check in file 02.
@@ -93,4 +93,4 @@ Whichever library: disable its default categorical cycling and feed it the fixed
 | Mark specs, labels, figures, tooltips, filters | `references/dataviz/03-marks-interaction-figures.md` |
 | The failure catalog to check every chart against | `references/dataviz/04-anti-patterns.md` |
 | OKLCH token architecture the palette plugs into | `references/design/01-color-oklch.md` |
-| Dashboard type scale (<= 24px caps) | `references/design/02-typography.md` |
+| Dashboard type scale (<= 24px cap for headings and labels; the hero figure and stat-tile VALUES are data displays and are exempt) | `references/design/02-typography.md` |

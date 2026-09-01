@@ -2,7 +2,7 @@
 name: ui-verifier
 description: |-
   Verification pass that runs AFTER specialist reviews. Checks evidence sufficiency for every finding, removes false positives, downgrades weak claims, deduplicates cross-dimension findings, enforces the four-class confidence enum, sets the four blocker flags, and emits one canonical verdict token per dimension -- the quality gate between specialist output and the final report. Use when verifying specialist findings before the final report; always runs after specialists, never standalone.
-tools: Read, Grep, Glob, Bash, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
+tools: Read, Grep, Glob, Bash, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: yellow
 ---
 
@@ -61,11 +61,11 @@ The missing counterweight, which you apply as the responsive equivalent of the a
 
 > A finding that blocks a core task at any width in the default viewport matrix, or that causes horizontal scroll of primary content at 320px, is never verified below HIGH.
 
-Your responsive verdict line must also state which widths were actually exercised. "Responsive: ROBUST" on a run that measured only 1440px is an unearned verdict; say `ROBUST (widths exercised: 1440 only)` so the reader can price it.
+Your responsive verdict line must also state which widths were actually exercised. "Responsive: ROBUST" on a run that measured only 1440px is an unearned verdict; say `ROBUST (widths exercised: 1440 only)` so the reader can price it. State the evidence mode next to every dimension's token the same way, not only responsive widths.
 
-### 3. Blocker flags (you are the only producer)
+### 3. Blocker flags (you produce the final ones)
 
-Set each flag from the VERIFIED findings, and name the finding number that set it. Nothing else in the chain produces these, and the report's Blockers column and the top-tier verdict gate both depend on them.
+Specialists propose flags in their summary blocks; you confirm or clear each from the VERIFIED findings and name the finding number that set it. The report's Blockers column and the verdict cap both depend on your final flags, never on a proposal.
 
 | Flag | Set when a verified finding shows |
 |---|---|
@@ -85,7 +85,8 @@ Specialists propose a verdict; you decide the final one, because only you know w
 | Any CRITICAL | 4th token (worst) |
 | Any HIGH, no CRITICAL | 3rd token |
 | Only MEDIUM / LOW | 2nd token |
-| Only TASTE, or none | 1st token (best) |
+| Only TASTE, or none, with driven or measured evidence | 1st token (best) |
+| None, in static-analysis or screenshot-only evidence mode | 2nd token, with `(evidence: static, <what was not exercised>)` appended; a clean automation run never earns the 1st token |
 
 Then apply the blocker cap: if the dimension's matching blocker flag is set, it cannot hold the 1st or 2nd token. Move it to the 3rd at best.
 

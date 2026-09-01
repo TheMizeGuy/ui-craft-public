@@ -33,8 +33,9 @@ in tier 2 with tier-1 UI (nothing) reads as a dead click.
 
 The 100ms / 1s / 10s boundaries are Miller's 1968 response-time limits, restated for the web
 by Nielsen in 1993 and unchanged since; they are perceptual, not technological, so they do
-not move with hardware. The 100ms figure is the same threshold Core Web Vitals encodes as
-the INP budget (INP's 200ms "good" bar allows one frame of slack on top of it).
+not move with hardware. The 100ms figure is stricter than, and independent of, INP's 200ms "good" bar,
+which is a p75 field metric measured to the next paint; a page can pass INP and still
+miss the 100ms acknowledgement on the element the user touched.
 
 Two corollaries a reviewer can check mechanically:
 
@@ -176,10 +177,12 @@ position in the document, so React's own streaming does not reorder settled cont
 reorder defect comes from application code that collects results as they resolve. See
 `references/performance/02-react-19-perf.md` for boundary placement.
 
-Staggered reveal is legitimate when the stagger is short and monotone: 30-60ms between
-sibling cards, all in the same direction, total under 300ms. Longer than that and the user
-watches the interface assemble itself, which is slower-feeling than showing everything at
-once even though the last pixel lands at the same time.
+Staggered reveal is legitimate when the stagger is short and monotone: 30-50ms between
+sibling cards, all in the same direction, at most 6-8 items staggered individually with the
+remainder batched, and the whole entry sequence inside ~800ms
+(`references/design/04-motion.md` owns these numbers). Longer than that and the user watches
+the interface assemble itself, which is slower-feeling than showing everything at once even
+though the last pixel lands at the same time.
 
 ## Scroll and focus restoration contract
 
@@ -229,7 +232,7 @@ A re-fetch of data that is already on screen must never blank the screen.
 
 | Rule | Detail |
 |---|---|
-| Show the stale data | Keep the previous result rendered while the new one is in flight. TanStack Query: `placeholderData: keepPreviousData`. SWR: this is the default |
+| Show the stale data | Keep the previous result rendered while the new one is in flight. TanStack Query: `placeholderData: keepPreviousData`. SWR: `keepPreviousData: true` (default `false`; only a same-key revalidation keeps `data` without it) |
 | Distinguish "no data yet" from "refreshing" | `isPending` (nothing to show) drives the skeleton; `isFetching` (refreshing something already shown) drives a subtle marker only |
 | Mark the staleness without moving anything | A thin top-of-region progress bar, a 0.6 opacity on the region, or `aria-busy="true"`. Never a layout change, never a height change |
 | Keep interaction alive | Stale rows stay clickable. Disabling the region during a background refresh converts an invisible wait into a blocking one |
@@ -269,7 +272,7 @@ severity scale.
 | Late-arriving content inserted above the current reading position | Any region above the fold rendered without reserved height | MEDIUM |
 | Streamed items appended in arrival order into a list being read | Results pushed into an array from a `Promise.all`-less loop | MEDIUM |
 | Determinate progress absent on an operation over 10s | Long export, upload, or report with an indeterminate spinner | MEDIUM |
-| Reveal stagger longer than 300ms total | Per-item `transition-delay` multiplied by index with no cap | LOW |
+| Reveal stagger with no item cap or an entry sequence over ~800ms | Per-item `transition-delay` multiplied by index with no item cap (`references/design/04-motion.md` owns the lane numbers) | LOW |
 | Modal open shifts the page by the scrollbar width | Body `overflow: hidden` without `scrollbar-gutter: stable` | LOW |
 
 ## Sources (canonical)

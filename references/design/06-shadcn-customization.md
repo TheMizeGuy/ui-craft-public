@@ -43,7 +43,7 @@ Only part 3 generates classes. Tailwind creates utilities from its documented th
 
 Two rules follow from part 3, and they are why the primitive ramp below also lives in `:root` rather than `@theme`:
 
-- A theme token whose value contains `var()` must be declared with `@theme inline`, or Tailwind resolves it at the point of definition rather than the point of use, and nested theme scopes get the wrong value.
+- A theme token whose `var()` target is re-declared in a scope (`.dark`, `[data-theme]`) must be declared with `@theme inline`, or Tailwind resolves it at the point of definition rather than the point of use, and nested theme scopes get the wrong value. A root-only reference (`--font-display: "Poppins", var(--font-sans)` in §3, both on `:root`) works either way.
 - `@theme inline` does not emit its own CSS custom property. Its value is inlined into the generated utility. So anything you want to reference from another declaration (as `--primary: var(--brand-500)` does) has to exist as a raw property in `:root`, not only as a theme token.
 
 ```css
@@ -79,18 +79,18 @@ Two rules follow from part 3, and they are why the primitive ramp below also liv
 
   --background:           var(--neutral-50);
   --foreground:           var(--neutral-900);
-  --card:                 oklch(1 0 0);
+  --card:                 oklch(0.995 0.003 var(--brand-hue));   /* brand-tinted near-white, one step above --neutral-50 */
   --card-foreground:      var(--neutral-900);
-  --popover:              oklch(1 0 0);
+  --popover:              oklch(0.995 0.003 var(--brand-hue));
   --popover-foreground:   var(--neutral-900);
   --primary:              var(--brand-500);
-  --primary-foreground:   oklch(1 0 0);
+  --primary-foreground:   var(--neutral-50);
   --secondary:            var(--neutral-200);
   --secondary-foreground: var(--neutral-900);
   --muted:                var(--neutral-200);
   --muted-foreground:     oklch(0.45 0 0);
   --accent:               var(--brand-500);
-  --accent-foreground:    oklch(1 0 0);
+  --accent-foreground:    var(--neutral-50);
   --destructive:          var(--feedback-error);
   --border:               oklch(0.90 0 0);
   --input:                oklch(0.90 0 0);
@@ -160,7 +160,7 @@ Two rules follow from part 3, and they are why the primitive ramp below also liv
 
 **On the brand hue.** `--brand-hue: 95` is a worked example, not a recommendation: it sits outside the 250-285 indigo/purple band and away from the ~180 teal band that `references/aesthetic/03-taste-checklist.md` flags as unconsidered defaults. Derive the real number from the POV brief. Changing that one line re-hues the entire ramp, both schemes, because every stop reads it.
 
-**On `light-dark()` here.** Do not use it in a shadcn recipe. `light-dark()` resolves against `color-scheme`, which the `.dark` class does not set, so a `light-dark()` token and a shadcn theme toggle silently disagree: `next-themes` adds `.dark`, the `dark:` variant fires, and the token does not move. Pick one mechanism. If you want `light-dark()`, you are also giving up class-based toggling and the `dark:` variant, and you should say so in the project's design notes.
+**On `light-dark()` here.** Do not use it in a shadcn recipe. `light-dark()` follows `color-scheme`, not the class. With next-themes at its default (`enableColorScheme: true`, which writes `style="color-scheme: dark"` on `<html>`) the two happen to agree; a toggle that only adds `.dark`, next-themes with `enableColorScheme={false}`, or a forced theme on a subtree moves the `dark:` variant and leaves every `light-dark()` token behind. Pick one mechanism and state it. If you want `light-dark()`, you are also giving up class-based toggling and the `dark:` variant, and you should say so in the project's design notes.
 
 **Pick exactly one radius scale per project** and commit to it. `--radius` is one number; the `@theme inline` block derives the whole `rounded-*` family from it, so the scale stays proportional whichever value you pick. Mixing `rounded-sm` on inputs, `rounded-md` on buttons, `rounded-lg` on cards by hand is the default, and the tell.
 
@@ -179,7 +179,6 @@ shadcn's default `--font-sans` is the system stack or Inter. The house doctrine 
                   "Segoe UI", Roboto, sans-serif;
   --font-display: "Poppins", var(--font-sans);        /* modern-elegant display moments */
   --font-mono:    "Berkeley Mono", ui-monospace, monospace;   /* code/log content only */
-  --font-serif:   "Instrument Serif", Georgia, serif;
 }
 ```
 
@@ -313,7 +312,9 @@ Pattern: re-export typed Radix primitives, build the styled layer yourself.
 ```tsx
 // components/ui/dialog.tsx — fully custom on Radix
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from "react";
+// React 18 form. On React 19 take `ref` as a plain prop and drop forwardRef + displayName
+// (references/typescript/02-component-typing.md, the forwardRef note); the wrapper still compiles there.
+import { forwardRef, type ComponentPropsWithoutRef, type ComponentRef } from "react";
 import { cn } from "@/lib/utils";
 
 export const Dialog        = DialogPrimitive.Root;
@@ -322,7 +323,7 @@ export const DialogPortal  = DialogPrimitive.Portal;
 export const DialogClose   = DialogPrimitive.Close;
 
 export const DialogOverlay = forwardRef<
-  ElementRef<typeof DialogPrimitive.Overlay>,
+  ComponentRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
@@ -339,7 +340,7 @@ export const DialogOverlay = forwardRef<
 DialogOverlay.displayName = "DialogOverlay";
 
 export const DialogContent = forwardRef<
-  ElementRef<typeof DialogPrimitive.Content>,
+  ComponentRef<typeof DialogPrimitive.Content>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { side?: "right" | "center" }
 >(({ className, side = "right", children, ...props }, ref) => (
   <DialogPortal>
@@ -360,6 +361,8 @@ export const DialogContent = forwardRef<
 ));
 DialogContent.displayName = "DialogContent";
 ```
+
+React 19 note: `ElementRef` is deprecated there in favour of `ComponentRef` (used above), and `ref` arrives as an ordinary prop, so the `forwardRef` wrapper is optional; current shadcn components take `ref` from props and type it with `ComponentProps<typeof DialogPrimitive.Content>`.
 
 Other Radix primitives worth bypassing shadcn for: `Popover`, `Tooltip`, `Tabs`, `Toast`, `NavigationMenu`. Shadcn's wrappers are opinionated about className composition that bites once the design diverges.
 
@@ -382,7 +385,7 @@ Standardize one stroke weight, one corner radius for line-style icons, one set t
 
 ## 7. Custom motion on shadcn primitives
 
-shadcn defaults animate via `tailwindcss-animate`. Replace with explicit transitions or Motion springs for components that touch the user's gesture surface. See `references/design/04-motion.md`.
+shadcn's Tailwind v4 template animates via `tw-animate-css` (`@import "tw-animate-css"` in globals.css; `tailwindcss-animate` was deprecated on 2025-03-19 and survives only in un-migrated projects). Replace with explicit transitions or Motion springs for components that touch the user's gesture surface. See `references/design/04-motion.md`.
 
 ```tsx
 // Replace the default Tabs underline with a morphing pill via View Transitions
@@ -427,7 +430,7 @@ function MotionTabs({ tabs, value, onChange }: TabsProps) {
 }
 ```
 
-For springs (gesture-driven sliders, drag-to-dismiss sheets), wrap with Motion's `<motion.div>` and pass `transition={{ type: "spring", stiffness: 320, damping: 30 }}`.
+For springs (gesture-driven sliders, drag-to-dismiss sheets), wrap with Motion's `<motion.div>` and pass one of the three section-3 triads from `references/design/04-motion.md`: `transition={{ type: "spring", stiffness: 200, damping: 24 }}` (`--spring-smooth`, for sheets and panels that follow the gesture) or `{ stiffness: 400, damping: 30 }` (`--spring-snappy`, for arrivals). A literal outside those three is the drift section 3 of that file warns about.
 
 ## 8. Distinctive component patterns to add
 

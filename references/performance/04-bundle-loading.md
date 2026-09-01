@@ -63,7 +63,7 @@ Avoid:
 | `import _ from "lodash"` | `import debounce from "lodash/debounce"` (or `lodash-es` with tree-shaking) |
 | Barrel files (`export * from "./x"`) on the hot import path | Direct imports |
 | `moment` (huge locale chunks) | `date-fns` / `dayjs` with explicit plugins |
-| `core-js` polyfills for modern browsers | `browserslist: "last 2 versions, not dead"` + no core-js needed |
+| `core-js` polyfills for modern browsers | `browserslist: "supports es6-module"` + no core-js needed |
 
 Sources: https://webpack.js.org/guides/code-splitting, https://vitejs.dev/guide/features.html#dynamic-import.
 

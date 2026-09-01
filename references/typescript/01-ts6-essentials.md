@@ -17,10 +17,10 @@ Covers the TS 6.0 language baseline (released 2026-03-23, the stable line), the 
 | `types` | inferred from `node_modules/@types/*` | **`[]`** | No more accidental `jest`/`mocha` globals leaking into a Vite app; opt in explicitly |
 | `rootDir` | longest common ancestor of input files | **dir of `tsconfig.json`** | Predictable `outDir` shape; prevents flattened `dist/` surprises in monorepos |
 | `noUncheckedSideEffectImports` | `false` | **`true`** | `import "./foo.css"` now errors if `foo.css` (or its `.d.ts` shim) is missing, which catches dead style imports |
-| `module` default | `commonjs` | modern ESM-oriented (set explicitly) | Apps and libraries align with bundler/runtime ESM |
+| `module` default | `commonjs` | `esnext` (set explicitly anyway) | Apps and libraries align with bundler/runtime ESM |
 | `moduleResolution` | `node`/`node10` | legacy; use `bundler` or `nodenext` | `node10` is deprecated and emits warnings |
 | `baseUrl` | implicit lookup root | **deprecated** | Use `package.json` `imports` (`#/...`) or bundler aliases instead |
-| `target` | `es5` was historical | shifted modern; `es5` discouraged | UI runtimes are evergreen; `es5` blocks modern emit and bloats output |
+| `target` | `es5` was historical | the current-year ES version (`es2025` in 6.0); `es5` discouraged | UI runtimes are evergreen; `es5` blocks modern emit and bloats output |
 | Legacy module formats | `amd`, `umd`, `systemjs`, `none`, `outFile`-era | effectively gone | UI bundlers don't use them |
 
 TS 6.0 is the **bridge release** to the Go-native TS 7 compiler: flags removed in TS 6 are hard errors in 7. Per-flag semantics are in the compiler-options reference linked at the foot of this file.
@@ -79,7 +79,7 @@ Why each flag earns its place in a UI project:
 | `noFallthroughCasesInSwitch` | UI state machines and reducer switches don't silently fall through |
 | `isolatedModules` | Each file transpilable in isolation, as Vite/SWC/esbuild/tsdown require |
 | `verbatimModuleSyntax` | `import type` stays `import type`; no import elision; required by Node strip-types and modern bundlers |
-| `erasableSyntaxOnly` | Bans enum, namespace-with-values, parameter properties, `import =`/`export =`, all TS-only runtime syntax. Aligns with Node 24 `--experimental-strip-types` |
+| `erasableSyntaxOnly` | Bans enum, namespace-with-values, parameter properties, `import =`/`export =`, all TS-only runtime syntax. Aligns with Node's default type stripping (unflagged since 22.18 / 23.6, stable since 24.12 / 25.2) |
 | `noUncheckedSideEffectImports` | TS 6 default; `import "./theme.css"` errors if missing. Kills dead CSS imports |
 | `skipLibCheck` | 30–60% faster typecheck; trade off `.d.ts` bug detection in deps for build speed |
 | `noEmit: true` | Bundler emits JS; tsc only typechecks |
@@ -135,6 +135,10 @@ TS 6.0 emits deprecation warnings for behaviors that hard-fail in TS 7. Treat wa
 | `target: es5` (and `downlevelIteration` to compensate) | `es2022` minimum |
 | `baseUrl` as the alias mechanism | `package.json` `imports` (`#shared/*`) or bundler `paths` |
 | Import assertions (`assert { type: "json" }`) | Import attributes (`with { type: "json" }`) |
+| `moduleResolution: classic` | `bundler` or `nodenext` |
+| `outFile` | A bundler (Vite, tsdown) |
+| `alwaysStrict: false`, `esModuleInterop: false`, `allowSyntheticDefaultImports: false` | Leave at the TS 6 defaults (`true`) |
+| `/// <reference no-default-lib="true"/>` | `noLib` or `lib` in tsconfig |
 | Floating compiler defaults (`strict`, `module`, `target`, `types`, `rootDir` unset) | Always set these explicitly |
 | Numeric `enum`, namespace-with-values, parameter properties, `import =`/`export =` | Forbidden under `erasableSyntaxOnly: true`; rewrite as union + `as const` object |
 
@@ -142,7 +146,7 @@ Each row above is a config edit, not a code migration, so the whole wave is usua
 
 ## The TypeScript 7 typecheck gate
 
-TypeScript 7.0 went GA on 2026-07-08. The Go-native compiler now ships as **`typescript@7` itself**, and its only binary is `tsc`. There is no separate binary name any more. The `@typescript/native-preview` package and its `tsgo` binary were the *preview* channel for that work; that channel was abandoned after `7.0.0-dev.20260707.2` (2026-07-07) and must never be installed. `tsgo` or `@typescript/native-preview` in a project is itself a finding: the project is pinned to a dev nightly of a dead channel.
+TypeScript 7.0 went GA on 2026-07-08. The Go-native compiler now ships as **`typescript@7` itself**, whose only binary is `tsc`; the official side-by-side package `@typescript/typescript6` ships `tsc6` and re-exports the TypeScript 6 API. Microsoft's documented layout is `"@typescript/native": "npm:typescript@^7.0.2"` plus `"typescript": "npm:@typescript/typescript6@^6.0.2"`; the fleet's `ts7` alias plus `typescript@^6.0.3` is an equivalent arrangement, and either is acceptable in a reviewed project. Detect TypeScript 7 by version (`--version` prints `Version 7.`), never by alias name. The `@typescript/native-preview` package and its `tsgo` binary were the *preview* channel for that work; that channel was abandoned after `7.0.0-dev.20260707.2` (2026-07-07) and must never be installed. `tsgo` or `@typescript/native-preview` in a project is itself a finding: the project is pinned to a dev nightly of a dead channel.
 
 Both compilers stay installed, because **TypeScript 7.0 ships no programmatic compiler API**. The official position is that 7.1 is expected to introduce a new and different one. Until then `typescript` 6.x remains the API provider for typescript-eslint, ts-jest, ts-morph, Stryker, custom transformers, and the editor's tsserver. Dual-compiler, not a swap.
 
@@ -180,7 +184,7 @@ This section is the plugin's single source of truth for the compiler channel. An
 |---|---|---|
 | `enum Status { ... }` (numeric or string) | `const STATUS = { idle: "idle", ... } as const` + `type Status = typeof STATUS[keyof typeof STATUS]` | Enums emit runtime, break under `erasableSyntaxOnly`, poor JSON/URL/JSX interop |
 | `namespace Foo { ... }` | ES module: separate file or barrel | Pre-ESM legacy; banned under `erasableSyntaxOnly` |
-| `const Btn: React.FC<P> = ...` | `function Btn(props: P) { ... }` | `React.FC` blocks generics, hardcodes return type, historically added implicit `children`. React 19 stripped implicit children but the pattern is still discouraged |
+| `const Btn: React.FC<P> = ...` | `function Btn(props: P) { ... }` | `React.FC` blocks generics, hardcodes return type, historically added implicit `children`. `@types/react` 18 stripped implicit children but the pattern is still discouraged |
 | `const x: any` or `(arg: any)` | `unknown` then narrow with type guard, `instanceof`, or schema parse | `any` poisons every downstream caller; `unknown` forces a check |
 | `value as unknown as T` (double cast) | Real validation (Zod / valibot) at the boundary; `satisfies T` if you're proving shape | Double cast is a confessed lie, and a review-blocker |
 | `barrel/index.ts` re-exporting an entire feature | Direct imports `import { Button } from "@/ui/button"` | Barrels block tree-shaking, balloon TS program memory in monorepos, slow incremental builds |

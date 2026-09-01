@@ -33,7 +33,11 @@ Concrete defaults that work:
 - Text and email: validate on blur, revalidate on input once errored.
 - Password strength: live meter, but the pass or fail verdict on blur.
 - Async uniqueness: debounce 400 to 600ms, show a pending state on the field,
-  never block submit while pending (queue the check into the submit).
+  never block submit while pending (queue the check into the submit). A search
+  box is the opposite case, 150 to 250ms per
+  `references/usability/01-task-flows-and-journeys.md` section 9: results are
+  what the user asked for, while a uniqueness check is a side effect they did
+  not.
 - Cross-field (confirm password, end date after start date): on submit, and on
   blur of the SECOND field once both have values.
 - Never validate a field the user has not interacted with, until submit. A form
@@ -350,9 +354,9 @@ Run these against any form, with no design doc and no spec.
 
 | Severity | Form and recovery defects |
 |---|---|
-| CRITICAL | Submitted input is destroyed on failure; an irreversible destructive action with neither confirmation nor undo; a form that cannot be submitted by keyboard; errors conveyed only by color; paste blocked on a password or OTP field |
-| HIGH | No error message on a rejected submit; errors that do not say how to fix; focus not moved to the error on submit failure; disabled submit with no explanation of what is missing; input lost on reload or back; `type="number"` on a card or OTP field; no undo and no confirm on a bulk delete; partial failure reported as "some items failed"; missing `autocomplete` on personal-data fields (WCAG 1.3.5) |
-| MEDIUM | Errors on untouched fields; validation on partial values; error that does not clear until resubmit; required marked by asterisk with no legend; no summary on a multi-error submit; no busy state on submit; confirmation dialog on a trivially reversible action |
+| CRITICAL | Submitted input is destroyed on failure; an irreversible destructive action with neither confirmation nor undo; a form that cannot be submitted by keyboard |
+| HIGH | No error message on a rejected submit; errors that do not say how to fix; focus not moved to the error on submit failure; disabled submit with no explanation of what is missing; input lost on reload or back; `type="number"` on a card or OTP field; no undo and no confirm on a bulk delete; partial failure reported as "some items failed"; missing `autocomplete` on personal-data fields (WCAG 1.3.5); no busy state on submit; errors conveyed only by color; paste blocked on a password or OTP field (either of the last two is CRITICAL when it blocks sign-in or the primary task) |
+| MEDIUM | Errors on untouched fields; validation on partial values; error that does not clear until resubmit; required marked by asterisk with no legend; no summary on a multi-error submit; confirmation dialog on a trivially reversible action |
 | LOW | `enterkeyhint` missing; field width unrelated to expected content; undo window under 8 seconds; hint text that repeats the label |
 | TASTE | Placement preference for hints; wording alternatives that are equally clear |
 

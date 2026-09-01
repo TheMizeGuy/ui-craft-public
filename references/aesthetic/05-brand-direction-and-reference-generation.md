@@ -13,7 +13,7 @@ Adapted from [VibeCurb](https://github.com/Yu-369/VibeCurb) (MIT, Copyright (c) 
 
 ## 1. The commitment engine
 
-Both lanes run the same discipline: for each axis, pick ONE option from a small set and commit -- no blending, no hedging. Picks must be internally consistent (a quiet-premium-neutral theme with compressed-industrial display type is a contradiction, not versatility). Declare the committed direction in 2-3 lines before generating anything, exactly as `aesthetic/01` demands a POV sentence before designing. Where the brief is silent, pick decisively from context rather than splitting the difference; where it is genuinely ambiguous, ask exactly one closed question (brand name + one-line value prop + dark-cinematic vs light-editorial).
+Both lanes run the same discipline: for each axis, pick ONE option from a small set and commit -- no blending, no hedging. Picks must be internally consistent (a quiet-premium-neutral theme with compressed-industrial display type is a contradiction, not versatility). Declare the committed direction in 2-3 lines before generating anything, exactly as `aesthetic/01` demands a POV sentence before designing. Where the brief is silent, pick decisively from context rather than splitting the difference; where it is genuinely ambiguous, ask one question that pins the subject: brand name, one-line value prop, and the concrete world the product lives in (its materials, instruments, audience). Do not offer an aesthetic menu; derive dark/light and editorial/cinematic from the answer.
 
 ## 2. Design-reference generation
 
@@ -48,13 +48,13 @@ Both lanes run the same discipline: for each axis, pick ONE option from a small 
 
 ## 4. Brand boards
 
-A brand board is a visual argument, not a moodboard: one committed direction explored across applications, never a comparison of options. Five rhetorical roles, all present: **Anchor** (the mark at rest, maximum negative space -- exactly one panel, position one), **Proof** (the brand on real surfaces: screen, card, packaging -- 2-3 panels), **System** (the visible rules: color relationships, type hierarchy -- 1-2 panels), **World** (atmosphere -- exactly one), **Signal** (one piece of language in the brand's voice -- exactly one). Panel rhythm varies (never two quiet panels adjacent); premium detail is discovered, not announced -- 3-5 small details across the whole board (page numbers, mono section labels, low-opacity construction lines), no more.
+A brand board is a visual argument, not a moodboard: one committed direction explored across applications, never a comparison of options. Five rhetorical roles, all present: **Anchor** (the mark at rest, maximum negative space -- exactly one panel, position one), **Proof** (the brand on real surfaces: screen, card, packaging -- 2-3 panels), **System** (the visible rules: color relationships, type hierarchy -- 1-2 panels), **World** (atmosphere -- exactly one), **Signal** (one piece of language in the brand's voice -- exactly one). Panel rhythm varies (never two quiet panels adjacent); premium detail is discovered, not announced -- 3-5 small details across the whole board (page numbers, small-caps or weight-differentiated section labels, low-opacity construction lines), no more.
 
 Palette discipline mirrors the UI rule: one or two accents maximum, repeated across panels (one appearance is not a system), hex-specified, and no default purple-blue glow unless the strategy genuinely earns it. Tagline under 8 words, no corporate filler -- the banned-vocabulary list applies to brand copy exactly as to UI copy.
 
 ## 5. Handoff
 
-The output of either lane feeds forward: reference images go to `design/11-image-to-code-replication.md` for faithful implementation; the committed direction (palette hexes, type character, mood) seeds the token system via `design/01-color-oklch.md` and `design/02-typography.md`; and the POV sentence the direction implies gets recorded per `aesthetic/01-point-of-view.md` so every later decision can be checked against it.
+The output of either lane feeds forward: reference images go to `design/11-image-to-code-replication.md` for faithful implementation; the committed direction (palette hexes, converted to OKLCH at the token boundary, type character, mood) seeds the token system via `design/01-color-oklch.md` and `design/02-typography.md`; and the POV sentence the direction implies gets recorded per `aesthetic/01-point-of-view.md` so every later decision can be checked against it.
 
 ## See also
 

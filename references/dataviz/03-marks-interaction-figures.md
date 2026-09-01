@@ -40,7 +40,7 @@ A **legend is always present for two or more series**; it is the dependable iden
 
 - **Stat tile** contract: `label` (sentence case, no trailing colon) / `value` (sans semibold, auto-compact: 1,284 / 12.9K / $4.2M) / `delta` (optional; signed, vs a named period; color = direction x whether up is good) / `trend` (optional; 12-point sparkline in the de-emphasis hue, current period in the accent).
 - **Meter:** the fill carries severity (accent to warning to danger); the unfilled track is a lighter step of the same ramp so state reads across the whole bar.
-- **Hero figure:** the single number a dashboard leads with, >= 48px, in the same sans as everything else (a display or serif face reads as off-brand decoration). Exactly one per view.
+- **Hero figure:** the single number a dashboard leads with, >= 48px, in the same sans as everything else (a display or serif face reads as off-brand decoration). This is a deliberate exception to the ~24px dashboard cap in `references/design/02-typography.md`, which governs headings and labels, not data displays (stat-tile values are exempt on the same grounds). Exactly one per view.
 - **Proportional figures for big standalone numbers; tabular only in columns.** `font-variant-numeric: tabular-nums` gives every digit a `0`'s width, so `121` looks loose at display sizes. Reserve it for columns that must align vertically (table rows, axis ticks).
 
 ## 5. Texture: The Backup Channel (Opt-In)

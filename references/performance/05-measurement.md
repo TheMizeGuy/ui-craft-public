@@ -60,14 +60,20 @@ function send(name: string, metric: any) {
 }
 
 export function initRUM() {
-  // reportSoftNavs: true is safe to set unconditionally. The library ignores it
-  // when the browser does not support the soft-navigation entry type.
-  const opts = { reportAllChanges: false, reportSoftNavs: true };
-  onLCP((m) => send("LCP", m), opts);
-  onINP((m) => send("INP", m), opts);
-  onCLS((m) => send("CLS", m), opts);
+  // Two registrations per metric, on purpose. With reportSoftNavs on, Chromium 151+
+  // finalizes the initial URL's metrics at the first soft navigation; other browsers
+  // ignore the option and keep accumulating. Registering both sets keeps "initial
+  // load" meaning the same thing in every browser (web-vitals README, soft navigations).
+  const traditional = { reportAllChanges: false };
+  const softNav = { reportAllChanges: false, reportSoftNavs: true };
+  onLCP((m) => send("LCP", m), traditional);
+  onINP((m) => send("INP", m), traditional);
+  onCLS((m) => send("CLS", m), traditional);
+  onLCP((m) => send("LCP", m), softNav); // key soft-nav reports on m.navigationType + navigationId
+  onINP((m) => send("INP", m), softNav);
+  onCLS((m) => send("CLS", m), softNav);
   onTTFB((m) => send("TTFB", m));
-  onFCP((m) => send("FCP", m), opts);
+  onFCP((m) => send("FCP", m), traditional);
 }
 ```
 
@@ -77,7 +83,7 @@ Key attribution fields:
 
 | Metric | Attribution contains |
 |--------|-----------------------|
-| LCP | `element`, `url`, `timeToFirstByte`, `resourceLoadDelay`, `resourceLoadDuration`, `elementRenderDelay` |
+| LCP | `target`, `url`, `timeToFirstByte`, `resourceLoadDelay`, `resourceLoadDuration`, `elementRenderDelay`, `lcpEntry`, `lcpResourceEntry` |
 | INP | `interactionTarget`, `interactionType` (`"pointer"` or `"keyboard"` only), `inputDelay`, `processingDuration`, `presentationDelay`, `longAnimationFrameEntries`, `longestScript` |
 | CLS | `largestShiftTarget`, `largestShiftTime`, `largestShiftValue`, `loadState` |
 | TTFB | `waitingDuration`, `cacheDuration`, `dnsDuration`, `connectionDuration`, `requestDuration` |
@@ -342,7 +348,7 @@ Pick one field dashboard + one synthetic monitor. Don't spread across five tools
 | 5. Check third-party versions | Did analytics / chat / A-B tool auto-update? Roll back if yes |
 | 6. Check bundle size diff | `@next/bundle-analyzer` on both deploys; diff `.next/static/chunks/*`; identify new / grown chunks |
 | 7. Check route-level size | Next: `analyze` build; Vite: `rollup-plugin-visualizer`. Did a new dependency land in the main chunk? |
-| 8. Check LCP image attribution | RUM `attribution.element` + `attribution.resourceLoadDelay`: did the LCP image change? |
+| 8. Check LCP image attribution | RUM `attribution.target` + `attribution.resourceLoadDelay`: did the LCP image change? |
 | 9. Check font changes | New weight? New family? Metric-override regressed? |
 | 10. Check INP attribution | `attribution.interactionTarget` + LoAF `sourceURL`: which script caused it? |
 | 11. Fix + deploy + verify in RUM | 24h observation before declaring resolved |

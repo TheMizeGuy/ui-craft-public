@@ -25,9 +25,9 @@ Run all seven; each is a sheet filled with measured values, not assumptions.
 
 | Character | What it discriminates |
 |---|---|
-| lowercase `a` | single-story (Geist, Helvetica) vs double-story (Outfit, Satoshi, DM Sans) |
+| lowercase `a` | single-story (Futura, Century Gothic, Geist, Product Sans) vs double-story (Helvetica, Inter, DM Sans) |
 | lowercase `t` | curved crossbar (humanist) vs straight (geometric) |
-| capital `R` | straight leg (grotesque) vs curved leg (geometric) |
+| capital `R` | Helvetica's curled vertical leg vs the straight diagonal leg of Futura / Akzidenz-style grotesques -- face-specific, use as a tiebreaker, not a class discriminator |
 | capital `Q`, numerals `1 4 6 9` | strongly face-specific shapes |
 | lowercase `e` | high crossbar (geometric) vs centered (humanist) |
 
@@ -45,7 +45,7 @@ Below confident identification, state the top 2-3 candidates with the discrimina
 
 ## 3. Build order
 
-Tokens first (all Layer 2-5 values as custom properties), then layout skeleton (Layer 1 boxes, no content), then the typography pass, components, spacing verification, atmosphere, responsive collapse, and interaction states last. Each step depends on the previous; spacing errors found late usually trace to a skeleton built before the grid was measured. Do not round extracted values to convenient ones -- `15px` body text is `0.9375rem`, not `1rem`; rounding accumulates across a page. Interactive states the image cannot show still ship: hover, focus-visible, active on every interactive element, per this library's standing rules.
+Tokens first: every Layer 2-5 value as a custom property, colors converted from the sampled hex to `oklch()` (catalogue C15, taste 1.1) -- the sample is the measurement, the token is the authoring format. Then layout skeleton (Layer 1 boxes, no content), then the typography pass, components, spacing verification, atmosphere, responsive collapse, and interaction states last. Each step depends on the previous; spacing errors found late usually trace to a skeleton built before the grid was measured. Do not round extracted values to convenient ones -- `15px` body text is `0.9375rem`, not `1rem`; rounding accumulates across a page. Interactive states the image cannot show still ship: hover, focus-visible, active on every interactive element, per this library's standing rules.
 
 ## 4. Artistic assets: classify, never approximate
 

@@ -69,22 +69,22 @@ Three layers: primitive, semantic, component. Components only ever read semantic
 
 | Tier | Example | Purpose |
 |---|---|---|
-| Primitive | `--blue-500: oklch(0.58 0.20 250)` | Raw palette. Never appears in component CSS |
-| Semantic | `--accent-default: var(--blue-500)` | Intent-based alias. Swap for theme/brand without touching components |
+| Primitive | `--brand-500: oklch(0.58 0.20 95)` | Raw palette. Never appears in component CSS |
+| Semantic | `--accent-default: var(--brand-500)` | Intent-based alias. Swap for theme/brand without touching components |
 | Component | `--button-bg: var(--accent-default)` | Per-component binding. Granular override surface |
 
 ```css
 :root {
-  /* Tier 1: primitive ramp */
-  --blue-500: oklch(0.58 0.20 250);
-  --blue-600: oklch(0.48 0.20 250);
-  --gray-50:  oklch(0.98 0 0);
-  --gray-900: oklch(0.18 0 0);
-  --red-500:  oklch(0.62 0.24 25);
+  /* Tier 1: primitive ramp (hue 95 is the section-4 worked example, not a recommendation) */
+  --brand-500: oklch(0.58 0.20 95);
+  --brand-600: oklch(0.48 0.20 95);
+  --gray-50:   oklch(0.98 0 0);
+  --gray-900:  oklch(0.18 0 0);
+  --red-500:   oklch(0.62 0.24 25);
 
   /* Tier 2: semantic */
-  --accent-default: var(--blue-500);
-  --accent-hover:   var(--blue-600);
+  --accent-default: var(--brand-500);
+  --accent-hover:   var(--brand-600);
   --surface:        var(--gray-50);
   --text:           var(--gray-900);
   --feedback-error: var(--red-500);
@@ -150,12 +150,13 @@ Change `--brand` once, the whole ramp regenerates. Chroma tapers at the extremes
 ```css
 :root {
   color-scheme: light dark;
+  --brand-hue: 95;   /* derive from the brief, as in section 4 */
 
   --text:        light-dark(oklch(0.20 0 0), oklch(0.92 0 0));
   --surface:     light-dark(oklch(0.98 0 0), oklch(0.16 0 0));
   --surface-2:   light-dark(oklch(0.95 0 0), oklch(0.21 0 0));
   --border:      light-dark(oklch(0.85 0 0), oklch(0.30 0 0));
-  --accent:      light-dark(oklch(0.50 0.20 250), oklch(0.72 0.18 250));
+  --accent:      light-dark(oklch(0.50 0.20 var(--brand-hue)), oklch(0.72 0.18 var(--brand-hue)));
 }
 
 /* light-dark() resolves colors ONLY. A shadow, an opacity, a length, or a bare
@@ -197,9 +198,9 @@ Four adjustments that separate an authored dark theme from a mirrored one:
 
 ([web.dev light-dark()](https://web.dev/articles/light-dark)).
 
-## 6. APCA over WCAG 2 contrast ratios
+## 6. APCA contrast ladder, with the WCAG 2.x floor
 
-WCAG 2 ratios fail on dark mode (over-rates dark-on-darker as legible) and ignore weight/size. APCA (the WCAG 3.0 candidate) is polarity-aware and font-size-aware. Score is `Lc` ranging roughly `-108..+106`; magnitude matters, sign indicates polarity.
+WCAG 2 ratios are a poor design tool on dark mode (they over-rate dark-on-darker as legible) and ignore weight/size. APCA (the WCAG 3.0 candidate) is polarity-aware and font-size-aware. APCA is the design ladder; WCAG 2.x is still the compliance claim. Score is `Lc` ranging roughly `-108..+106`; magnitude matters, sign indicates polarity.
 
 | Lc | Use case |
 |---|---|
@@ -210,18 +211,21 @@ WCAG 2 ratios fail on dark mode (over-rates dark-on-darker as legible) and ignor
 | 30+ | Decorative non-essential |
 | <15 | Invisible. Never for functional content |
 
+WCAG 2.x remains the compliance floor and is checked in the same pass: every text pair at least `4.5:1`, or `3:1` for large text (24px regular / 18.66px bold and above) and for non-text UI (icons, borders, focus rings, 1.4.11). A pair that passes APCA and fails WCAG 2.x fails. Math, thresholds and the finding format: `references/accessibility/01-wcag-2-2.md` section 5; when to use which: section 6.
+
 Calculate via the `apca-w3` npm package or `apcach` (OKLCH-aware):
 
 ```ts
-import { apcaContrast } from "apca-w3";
-// inputs: text-color (foreground), bg-color (background)
-const lc = apcaContrast("#1A1A1A", "#FCFCFC");   // ~98 -> safe for body
+import { calcAPCA } from "apca-w3";
+// arguments: text colour first, background second; the sign is polarity (positive = dark text on light)
+const lc = calcAPCA("#1A1A1A", "#FCFCFC");   // ~98 -> clears 90+ for small body text
+// long form: APCAcontrast(sRGBtoY(text), sRGBtoY(bg))
 ```
 
 ```ts
 import { apcach, apcachToCss, crToBg } from "apcach";
-// "I want a color with Lc 75 against the page surface, hue 250, max chroma"
-const accessibleAccent = apcach(crToBg("#FFFFFF", 75), 0.18, 250);
+// "I want a color with Lc 75 against the page surface, hue 95, max chroma"
+const accessibleAccent = apcach(crToBg("#FFFFFF", 75), 0.18, 95);
 const css = apcachToCss(accessibleAccent, "oklch");
 ```
 
@@ -233,10 +237,10 @@ P3 ships on every modern Apple display (iPhone 7+, iPad Pro 2017+, every M-serie
 
 ```css
 .accent {
-  /* sRGB fallback declared first */
-  color: rgb(0 102 204);
+  /* sRGB fallback declared first: the gamut-mapped value of the OKLCH line below */
+  color: rgb(134 112 0);
   /* OKLCH layer — wins on supporting browsers, browser clamps to gamut */
-  color: oklch(0.55 0.20 250);
+  color: oklch(0.55 0.20 95);
 }
 
 /* P3-only vibrant accent — use only if the design degrades gracefully without it */
@@ -246,7 +250,7 @@ P3 ships on every modern Apple display (iPhone 7+, iPad Pro 2017+, every M-serie
 
 /* Feature query — gate experimental rules behind oklch() support */
 @supports (color: oklch(0.7 0.15 30)) {
-  :root { --accent: oklch(0.58 0.20 250); }
+  :root { --accent: oklch(0.58 0.20 95); }
 }
 ```
 
@@ -266,6 +270,6 @@ P3 ships on every modern Apple display (iPhone 7+, iPad Pro 2017+, every M-serie
 | Hex literals in components | Breaks theming, multi-brand, dark mode, tokens spec compliance | Tokens at every layer. No `#` outside `:root` or `@theme` |
 | HSL for ramp generation | Perceptual non-uniformity; lightness lies | Author in OKLCH, derive with relative color syntax |
 | `filter: invert()` for dark mode | Inverts photos, maps, video, illustrations — visually wrong | Author dual values via `light-dark()` per token |
-| `transparent` over a colored surface | `transparent` = `rgba(0,0,0,0)`; multiplies dark when used over color | Use `oklch(L C H / 0)` or `color-mix(in oklch, var(--surface), transparent)` |
+| `transparent` in `color-mix()` or a JS-interpolated gradient | `transparent` = `rgba(0,0,0,0)`; interpolation that does not premultiply alpha passes through dark gray (CSS gradients and transitions premultiply and do not) | Use `oklch(L C H / 0)` or `color-mix(in oklch, var(--surface), transparent)` |
 
 ([web.dev high-definition CSS color guide](https://web.dev/articles/high-definition-css-color-guide)).

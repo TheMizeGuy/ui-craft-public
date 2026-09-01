@@ -22,14 +22,48 @@ failing accessibility verdict.
 
 ### Blocker flags (checked before verdicts)
 
-A verdict cannot be assigned STRONG/ROBUST/FLUID/INCLUSIVE/RESPONSIVE-tier while its
-matching blocker flag is set. Blocker flags are the gate; verdicts are the nuance layered
-on top:
+Blocker flags are the gate; verdicts are the nuance layered on top. The verifier is the only
+producer: it sets each flag from the VERIFIED findings, names the finding number that set it,
+and reports every flag explicitly, set or not (silence is indistinguishable from "not
+checked"). On the `review-ui` path, which runs no verifier, the coordinator applies the same
+table during the merge.
 
-- `accessibility_blocker`
-- `responsive_blocker`
-- `core_task_blocker`
-- `runtime_instability`
+| Flag | Set when a verified finding shows |
+|---|---|
+| `accessibility_blocker` | Users are excluded: no keyboard path to a control, focus not visible or obscured, unlabeled core control, body-text contrast failure, motion with no reduce-motion path |
+| `responsive_blocker` | Primary content scrolls horizontally at 320px, or a control is clipped, overlapped, or unreachable at any width in the default matrix |
+| `core_task_blocker` | A task named in FLOWS IN SCOPE cannot be completed: dead end, lost input across a step, no recovery from an error state, a non-functional control on the path |
+| `runtime_instability` | Verified jank, dropped frames, layout thrash, or a Core Web Vitals threshold breach |
+
+A set flag caps its dimension at the 3rd token of its family, never the 1st or 2nd: a
+blocker means users excluded or a path broken, which is what the 3rd token names, and it maps
+to RED at the CI gate rather than YELLOW.
+
+| Flag | Dimension it caps |
+|---|---|
+| `accessibility_blocker` | Accessibility (INCLUSIVE and ADEQUATE barred; GAPS at best) |
+| `responsive_blocker` | Responsive quality (ROBUST and ADEQUATE barred; FRAGILE at best) |
+| `runtime_instability` | Runtime smoothness (RESPONSIVE and ACCEPTABLE barred; SLUGGISH at best) |
+| `core_task_blocker` | Visual quality, the family whose specialist files the usability findings (STRONG and ADEQUATE barred; WEAK at best) |
+
+Motion quality, Anti-AI aesthetic and TypeScript safety carry no flag; their tokens come from
+the derivation table alone.
+
+### Verdict derivation
+
+One row per dimension that had a dispatched specialist, derived mechanically from that
+dimension's verified findings, then capped by its flag:
+
+| Verified findings in that dimension | Verdict tier (from that dimension's four-token family) |
+|---|---|
+| Any CRITICAL | 4th token (worst) |
+| Any HIGH, no CRITICAL | 3rd token |
+| Only MEDIUM / LOW | 2nd token |
+| Only TASTE, or none, with driven or measured evidence | 1st token (best) |
+| None, in static-analysis or screenshot-only evidence mode | 2nd token, with `(evidence: static, <what was not exercised>)` appended; a clean automation run never earns the 1st token |
+
+A deviation from the mechanical derivation is stated in Verification Notes with its reason; a
+silent deviation makes two runs on the same findings disagree.
 
 ### Report usage
 
@@ -68,12 +102,12 @@ The table below applies it per finding type:
 
 | Finding type | Minimum evidence required | Action if missing |
 |---|---|---|
-| Pixel-precision alignment claim | Layout metrics, bounding box data, or DOM geometry | Downgrade to "possible -- needs geometry measurement" or remove |
-| Motion claim (sluggish/excessive) | Code timing analysis, video, or trace | Downgrade to "code suggests -- verify at runtime" |
+| Pixel-precision alignment claim | Layout metrics, bounding box data, or DOM geometry | Keep the confidence class; add `[unverified: geometry measurement needed]` to the Evidence line; cap at MEDIUM; or remove when nothing supports it |
+| Motion claim (sluggish/excessive) | Code timing analysis, video, or trace | Keep the class; add `[unverified: runtime measurement needed]`; cap at MEDIUM |
 | Accessibility violation | WCAG criterion + code/DOM evidence or automated scan result | Keep if code evidence is clear; soften if screenshot-only |
 | Contrast failure | Computed color values + contrast ratio | Remove if based on screenshot color estimation only |
 | Responsive failure | Evidence at specific viewport width(s) | Keep if code analysis or screenshot at that width exists |
-| Performance claim | Metric measurement, code analysis, or trace data | Downgrade to "likely -- measure to confirm" |
+| Performance claim | Metric measurement, code analysis, or trace data | Keep the class; add `[unverified: runtime measurement needed]`; cap at MEDIUM |
 
 ### False-positive filters
 
@@ -108,6 +142,7 @@ Grouping rules -- collapsing repeated instances of the same finding within one d
 |---|---|
 | Taste comment at HIGH/CRITICAL | Downgrade to TASTE |
 | Accessibility blocker at MEDIUM/LOW | Upgrade to HIGH/CRITICAL |
+| Core task blocked at any width in the default matrix, or primary content scrolling horizontally at 320px, at MEDIUM/LOW | Upgrade to HIGH |
 | Pattern smell at CRITICAL | Downgrade to MEDIUM unless evidence supports objective failure |
 | Quality defect without user impact | Downgrade to LOW |
 
@@ -145,7 +180,7 @@ The verifier's output is a re-ranked, deduplicated findings list, not a raw pass
 ...
 
 ## Verification Notes
-- Removed: "header alignment off by 2px" -- no geometry evidence, screenshot-only assertion
+- Capped: "header alignment off by 2px" held at MEDIUM -- [unverified: geometry measurement needed], screenshot-only assertion
 - Downgraded: "generic color palette" from MEDIUM to TASTE -- no objective quality impact
 - Merged: contrast findings from visual + accessibility into finding #3
 ```

@@ -7,7 +7,7 @@ audience: ui-engineer
 
 # UI State Typing (Discriminated Unions, Reducers, Boundaries)
 
-The single most common UI bug pattern is **impossible state combinations**: `isLoading && isError`, modal `isOpen` with no payload, form `isValid && hasErrors`. TypeScript's discriminated unions plus `noUncheckedIndexedAccess` plus `useUnknownInCatchVariables` (all on by default in TS 6.0 strict mode) eliminate the entire class.
+The single most common UI bug pattern is **impossible state combinations**: `isLoading && isError`, modal `isOpen` with no payload, form `isValid && hasErrors`. TypeScript's discriminated unions plus `noUncheckedIndexedAccess` plus `useUnknownInCatchVariables` (`useUnknownInCatchVariables` is part of `strict`, on by default in TS 6.0; `noUncheckedIndexedAccess` must be enabled explicitly, see `references/typescript/01-ts6-essentials.md` § Strictness ladder) eliminate the entire class.
 
 Baseline: `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, `useUnknownInCatchVariables: true` (see `references/typescript/01-ts6-essentials.md`).
 
@@ -46,9 +46,11 @@ type UserPanelState =
   | { status: "success"; data: User }
   | { status: "error"; error: Error };
 
+declare function load(): Promise<void>; // the fetch action, owned by the caller
+
 function render(s: UserPanelState) {
   switch (s.status) {
-    case "idle":    return <button onClick={fetch}>Load</button>;
+    case "idle":    return <button onClick={() => void load()}>Load</button>;
     case "loading": return <Spinner />;
     case "success": return <Profile user={s.data} />;
     case "error":   return <Alert>{s.error.message}</Alert>;

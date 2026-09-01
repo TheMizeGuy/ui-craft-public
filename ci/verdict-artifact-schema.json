@@ -67,7 +67,7 @@
         "runtime": { "$ref": "#/definitions/verdict", "description": "Gate token for runtime smoothness (RESPONSIVE/ACCEPTABLE/SLUGGISH/UNSTABLE family); corresponds to finding.dimension 'performance'." },
         "antiAiAesthetic": { "$ref": "#/definitions/verdict", "description": "Gate token for anti-AI aesthetic (DISTINCTIVE/ADEQUATE/GENERIC/AI-DEFAULT family); corresponds to finding.dimension 'anti-ai'. Required since v3: every UI surface can be judged for AI-default aesthetics, so 'the auditor did not run' is a gap to fix, not a reason to omit the key." },
         "typescriptSafety": { "$ref": "#/definitions/verdict", "description": "Optional gate token for TypeScript safety (SOUND/ADEQUATE/LEAKY/UNSOUND family); corresponds to finding.dimension 'typescript'. Omit on non-TypeScript projects." },
-        "usability": { "$ref": "#/definitions/verdict", "description": "Optional gate token for usability and task flow (EFFORTLESS/ADEQUATE/AWKWARD/BLOCKING family); corresponds to finding.dimension 'usability'. Optional while the usability specialist is still adaptive; it becomes required once every improve-ui pass dispatches it." }
+        "usability": { "$ref": "#/definitions/verdict", "description": "Optional gate token for usability and task flow (its four-point family is not yet defined in references/review/04-verdicts-and-verification.md, and the key stays omitted until it is); corresponds to finding.dimension 'usability'. Optional while the usability specialist is still adaptive; it becomes required once every improve-ui pass dispatches it." }
       }
     },
     "overall": {

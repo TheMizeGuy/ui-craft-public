@@ -17,9 +17,9 @@ Anything below that names a version has been checked against react.dev. If a pro
 |--------|--------|
 | What it does | Auto-memoizes components, hooks, and derived values. Generates the equivalent of `React.memo` / `useMemo` / `useCallback` at compile time, guided by React's Rules of React |
 | Why it exists | Manual memoisation is error-prone (missing deps, stale closures, over-memoising). Compiler is correct by construction and typically outperforms hand-tuned memos |
-| Opt-in | Babel plugin `babel-plugin-react-compiler@latest` (Next.js 15+: `experimental.reactCompiler: true` in `next.config.js`; Vite: plugin from `babel-plugin-react-compiler`) |
+| Opt-in | Babel plugin `babel-plugin-react-compiler@latest` (Next.js 16+: top-level `reactCompiler: true` in `next.config.ts`, stable; Next.js 15: `experimental.reactCompiler: true`; Vite: plugin from `babel-plugin-react-compiler`) |
 | Disable a component | `"use no memo"` directive at the top of the function body. Reserved for components with impure code or unusual patterns |
-| Healthcheck | Install `eslint-plugin-react-hooks@latest` and enable its `recommended-latest` preset. That preset carries the compiler's diagnostics: it reports any component the compiler would refuse to compile, with the reason, and it works before the compiler is adopted. There is no separate `eslint-plugin-react-compiler` package to install; the one on npm is an abandoned release candidate |
+| Healthcheck | Install `eslint-plugin-react-hooks@latest` (7+) and enable its `recommended` preset (flat config: `reactHooks.configs.flat.recommended`; `recommended-latest` is deprecated). That preset carries the compiler's diagnostics: it reports any component the compiler would refuse to compile, with the reason, and it works before the compiler is adopted. There is no separate `eslint-plugin-react-compiler` package to install; the one on npm is an abandoned release candidate |
 | When to disable manually | Rare. Only when profiling shows the compiler-memoised component is slower than a hand-tuned variant (effectively never in app code; can happen in hot virtualised-list inner components) |
 
 `babel.config.js`:
@@ -37,7 +37,7 @@ module.exports = {
 };
 ```
 
-Rules of React enforcement (`eslint-plugin-react-hooks`, `recommended-latest` preset):
+Rules of React enforcement (`eslint-plugin-react-hooks`, `recommended` preset):
 
 | Rule | Violation means |
 |------|-----------------|
@@ -225,7 +225,7 @@ For instant feedback on mutations. Canonical use: like button, save indicator, o
 
 ```tsx
 "use client";
-import { useOptimistic } from "react";
+import { useOptimistic, startTransition } from "react";
 import { likePost } from "./actions";
 
 export function LikeButton({ post }: { post: Post }) {
@@ -234,9 +234,11 @@ export function LikeButton({ post }: { post: Post }) {
     (state, delta: number) => state + delta,
   );
 
-  const onClick = async () => {
-    addOptimistic(1);          // UI updates to +1 immediately
-    await likePost(post.id);   // Server Action confirms; reverted if it throws
+  const onClick = () => {
+    startTransition(async () => {
+      addOptimistic(1);        // shown for the length of the transition
+      await likePost(post.id); // real state arrives; the optimistic value is discarded
+    });
   };
 
   return <button onClick={onClick}>Like {optimisticCount}</button>;
@@ -442,7 +444,7 @@ For the `ui-perf-engineer` agent to walk through on every non-trivial component:
 
 9. If the app is on React 19.2+, is hidden-but-returnable UI wrapped in `<Activity mode="hidden">` instead of being unmounted and refetched?
 
-Run `eslint-plugin-react-hooks` with the `recommended-latest` preset on every PR. It carries both the Rules of Hooks lints and the React Compiler diagnostics, and catches the most common regressions statically.
+Run `eslint-plugin-react-hooks` with the `recommended` preset on every PR. It carries both the Rules of Hooks lints and the React Compiler diagnostics, and catches the most common regressions statically.
 
 ## Sources (canonical)
 

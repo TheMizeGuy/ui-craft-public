@@ -19,7 +19,7 @@ A layout that never breaks can still fail your review. Fixed pixel widths, per-b
 | Fluid and intrinsic sizing | `${CLAUDE_PLUGIN_ROOT}/references/responsive/01-fluid-and-intrinsic-sizing.md` |
 | Breakpoints vs container queries | `${CLAUDE_PLUGIN_ROOT}/references/responsive/02-breakpoints-vs-container-queries.md` |
 | Zoom, orientation, adaptive postures | `${CLAUDE_PLUGIN_ROOT}/references/responsive/03-zoom-orientation-and-adaptive.md` |
-| Spacing scale, container queries, intrinsic sizing, viewport units | `${CLAUDE_PLUGIN_ROOT}/references/design/03-spacing-rhythm.md` |
+| Spacing scale and fluid space tokens (viewport units, container queries and intrinsic sizing are owned by responsive/01-02 above) | `${CLAUDE_PLUGIN_ROOT}/references/design/03-spacing-rhythm.md` |
 | Fluid type scale (`clamp()` ladder, §4) | `${CLAUDE_PLUGIN_ROOT}/references/design/02-typography.md` |
 | Viewport matrix | `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md` |
 | Universal rubric | `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` |
@@ -52,7 +52,7 @@ Android: compact through extra-large window size classes, including foldable sta
 Then settle the evidence mode before doing any measuring, because it changes what you are allowed to claim:
 
 - **Measured mode.** A browser tool resolves (`browser_navigate`, `browser_resize`, `browser_evaluate`). Drive the matrix yourself and capture geometry. Spatial findings can be stated as fact.
-- **Static-analysis mode.** No browser tool resolves, or there is no running app. Say so in the report header, and restrict findings to what the source proves: fixed widths, per-breakpoint type overrides, viewport queries on portable components, `100vh`, missing safe-area handling, missing internal scroll on sheets, locked orientation. Every geometry claim stays at `[Possible issue -- geometry measurement needed]`. Do not silently downgrade the whole review to guesswork: static analysis catches the root causes in steps 2 to 4 completely, and those are the findings that lead to fluid fixes.
+- **Static-analysis mode.** No browser tool resolves, or there is no running app. Say so in the report header, and restrict findings to what the source proves: fixed widths, per-breakpoint type overrides, viewport queries on portable components, `100vh`, missing safe-area handling, missing internal scroll on sheets, locked orientation. Every geometry claim keeps its canonical class, carries `[unverified: geometry measurement needed]` on its `Evidence:` line, and is capped at MEDIUM. Do not silently downgrade the whole review to guesswork: static analysis catches the root causes in steps 2 to 4 completely, and those are the findings that lead to fluid fixes.
 
 ### 2. Classify the sizing strategy before hunting failures
 
@@ -83,11 +83,11 @@ grep -rEn "(sm|md|lg|xl):text-|@media[^{]*\{[^}]*font-size" src/   # per-breakpo
 
 | Check | Pass condition | Defect signal | Severity |
 |---|---|---|---|
-| Type scale | Every display and heading step is `clamp(min, rem-intercept + vw-slope, max)` with the viewport pair recorded | One fixed rem per step, or `md:text-5xl` overrides doing the scaling | HIGH |
+| Type scale | Every display and heading step is `clamp(min, rem-intercept + vw-slope, max)` with the viewport pair recorded | One fixed rem per step, or `md:text-5xl` overrides doing the scaling | MEDIUM (HIGH when the preferred value has no `rem` term, see below) |
 | Section spacing | Width-sensitive padding and gaps use `clamp()` or container-query units | The same fixed rem at 320px and 2560px | MEDIUM |
 | Layout containers | `minmax(min(100%, 20rem), 1fr)`, `fit-content`, `min()`/`max()`, or a capped measure | `width: NNNpx` on anything that holds layout | HIGH |
 | Grids | `repeat(auto-fit, minmax(min(100%, 18rem), 1fr))` | `grid-cols-3` at every width, or a breakpoint ladder re-declaring the column count | HIGH |
-| Viewport height | `svh` / `dvh` (`lvh` only where the taller measure is wanted) | `100vh`, `h-screen` | HIGH on mobile, MEDIUM on desktop-only |
+| Viewport height | `svh` / `dvh` (`lvh` only where the taller measure is wanted) | `100vh`, `h-screen` | HIGH on a modal, sheet, drawer or full-height form; MEDIUM on a decorative hero; not a finding on a desktop-only surface (`references/responsive/01-fluid-and-intrinsic-sizing.md` section 7) |
 | Media | `max-width: 100%`, `height: auto`, explicit `aspect-ratio` | Fixed px dimensions on `img`/`video`, or no aspect ratio (CLS plus clipping) | MEDIUM |
 
 The fix shape, so the finding lands with a rewrite rather than a complaint:
@@ -97,11 +97,11 @@ The fix shape, so the finding lands with a rewrite rather than a complaint:
 .hero-title { font-size: 2.25rem; }
 @media (min-width: 768px) { .hero-title { font-size: 4.5rem; } }
 
-/* fluid: 36px at 320px, 72px at 1440px, still zoom-scalable because the intercept is rem */
-.hero-title { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 4.5rem); }
+/* fluid: 36px at 360px, 72px at 1440px, still zoom-scalable because the intercept is rem */
+.hero-title { font-size: clamp(2.25rem, 1.5rem + 3.333vw, 4.5rem); }
 ```
 
-A `clamp()` whose intercept is pure `vw` with no `rem` term breaks text resize (WCAG 1.4.4). Flag that as a HIGH, not a nit.
+A `clamp()` whose preferred value is pure `vw` with no `rem` term breaks text resize (WCAG 1.4.4). Flag that as a HIGH, not a nit.
 
 ### 4. Judge the breakpoint vs container-query decision
 
@@ -116,7 +116,7 @@ Tracing which mechanism is used is not a review. Judge it against this table:
 
 Two failure modes, both findings:
 
-- **Every component on the global `sm/md/lg` ladder.** Portable components are coupled to the viewport and break the first time they are reused in a narrower slot. MEDIUM normally, HIGH once the component demonstrably appears in two different slot widths in this codebase.
+- **Every component on the global `sm/md/lg` ladder.** Portable components are coupled to the viewport and break the first time they are reused in a narrower slot. MEDIUM normally; HIGH once the component demonstrably renders at two container widths with a visible layout defect at one of them (`references/responsive/02-breakpoints-vs-container-queries.md` section 8).
 - **Container query thresholds copied from the breakpoint ladder.** A container threshold is chosen from the component's own content: measure its `min-content` width and the width at which its two-column form stops cramping, then set the threshold there. `@container (min-width: 768px)` on a card that is never 768px wide is dead code. MEDIUM.
 
 Do not flag `md:` on the page shell. Blanket "media queries bad" findings are noise and the verifier will strip them.
@@ -133,7 +133,7 @@ Widths come from `references/review/03-viewport-matrix.md`. Add these height-bea
 | Portrait phone | 390x844 | Baseline |
 | Landscape phone | 844x390 | Fixed chrome eating the whole viewport |
 | Landscape phone, keyboard open | 844x~200 | Submit buttons pushed off-screen in forms |
-| 400% zoom on a 1280px display | 320 CSS px | WCAG 2.2 1.4.10 reflow |
+| 400% zoom on a 1280x1024 display | 320x256 CSS px | WCAG 2.2 1.4.10 reflow |
 
 ### 6. Check the vertical budget: landscape, keyboard, zoom, reflow
 
@@ -143,8 +143,8 @@ Landscape phone is a HEIGHT constraint, not a width one. Modelling it as a 568px
 - **Keyboard open.** With the software keyboard up, usable height drops to roughly 180 to 200px on a landscape phone. The focused field and the primary action must both stay visible, and the layout must react to the visual viewport rather than assuming a fixed height.
 - **Internal scroll.** Any modal, sheet, or dialog taller than the viewport scrolls inside itself (`max-block-size: 100dvh` plus an `overflow: auto` body region) with its action row pinned. A dialog whose confirm button is below the fold with no scroll is CRITICAL.
 - **Units.** `svh` / `dvh` on those surfaces, never `100vh`. On mobile browsers `100vh` is the tallest state, so the bottom of the layout sits under the browser chrome exactly when the toolbar is showing.
-- **Zoom and reflow.** At 400% zoom on a 1280px viewport (equal to 320 CSS px), WCAG 2.2 1.4.10 forbids two-dimensional scrolling, content loss, and functionality loss. Also check text-only zoom to 200% (1.4.4): layouts sized in px rather than rem fail this while passing full-page zoom.
-- **Orientation.** Check for `screen.orientation.lock()` and manifest orientation locks (WCAG 1.3.4: no lock unless essential). Where layout genuinely must differ by orientation, it belongs in `@media (orientation: landscape)` or an aspect-ratio query. A width breakpoint cannot distinguish a landscape phone from a small tablet, and that confusion is the usual cause of a phone getting the tablet layout on its side.
+- **Zoom and reflow.** At 400% zoom on a 1280px viewport (equal to 320 CSS px), WCAG 2.2 1.4.10 forbids two-dimensional scrolling, content loss, and functionality loss. Also set the root font size to 24px (or use Firefox text-only zoom): a layout that does not move is px-sized, a MEDIUM systemic finding (`references/responsive/03-zoom-orientation-and-adaptive.md` sections 3 and 9). The hard 1.4.4 failure is `vw`- or `cqi`-only text, which does not grow under page zoom at all.
+- **Orientation.** Check for `screen.orientation.lock()` and manifest orientation locks (WCAG 1.3.4: no lock unless essential). Where the layout must change on a short viewport, key it to height (`@media (height <= 32rem)`, `references/responsive/03-zoom-orientation-and-adaptive.md` section 5), never to `orientation`, which also matches every desktop window. Reserve `orientation` and `aspect-ratio` queries for media that must not letterbox.
 
 ### 7. Check adaptive postures: foldables, split windows, Stage Manager
 
@@ -184,7 +184,7 @@ Named coverage without criteria is not coverage. Check these explicitly, on any 
   viewport with zero `<details>` is a finding; so is any non-primary section
   over 40% of page height
 - Excessive dead space on large displays (see step 8, it is an always-flag now)
-- Line lengths > 80ch on wide screens
+- Line lengths > 75ch on wide screens
 - Proportions comically stretched/cramped
 - Awkward breakpoint jumps: a layout that visibly snaps between two states with nothing in between is the stepped-sizing defect from step 3 showing up visually
 - Important actions in hard-to-reach areas
@@ -205,7 +205,7 @@ Named coverage without criteria is not coverage. Check these explicitly, on any 
 
 All three together satisfy the canonical geometry evidence rule
 (`${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md`, "Geometry evidence rule");
-a spatial claim without them stays capped at "Possible issue -- geometry measurement needed".
+a spatial claim without them carries the `[unverified: geometry measurement needed]` modifier and is capped at MEDIUM.
 In static-analysis mode you will not have them, which is exactly why that mode is declared in
 the header rather than papered over.
 
@@ -216,15 +216,15 @@ severity-tagged viewport finding in the strict format (severity tag + confidence
 family grouping with affected/unaffected widths, all three geometry contexts in Evidence):
 
 ```
-[HIGH] [Hard defect] Responsive layout -- checkout summary clips primary action
+[HIGH] [Hard defect] Responsive quality -- checkout summary clips primary action
 Surface: checkout screen, summary footer, portrait phones
-Affected viewports: 390px, 360px, 320px portrait
-Unaffected: 430px, 768px+
+Location: runtime only
 Issue: fixed summary footer overlaps the pay button area below 430px
 Why it matters: users cannot complete checkout on common phone widths
 Evidence: screenshots at 390/360/320px; geometry at 390x844 viewport -- container
 `.checkout-summary` 390px wide, pay button box 358x48 at y=812, overlapped 22px by the
 fixed footer (viewport + container + component box satisfy the geometry evidence rule)
+Viewport: 320, 360, 390 (unaffected: 430, 768+)
 Recommended change: stack totals above actions below 430px; add
 `padding-bottom: env(safe-area-inset-bottom)` to the action bar
 ```
@@ -237,13 +237,15 @@ Severity vocabulary (shared across every ui-craft reviewer, and re-validated by 
 
 | Tag | Meaning for this dimension |
 |---|---|
-| **CRITICAL** | Content or a required action is unreachable at a supported size, orientation, or zoom level: overflow that hides primary content, a dialog whose confirm button cannot be reached, 1.4.10 reflow failure at 400% |
-| **HIGH** | The layout adapts badly enough to cost the user: fixed-width layout containers, stepped type doing the scaling, `100vh` on mobile, state lost on resize, targets under the platform minimum, a portable component coupled to the viewport in a codebase that reuses it |
-| **MEDIUM** | Quality cost that does not block a task: non-fluid section spacing, container thresholds copied from the breakpoint ladder, dead space above 1600px, missing safe-area handling on a non-critical edge |
+| **CRITICAL** | Content or a required action is unreachable at a supported size, orientation, or zoom level: overflow that hides primary content, a dialog whose confirm button cannot be reached, a 1.4.10 reflow failure that blocks the primary task |
+| **HIGH** | The layout adapts badly enough to cost the user: fixed-width layout containers, `100vh` on a modal, sheet, drawer or full-height form, state lost on resize, targets under the platform minimum, a portable component coupled to the viewport with a visible defect at one of its slot widths, 1.4.10 two-dimensional scroll or content loss that does not block the primary task |
+| **MEDIUM** | Quality cost that does not block a task: non-fluid section spacing, stepped type doing the scaling, container thresholds copied from the breakpoint ladder, bounded dead space above 1600px that stays at or above 60% utilisation (under 60% is HIGH, step 8), missing safe-area handling on a non-critical edge |
 | **LOW** | Polish: a newer sizing primitive would simplify, a matrix width untested but low risk |
 | **TASTE** | Pure preference. Use sparingly; the verifier downgrades any taste comment escalated above this tier |
 
-Confidence class (prefix on every finding): `[Hard defect]` (objective, evidence-backed), `[Quality defect]` (clear quality cost), `[Possible issue -- geometry measurement needed]` (spatial claim not yet backed by the required evidence). In static-analysis mode, source-provable findings still qualify as `[Hard defect]`; only geometry claims drop.
+**Confidence class** (prefix on every finding) is one of the four classes in the rubric's Layer 3: `[Hard defect]`, `[Quality defect]`, `[Pattern smell]`, `[Taste note]`. Do not invent other class names. In particular there is no `[Possible issue]` class: `ci/ui-craft-gate.sh` and `ci/verdict-artifact-schema.json` hard-reject any value outside those four, so an invented class fails the merge gate outright rather than softening a claim.
+
+Insufficient evidence is an evidence STATUS, not a confidence class. When a spatial claim lacks the geometry evidence the rule requires: keep the correct canonical class, append `[unverified: geometry measurement needed]` to the `Evidence:` line, and cap that finding at MEDIUM until it is measured.
 
 ### 14. Output structure
 
@@ -259,7 +261,10 @@ Open with the summary block:
 **Sizing strategy:** <fluid + container-driven | stepped breakpoints | fixed px | mixed, per the step-2 table>
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
 **Blocker flags:** <responsive_blocker set | clear>
-**Verdict:** <ROBUST | ADEQUATE | FRAGILE | BROKEN> -- <one line>
+**Verdict:** <ROBUST | ADEQUATE | FRAGILE | BROKEN>
+**Summary:** <one line; the verdict line above is a bare token because the report table and the CI gate consume it mechanically>
+
+Machine fields on every finding: `id` is `responsive-<kebab-slug>`, `dimension` is `responsive`, `file` and `line` come from `Location:`; the `<Dimension>` slot in the header is `Responsive quality`.
 ```
 
 Verdict rubric, applied in order (the first matching row wins):
@@ -271,8 +276,8 @@ Verdict rubric, applied in order (the first matching row wins):
 | ADEQUATE | Adapts everywhere with quality costs: some non-fluid spacing, some viewport-coupled components, some dead space |
 | ROBUST | Fluid or intrinsic sizing throughout, container-driven components, reflow at 400% clean, postures and resize survive |
 
-`responsive_blocker` is set whenever the verdict is BROKEN, and whenever 1.4.10 reflow fails.
-A verdict of ROBUST may never be reported while the blocker flag is set.
+Propose `responsive_blocker` (the verifier confirms it) whenever the verdict is BROKEN, and whenever 1.4.10 reflow fails.
+Neither ROBUST nor ADEQUATE may be reported while the blocker flag is set: FRAGILE at best (`references/review/04-verdicts-and-verification.md` § Blocker flags).
 
 Then the step-2 sizing-strategy table, then findings ordered by severity (CRITICAL first), grouped by failure family within severity. End with:
 

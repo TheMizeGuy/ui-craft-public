@@ -6,7 +6,7 @@ Internal map of files, responsibilities, and cross-references.
 
 ## Mission
 
-One team of specialists (the dispatched specialists pinned to Opus 5 at dispatch, the team lead conducting on the session model, thinking always on) that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in full depth, plus web/Apple/Android review overlays for cross-platform work. Distinctive aesthetic point-of-view, not a recycled template. Evidence-backed findings with severity tags and per-dimension verdicts. Read-only on the reviewed project's source: nothing is edited without explicit approval. Two files are written into the reviewed repo without asking, both under `.claude/ui-craft/`: the review ledger and, on a full pass, the team lead's `runs/<timestamp>/merged-report.md` (see **Data contracts**).
+One team of specialists (every dispatched agent pinned to the Fable 5.1 lane at dispatch, thinking always on; the invoking session orchestrates) that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in full depth, plus web/Apple/Android review overlays for cross-platform work. Distinctive aesthetic point-of-view, not a recycled template. Evidence-backed findings with severity tags and per-dimension verdicts. Read-only on the reviewed project's source: nothing is edited without explicit approval. Three things are written into the reviewed repo without asking, all under `.claude/ui-craft/`: the review ledger, the browser evidence captures on a browser run, and, on a full pass, the team lead's `runs/<timestamp>/merged-report.md` (see **Data contracts**).
 
 ## Layout
 
@@ -19,7 +19,7 @@ ui-craft/
 │   ├── review-ui/SKILL.md     "review my UI / check this component"
 │   ├── improve-ui/SKILL.md    "improve / make this god tier / full UI pass"
 │   └── optimize-ui/SKILL.md   "optimize for Core Web Vitals / fix LCP"
-├── agents/                    10 agents: 9 specialists pinned to Opus 5 at dispatch; ui-team-lead conducts on session model
+├── agents/                    10 agents: 9 specialists + ui-team-lead, all pinned to Fable 5.1 at dispatch (opus fallback)
 │   ├── ui-craft-architect.md       greenfield design + token systems + code
 │   ├── ui-visual-reviewer.md       visual/POV/affordance/state audit + usability and task flow
 │   ├── ui-anti-slop-auditor.md     internal AI-tell catalogue walker
@@ -44,22 +44,22 @@ ui-craft/
 │   ├── typescript/{01-ts6-essentials, 02-component-typing, 03-state-typing, 04-branded-primitives}.md
 │   └── architecture/{01-component-patterns, 02-state-architecture, 03-styling-architecture}.md
 ├── scripts/                    zero-dependency measurement tools (node CLI + browser module)
-│   ├── validate_palette.js     six-checks chart-palette validator (0.2.0)
+│   ├── validate_palette.js     chart-palette validator (four computable checks plus the normal-vision floor; checks 1 and 6 are structural and reported as not evaluated) (0.2.0)
 │   └── measure_density.js      viewport utilisation / width distribution / page length (0.2.3)
 ├── tests/                      regression corpus + scoring harness (0.1.2)
-│   ├── corpus/                 10 labeled fixtures (5 anti-slop MIT-corpus, 5 new) + ground-truth findings
-│   └── harness/score-review.mjs    scores an auditor findings file against the corpus labels, gates recall >= 0.8
+│   ├── corpus/                 21 labeled fixtures (5 anti-slop MIT-corpus, 16 authored, five clean controls) + ground-truth findings
+│   └── harness/score-review.mjs    scores an auditor findings file against the corpus labels, gates recall and precision >= 0.8
 └── ci/                          CI gate (0.1.2): artifact schema + ui-craft-gate.sh + selftest.sh + adoption guide
 ```
 
-Two runtime artifacts are written outside this tree, in the *reviewed* repo rather than in ui-craft's own: the review ledger (`.claude/ui-craft/last-review.json`, written unprompted on every review run) and, when the user accepts the offer, the CI gate artifact (default `.claude/ui-craft-artifacts/`). Both are covered in **Data contracts** below.
+Three runtime artifacts are written outside this tree, in the *reviewed* repo rather than in ui-craft's own: the review ledger (`.claude/ui-craft/last-review.json`, written unprompted on every review run), the team lead's `runs/<timestamp>/merged-report.md` on a full pass (with the browser evidence captures under `runs/<timestamp>/evidence/` on a browser run), and, when the user accepts the offer, the CI gate artifact (default `.claude/ui-craft-artifacts/`). All three are covered in **Data contracts** below.
 
 ## Skill to agent mapping
 
 | Skill | Agents dispatched | Mode |
 |---|---|---|
 | `design-ui` | `ui-craft-architect` | Single |
-| `review-ui` | 2-3 specialists adaptive on scope/platform: always `ui-visual-reviewer` + `ui-accessibility-reviewer`, plus `ui-responsive-reviewer` by default on web; `ui-anti-slop-auditor`, `ui-motion-reviewer`, `ui-perf-engineer`, `ui-typescript-engineer` added by what the scope contains | Parallel, skill merges |
+| `review-ui` | 3-5 specialists by rank: `ui-visual-reviewer`, `ui-accessibility-reviewer` and `ui-responsive-reviewer` always (responsive excused only on screenshot-only scope); `ui-anti-slop-auditor` on any aesthetic-bearing surface; `ui-motion-reviewer`, `ui-perf-engineer`, `ui-typescript-engineer` by what the scope contains; capped at five per run with uncovered dimensions named | Parallel, skill merges |
 | `improve-ui` | `ui-team-lead` to up to 7 specialists (visual + usability, anti-slop, accessibility, motion, responsive, perf, typescript), then the verifier, always last and never in parallel | Team lead orchestrates (RUNTIME DISPATCH NOTE applies, see below) |
 | `optimize-ui` | `ui-perf-engineer` | Single |
 
@@ -70,14 +70,14 @@ Regenerated from each agent's own Knowledge Sources section. `*` means every fil
 | Agent | Reads (must) |
 |---|---|
 | `ui-craft-architect` | catalogue/01, aesthetic/*, design/*, usability/01-03, responsive/*, accessibility/*, architecture/01, architecture/03, platform overlay for the target, dataviz/01-03 when the design contains charts or stats |
-| `ui-visual-reviewer` | catalogue/01-02, review/01, review/02, review/04, review/05, usability/* (this agent owns usability and task flow), design/01-04, design/06-08, aesthetic/01-03, accessibility/*, architecture/01, architecture/03, platform overlay for scope, dataviz/01+02+04 when charts are present |
+| `ui-visual-reviewer` | catalogue/01-02, review/01, review/02, review/04, review/05, review/06, review/07, usability/* (this agent owns usability and task flow), design/01-04, design/06-08, design/10, aesthetic/01-03, accessibility/*, architecture/01, architecture/03, platform overlay for scope, dataviz/01+02+04 when charts are present |
 | `ui-anti-slop-auditor` | catalogue/01 (primary), catalogue/02 (primary), review/01, aesthetic/03 (high), aesthetic/01-02 (context), design/06 (context) |
-| `ui-accessibility-reviewer` | review/01, review/02, accessibility/*, platform overlay for scope |
+| `ui-accessibility-reviewer` | review/01, review/02, review/06, accessibility/*, platform overlay for scope |
 | `ui-motion-reviewer` | review/01, review/02, review/04, design/04, accessibility/03, platform overlay for scope |
 | `ui-responsive-reviewer` | review/01, review/02, review/03 (viewport matrix), review/05, responsive/*, design/02, design/03, accessibility/01, platform overlay for scope |
 | `ui-perf-engineer` | performance/*, design/05, review/01, review/02, platform/01-03 |
 | `ui-typescript-engineer` | typescript/*, architecture/*, review/01 |
-| `ui-verifier` | review/01, review/02, review/04 (verdict vocabularies, blocker flags, verifier rules) |
+| `ui-verifier` | review/01, review/02, review/04 (verdict vocabularies, blocker flags, verifier rules), review/06 |
 | `ui-team-lead` | review/01 (finding format + severity scale), review/03 (viewport matrix, for the one browser capture it owns), review/04 (verdicts + blocker flags), and this file for the mapping above. It routes to specialists rather than reading deep-dive references itself |
 
 ## The orchestrator / specialist / verifier pattern
@@ -148,7 +148,7 @@ Widening the enum is a schema change, not an edit. `ci/ui-craft-gate.sh` hardcod
 }
 ```
 
-A ledger holds the findings from exactly one prior run against a given scope. The next run against that same scope matches its fresh findings against this file on `id` + `file` to produce the delta report: absent from the ledger is **NEW**; present in the ledger, absent now, and re-verified as actually fixed is **RESOLVED**; present in both at the same severity is **STILL OPEN**; higher severity now is **REGRESSED**; lower severity now is **IMPROVED**. `dimensions` is what keeps a narrow run from erasing a wide one: a prior finding whose dimension is not in this run's `dimensions` is carried forward unchanged rather than counted RESOLVED. A missing or unreadable ledger is treated as an empty prior run (everything reports NEW), never an error.
+A ledger is the union of prior findings across runs; the delta compares this run against the entries whose dimension it reviewed. The next run against that same scope matches its fresh findings against this file on `id` + `file` to produce the delta report: absent from the ledger is **NEW**; present in the ledger, absent now, and re-verified as actually fixed is **RESOLVED**; present in both at the same severity is **STILL OPEN**; higher severity now is **REGRESSED**; lower severity now is **IMPROVED**. `dimensions` is what keeps a narrow run from erasing a wide one: a prior finding whose dimension is not in this run's `dimensions` is carried forward unchanged rather than counted RESOLVED. A missing or unreadable ledger is treated as an empty prior run (everything reports NEW), never an error.
 
 Nothing outside the plugin parses this file, so its `schemaVersion` is informational rather than enforced, unlike the CI artifact's, which the gate hard-rejects on mismatch. Both skills must still write the same shape: a ledger written by one and read by the other is the whole point.
 
@@ -184,7 +184,7 @@ Verdict derivation: per dimension, the four-point family's best token maps to **
 
 The gate (`ci/ui-craft-gate.sh`) passes only when a schema-valid artifact bound to the reviewed sha exists, every present verdict plus `overall` is GREEN, and `blocker_findings` is empty. The reviewed sha is the last commit that touched a UI-adjacent path, deliberately not `HEAD`: an artifact can never name the commit it is committed into, so binding to `HEAD` made the documented happy path (write the artifact, commit it, push) unsatisfiable. Binding to the last UI-touching commit means committing the artifact does not invalidate it, while the next real UI change does. There is no soft pass: YELLOW fails, as do a missing artifact, a malformed one, a `schemaVersion` other than the const, and a sha mismatch. A CRITICAL finding fails the gate whichever array it was filed in, because a GREEN verdict shipped alongside a blocker is a self-contradicting artifact rather than a judgment call. The required-verdict set is why the artifact is only written from a full `improve-ui` pass and never from a partial `review-ui` pass; `review-ui` points the user at `improve-ui` rather than writing a padded one.
 
-**The corpus-harness feedback loop:** `references/catalogue/01-ai-tells.md` and `agents/ui-anti-slop-auditor.md` are the two files most likely to silently regress detection quality (a tell definition tightened for one false positive can blind the auditor to a real one). `tests/harness/score-review.mjs` closes that loop, but it does not close it automatically: the script is a pure comparator that reads a findings JSON array and scores it against `tests/corpus/labels.json`. It never opens a fixture and never invokes an agent. Closing the loop is two steps, documented in `tests/harness/README.md` § The two-step loop: dispatch `ui-anti-slop-auditor` over `tests/corpus/fixtures/`, capture its findings as a canonical array, then score that array. Any change to the catalogue or the auditor is expected to re-run both steps before shipping; a run scoring below 0.8 recall fails, and the change does not land until the catalogue or the auditor prompt is corrected, not until the corpus is quietly relabeled to fit. Re-scoring the committed baseline without re-running the auditor verifies nothing about the change.
+**The corpus-harness feedback loop:** `references/catalogue/01-ai-tells.md` and `agents/ui-anti-slop-auditor.md` are the two files most likely to silently regress detection quality (a tell definition tightened for one false positive can blind the auditor to a real one). `tests/harness/score-review.mjs` closes that loop, but it does not close it automatically: the script is a pure comparator that reads a findings JSON array and scores it against `tests/corpus/labels.json`. It never opens a fixture and never invokes an agent. Closing the loop is two steps, documented in `tests/harness/README.md` § The two-step loop: dispatch `ui-anti-slop-auditor` over `tests/corpus/fixtures/`, capture its findings as a canonical array, then score that array. Any change to the two catalogue files, the auditor or visual-reviewer bodies, the finding shape, or a dispatching skill (the canonical list is `tests/harness/README.md` § When to run this) is expected to re-run both steps before shipping; a run scoring below 0.8 recall or 0.8 precision, or tripping a clean control, fails, and the change does not land until the catalogue or the auditor prompt is corrected, not until the corpus is quietly relabeled to fit. Re-scoring the committed baseline without re-running the auditor verifies nothing about the change.
 
 ## RUNTIME DISPATCH NOTE (inherited, both prior team leads)
 
@@ -194,5 +194,5 @@ Dispatch via `subagent_type: "general-purpose"` with the agent body inlined and 
 
 - **Single canonical catalogue, not three.** `catalogue/01-ai-tells.md` is the one place any AI-tell lookup resolves to; `catalogue/02-empirical-evidence.md` is the one place clearance-rate evidence resolves to. Every agent and reference that used to point at a sibling plugin's catalogue now points here.
 - **No filesystem path leaves the plugin root.** The prior architecture had catalogue citations hardcode a sibling plugin's cache path, which broke silently on version drift; the same failure mode applied to machine-local notes, which simply do not exist on anyone else's machine. Every path an agent or reference is told to read is now plugin-root-relative (`${CLAUDE_PLUGIN_ROOT}/references/catalogue/01-ai-tells.md#section`). No agent body, reference file, or skill cites a personal vault, a sibling plugin's cache, or an absolute user path, and a finding may only cite a path that ships in this repo or exists in the reviewed project. Optional MCPs (goodmem, serena, context7, playwright) are named by capability, never by a stored identifier, so a machine without them degrades rather than breaking.
-- **No `model:` field in any agent frontmatter.** Dispatched specialists are pinned to `model: "opus"` (Opus 5); the `ui-team-lead` orchestrator conducts on the session model. Executor-tier dispatch (Sonnet/Opus at xhigh) is a conductor-managed runtime decision, never baked into the plugin.
+- **No `model:` field in any agent frontmatter.** Every dispatched agent is pinned at dispatch to `model: "fable"` (Fable 5.1, the UI/UX lane) with the `FABLE-ESCALATION: ui-ux-frontend` attestation line first in its prompt, `opus` only where a harness rejects the alias; the invoking session orchestrates. The pin is a runtime instruction carried by the skills, never baked into the agent files, so the lane can move without touching them.
 - **Merged, not just co-located.** `ui-visual-reviewer`, `ui-perf-engineer`, and `ui-team-lead` are true merges of two prior agents each: one set of tools, one prompt, one dispatch path, not two agents kept side by side under new names.
