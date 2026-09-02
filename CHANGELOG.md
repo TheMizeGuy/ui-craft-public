@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.1 — 2026-09-02
+
+Withdraws the Fable-lane dispatch that 0.5.0 shipped (owner directive
+2026-09-02). Documentation and dispatch instructions only; no reference,
+corpus, harness, or CI change.
+
+- **Every dispatched agent pins `model: "opus"` (Opus 5) again**, the nine
+  specialists and the dispatched `ui-team-lead` alike, at `xhigh` and with
+  thinking always on. The `FABLE-ESCALATION: ui-ux-frontend` attestation line,
+  the `model: "fable"` pins, and the "opus only where a harness rejects the
+  alias" fallback are gone from every skill, agent, doc, and manifest
+  description. Never omit `model`: an omitted model inherits the session model
+  and a policy-gated harness denies the dispatch.
+- **What 0.5.0 changed and this release keeps.** The session model stays
+  orchestrator-only: it constructs prompts, gates output, and applies approved
+  fixes, and never runs a specialist's or the team lead's process in its own
+  context, the no-Agent-tool case aside. Agent frontmatter still carries no
+  `model:` pin, and the pin remains a runtime instruction carried by the skills
+  so the tier can move without touching the agent files.
+
 ## 0.5.0 — 2026-09-01
 
 A full-plugin review against one standard: nothing the plugin ships may make

@@ -6,7 +6,7 @@ Internal map of files, responsibilities, and cross-references.
 
 ## Mission
 
-One team of specialists (every dispatched agent pinned to the Fable 5.1 lane at dispatch, thinking always on; the invoking session orchestrates) that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in full depth, plus web/Apple/Android review overlays for cross-platform work. Distinctive aesthetic point-of-view, not a recycled template. Evidence-backed findings with severity tags and per-dimension verdicts. Read-only on the reviewed project's source: nothing is edited without explicit approval. Three things are written into the reviewed repo without asking, all under `.claude/ui-craft/`: the review ledger, the browser evidence captures on a browser run, and, on a full pass, the team lead's `runs/<timestamp>/merged-report.md` (see **Data contracts**).
+One team of specialists (every dispatched agent pinned to Opus 5 at dispatch, thinking always on; the invoking session orchestrates) that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in full depth, plus web/Apple/Android review overlays for cross-platform work. Distinctive aesthetic point-of-view, not a recycled template. Evidence-backed findings with severity tags and per-dimension verdicts. Read-only on the reviewed project's source: nothing is edited without explicit approval. Three things are written into the reviewed repo without asking, all under `.claude/ui-craft/`: the review ledger, the browser evidence captures on a browser run, and, on a full pass, the team lead's `runs/<timestamp>/merged-report.md` (see **Data contracts**).
 
 ## Layout
 
@@ -19,7 +19,7 @@ ui-craft/
 │   ├── review-ui/SKILL.md     "review my UI / check this component"
 │   ├── improve-ui/SKILL.md    "improve / make this god tier / full UI pass"
 │   └── optimize-ui/SKILL.md   "optimize for Core Web Vitals / fix LCP"
-├── agents/                    10 agents: 9 specialists + ui-team-lead, all pinned to Fable 5.1 at dispatch (opus fallback)
+├── agents/                    10 agents: 9 specialists + ui-team-lead, all pinned to Opus 5 at dispatch
 │   ├── ui-craft-architect.md       greenfield design + token systems + code
 │   ├── ui-visual-reviewer.md       visual/POV/affordance/state audit + usability and task flow
 │   ├── ui-anti-slop-auditor.md     internal AI-tell catalogue walker
@@ -194,5 +194,5 @@ Dispatch via `subagent_type: "general-purpose"` with the agent body inlined and 
 
 - **Single canonical catalogue, not three.** `catalogue/01-ai-tells.md` is the one place any AI-tell lookup resolves to; `catalogue/02-empirical-evidence.md` is the one place clearance-rate evidence resolves to. Every agent and reference that used to point at a sibling plugin's catalogue now points here.
 - **No filesystem path leaves the plugin root.** The prior architecture had catalogue citations hardcode a sibling plugin's cache path, which broke silently on version drift; the same failure mode applied to machine-local notes, which simply do not exist on anyone else's machine. Every path an agent or reference is told to read is now plugin-root-relative (`${CLAUDE_PLUGIN_ROOT}/references/catalogue/01-ai-tells.md#section`). No agent body, reference file, or skill cites a personal vault, a sibling plugin's cache, or an absolute user path, and a finding may only cite a path that ships in this repo or exists in the reviewed project. Optional MCPs (goodmem, serena, context7, playwright) are named by capability, never by a stored identifier, so a machine without them degrades rather than breaking.
-- **No `model:` field in any agent frontmatter.** Every dispatched agent is pinned at dispatch to `model: "fable"` (Fable 5.1, the UI/UX lane) with the `FABLE-ESCALATION: ui-ux-frontend` attestation line first in its prompt, `opus` only where a harness rejects the alias; the invoking session orchestrates. The pin is a runtime instruction carried by the skills, never baked into the agent files, so the lane can move without touching them.
+- **No `model:` field in any agent frontmatter.** Every dispatched agent is pinned at dispatch to `model: "opus"` (Opus 5, the coding/review floor); the invoking session orchestrates. The pin is a runtime instruction carried by the skills, never baked into the agent files, so the tier can move without touching them.
 - **Merged, not just co-located.** `ui-visual-reviewer`, `ui-perf-engineer`, and `ui-team-lead` are true merges of two prior agents each: one set of tools, one prompt, one dispatch path, not two agents kept side by side under new names.

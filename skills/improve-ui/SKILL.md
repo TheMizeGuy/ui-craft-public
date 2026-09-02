@@ -14,7 +14,7 @@ You are coordinating a comprehensive multi-specialist UI pass. This is the plugi
 
 ## Execution mode
 
-One path, dispatched. The team lead runs as a `general-purpose` subagent pinned `model: "fable"` (Fable 5.1) with the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` first in its prompt (Step 4): the standing lane for UI/UX, frontend, and design work, owner directive 2026-09-01; a policy-gated harness checks for that line, and it costs nothing where nothing checks. Its specialists are dispatched the same way, `model: "fable"` plus the attestation line on every call. If the harness rejects the `fable` alias, re-dispatch the same prompt with `model: "opus"` (Opus 5), the floor for UI work. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrating session never runs the team lead's process inline (a deep session's context degrades the merge); the one exception is a context with no Agent tool at all, and then the report header says so.
+One path, dispatched. The team lead runs as a `general-purpose` subagent pinned `model: "opus"` (Opus 5, the coding/review floor, owner directive 2026-07-24) in Step 4. Its specialists are dispatched the same way, `model: "opus"` on every call. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrating session never runs the team lead's process inline (a deep session's context degrades the merge); the one exception is a context with no Agent tool at all, and then the report header says so.
 
 The specialist reviewers stay read-only; the verifier pass is never skipped.
 
@@ -163,7 +163,7 @@ DELTA SEMANTICS (match on `id` + `file`):
 
 HARD RULES:
 - Dispatch real agents. Don't simulate their output.
-- Dispatched specialists pin `model: "fable"` (Fable 5.1) and open every prompt with `FABLE-ESCALATION: ui-ux-frontend -- <reason>`; `model: "opus"` only if the harness rejects the alias. Never Haiku, never an omitted model.
+- Dispatched specialists pin `model: "opus"` (Opus 5). Never Haiku, never an omitted model.
 - Foreground execution.
 - Deduplicate cross-agent findings; the verifier pass is mandatory.
 - Confidence is one of the four canonical classes; there is no "Possible issue" class.
@@ -200,13 +200,13 @@ Do the placeholder substitution mechanically, in this order:
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: "fable",
+  model: "opus",
   description: "Full UI pass: N files",
-  prompt: "FABLE-ESCALATION: ui-ux-frontend -- full multi-specialist UI pass\n\n" + <substituted ui-team-lead body> + "\n\n" + <the Step 3 prompt>
+  prompt: <substituted ui-team-lead body> + "\n\n" + <the Step 3 prompt>
 })
 ```
 
-Foreground. `model: "fable"` with the attestation line is mandatory (`"opus"` only as the fallback when the harness rejects the alias): an omitted model inherits the session model, which a policy-gated harness denies, and the flagship pass then never starts.
+Foreground. `model: "opus"` is mandatory: an omitted model inherits the session model, which a policy-gated harness denies, and the flagship pass then never starts.
 
 ## Step 5: Present results
 
@@ -273,7 +273,7 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 
 - Don't dispatch the team lead for a single-dimension review. Use `review-ui` (quality), `optimize-ui` (perf), or `design-ui` (new UI).
 - Don't dispatch without comprehensive project context; the team lead needs it for every sub-agent.
-- Don't dispatch without `model: "fable"` and its attestation line (or the `opus` fallback); never an omitted model.
+- Don't dispatch without `model: "opus"`; never an omitted model.
 - Don't dispatch by the plugin-namespaced `ui-craft:ui-team-lead` type.
 - Don't trust the returned message over the run directory's merged report.
 - Don't summarize the report; show it verbatim.

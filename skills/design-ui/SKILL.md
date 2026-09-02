@@ -1,7 +1,7 @@
 ---
 name: design-ui
 description: |-
-  Use this skill when the user asks to design new UI: a screen, flow, page, component, or full product. Triggers: "design a [thing]", "build me a [screen/page/flow]", "create the UI for", "design the [dashboard/settings/onboarding/landing]", "make this screen look [distinctive/professional/not AI]". Dispatches the ui-craft:ui-craft-architect agent (pinned to the Fable 5.1 lane at dispatch) which commits to a distinctive aesthetic POV, generates a token system (OKLCH + variable fonts + modular spacing + spring motion), and produces production-grade UI code that does not look AI-generated, then audits the fresh code with the responsive and accessibility reviewers before it is presented. TypeScript + React + Tailwind v4 is the primary output path; the design principles (POV, tokens, catalogue floor, taste gate) apply to any stack. Uses the internal anti-AI-tells catalogue as a hard floor and the taste checklist as a pre-ship gate.
+  Use this skill when the user asks to design new UI: a screen, flow, page, component, or full product. Triggers: "design a [thing]", "build me a [screen/page/flow]", "create the UI for", "design the [dashboard/settings/onboarding/landing]", "make this screen look [distinctive/professional/not AI]". Dispatches the ui-craft:ui-craft-architect agent (pinned to Opus 5 at dispatch) which commits to a distinctive aesthetic POV, generates a token system (OKLCH + variable fonts + modular spacing + spring motion), and produces production-grade UI code that does not look AI-generated, then audits the fresh code with the responsive and accessibility reviewers before it is presented. TypeScript + React + Tailwind v4 is the primary output path; the design principles (POV, tokens, catalogue floor, taste gate) apply to any stack. Uses the internal anti-AI-tells catalogue as a hard floor and the taste checklist as a pre-ship gate.
 argument-hint: '<brief description of what to design>'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
 ---
@@ -14,7 +14,7 @@ You are coordinating new UI design on the user's behalf. Your job is to gather p
 
 ## Execution mode
 
-Design work is dispatched, never done inline in the orchestrating session. The `ui-craft-architect` and the Step 5 audit reviewers run as Fable 5.1 subagents: pin `model: "fable"` on every call and put the attestation line `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` first in each prompt (the standing lane for UI/UX, frontend, and design work, owner directive 2026-09-01; a policy-gated harness checks for that line, and it costs nothing where nothing checks). If the harness rejects the `fable` alias, re-dispatch the same prompt with `model: "opus"` (Opus 5), the floor for UI work. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: it builds the prompt, gates the output, and applies approved files. Run the architect's process inline only when no Agent tool exists in the current context (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and follow its Knowledge sources table and process steps verbatim), and say so in the output header; the Step 5 audit runs either way.
+Design work is dispatched, never done inline in the orchestrating session. The `ui-craft-architect` and the Step 5 audit reviewers run as Opus 5 subagents: pin `model: "opus"` on every call, the coding/review floor (owner directive 2026-07-24). Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: it builds the prompt, gates the output, and applies approved files. Run the architect's process inline only when no Agent tool exists in the current context (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and follow its Knowledge sources table and process steps verbatim), and say so in the output header; the Step 5 audit runs either way.
 
 ## Stack awareness
 
@@ -149,22 +149,22 @@ ACCEPTANCE CRITERIA (output is rejected if any fails):
 
 Use the Agent tool:
 - `subagent_type`: `"ui-craft:ui-craft-architect"`
-- `model`: `"fable"` (mandatory, see Execution mode; `"opus"` only when the harness rejects the alias; never omitted)
+- `model`: `"opus"` (mandatory, see Execution mode; an omitted model inherits the session model, which a policy-gated harness denies)
 - `description`: `"Design <brief summary>"`
-- `prompt`: `FABLE-ESCALATION: ui-ux-frontend -- <one-line reason>` on the first line, then the prompt from Step 3
+- `prompt`: the prompt from Step 3
 - Foreground (NOT `run_in_background: true`)
 
 ## Step 5: Audit the fresh code before showing it
 
-Generated code is code. It gets reviewed before it is presented, not after it ships. Dispatch two reviewers in parallel on the architect's output, both `model: "fable"` with the attestation line first in their prompts, both read-only:
+Generated code is code. It gets reviewed before it is presented, not after it ships. Dispatch two reviewers in parallel on the architect's output, both `model: "opus"`, both read-only:
 
 ```
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "fable",
-  prompt: "FABLE-ESCALATION: ui-ux-frontend -- responsive audit of generated UI\n<the generated component code verbatim, the DISPLAY RANGE, the stated responsive behavior>",
+Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "opus",
+  prompt: "<the generated component code verbatim, the DISPLAY RANGE, the stated responsive behavior>",
   description: "Responsive audit of generated UI" })
 
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "fable",
-  prompt: "FABLE-ESCALATION: ui-ux-frontend -- accessibility audit of generated UI\n<the generated component code verbatim, the token values, the platform>",
+Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "opus",
+  prompt: "<the generated component code verbatim, the token values, the platform>",
   description: "Accessibility audit of generated UI" })
 ```
 
@@ -209,7 +209,7 @@ This skill never writes a CI verdict artifact. `improve-ui` is the only producer
 
 - Don't dispatch without a brief; ask first.
 - Don't dispatch without project context if there IS a repo; the architect needs it.
-- Don't dispatch without `model: "fable"` and its attestation line (or the `opus` fallback); never an omitted model.
+- Don't dispatch without `model: "opus"`; never an omitted model.
 - Don't ship a design whose only tested width is the one you imagined.
 - Don't summarize the agent output; show it raw.
 - Don't auto-apply; wait for explicit user approval.

@@ -18,10 +18,9 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    ```
    With no argument, this reviews your uncommitted + staged changes filtered to UI-relevant
    files. Pass a path, a screenshot, `staged`, `pr`, or `all` to target something else.
-4. **What to expect**: every dispatched agent runs on Fable 5.1 (pinned at dispatch, thinking
-   always on; `opus` only where a harness rejects the alias) and never modifies files itself;
-   the invoking session applies findings or generated code only after
-   you explicitly approve. The exception to read-only is the plugin's own state, all of it under
+4. **What to expect**: every dispatched agent runs on Opus 5 (pinned at dispatch, thinking
+   always on) and never modifies files itself; the invoking session applies findings or
+   generated code only after you explicitly approve. The exception to read-only is the plugin's own state, all of it under
    `.claude/ui-craft/` in the reviewed repo and all of it announced in one line: the three review
    skills write `last-review.json` on every run without asking (it is what makes the second
    run a delta instead of a cold re-listing), a browser run also writes its evidence captures

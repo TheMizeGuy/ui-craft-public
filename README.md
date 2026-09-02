@@ -1,6 +1,6 @@
 # ui-craft
 
-Consolidated UI engineering team for Claude Code. One plugin that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in depth, with Apple and Android review overlays for cross-platform work. Ten specialist agents (every one pinned to Fable 5.1 at dispatch, thinking always on; the invoking session orchestrates, gates, and applies approved fixes) backed by a knowledge base of 57 reference files that ship inside the plugin. Four user-invoked skills. Findings are advisory: nothing in your source tree is edited until you approve it. Reviews do write their own state under `.claude/ui-craft/` in the reviewed repo without asking, and say so: the run-over-run ledger, the browser evidence captures on a browser run, plus a merged report on a full pass (see **Review ledger** below). A labeled regression corpus, a CI gate, and that ledger keep the catalogue and the auditor honest as they evolve (see **Toolkit** below).
+Consolidated UI engineering team for Claude Code. One plugin that designs, reviews, improves, and optimizes UI on any surface: TypeScript/React/Tailwind v4 in depth, with Apple and Android review overlays for cross-platform work. Ten specialist agents (every one pinned to Opus 5 at dispatch, thinking always on; the invoking session orchestrates, gates, and applies approved fixes) backed by a knowledge base of 57 reference files that ship inside the plugin. Four user-invoked skills. Findings are advisory: nothing in your source tree is edited until you approve it. Reviews do write their own state under `.claude/ui-craft/` in the reviewed repo without asking, and say so: the run-over-run ledger, the browser evidence captures on a browser run, plus a merged report on a full pass (see **Review ledger** below). A labeled regression corpus, a CI gate, and that ledger keep the catalogue and the auditor honest as they evolve (see **Toolkit** below).
 
 ## What ui-craft is
 
@@ -125,7 +125,7 @@ The three review skills (`review-ui`, `improve-ui`, `optimize-ui`) accept the sa
 
 ## Agents reference
 
-Agent frontmatter carries no `model:` pin; every dispatched agent, the `ui-team-lead` included, is pinned to Fable 5.1 at dispatch (`model: "fable"` with the `FABLE-ESCALATION: ui-ux-frontend` attestation line first in its prompt; `opus` only where a harness rejects the alias), and the invoking session orchestrates. No agent carries `Edit`, and only `ui-team-lead` carries `Write`, for one file: `.claude/ui-craft/runs/<timestamp>/merged-report.md` in the reviewed repo. A seven-specialist report with code extracts routinely exceeds the ~60KB at which a subagent's final message truncates, so the file is the deliverable and the message is the pointer. Only `ui-team-lead` carries the `Agent` tool, needed to dispatch its own sub-specialists. No agent ever edits the reviewed project: applying findings or generated code is always done by the invoking session (the skill orchestrator) itself, and only after explicit user approval.
+Agent frontmatter carries no `model:` pin; every dispatched agent, the `ui-team-lead` included, is pinned to Opus 5 at dispatch (`model: "opus"`), and the invoking session orchestrates. No agent carries `Edit`, and only `ui-team-lead` carries `Write`, for one file: `.claude/ui-craft/runs/<timestamp>/merged-report.md` in the reviewed repo. A seven-specialist report with code extracts routinely exceeds the ~60KB at which a subagent's final message truncates, so the file is the deliverable and the message is the pointer. Only `ui-team-lead` carries the `Agent` tool, needed to dispatch its own sub-specialists. No agent ever edits the reviewed project: applying findings or generated code is always done by the invoking session (the skill orchestrator) itself, and only after explicit user approval.
 
 | Agent | Purpose |
 |---|---|
@@ -282,7 +282,7 @@ Three operational surfaces added in 0.1.2 that keep the catalogue, the auditor, 
 
 ## Requirements
 
-- Claude Code with plugin support and access to the `fable` model alias (Fable 5.1). Dispatched agents are pinned to it at dispatch, thinking always on, and fall back to `opus` where the alias is unavailable; the invoking session orchestrates.
+- Claude Code with plugin support and access to the `opus` model alias (Opus 5). Dispatched agents are pinned to it at dispatch, thinking always on; the invoking session orchestrates.
 - The toolkit surfaces (`tests/harness/`, `ci/`, `scripts/`) need Node >= 18; the CI gate additionally needs `bash`, `python3` and `git`. No npm packages, ever. The four skills and ten agents need none of this.
 - Optional: **GoodMem MCP** for cross-run learnings, written to the goodmem Learnings space when goodmem is configured. Without it, agents work entirely from the reference library.
 - Optional: **Serena MCP** for semantic code navigation in TypeScript/React codebases.
