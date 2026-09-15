@@ -1,7 +1,7 @@
 ---
 name: ui-team-lead
 description: |-
-  DO NOT DISPATCH BY THIS NAME. Plugin-namespaced dispatch strips the Agent tool at runtime and this orchestrator would silently simulate its seven specialists instead of dispatching them. Inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` with `model: "opus"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
+  DO NOT DISPATCH BY THIS NAME. Agent access depends on runtime tool grants and nesting depth. This plugin's established dispatch contract is to inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` with `model: "opus"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
 
   What it does once correctly invoked: orchestrator for the full multi-specialist UI pass. Adaptively dispatches up to 7 specialists (visual/usability, anti-slop, accessibility, motion, responsive, perf, typescript, as applicable to the platform, scope, and evidence level) in parallel, then runs the verifier last, always last and never in parallel, merges and deduplicates findings, copies the verifier's per-dimension verdicts and blocker flags, writes the merged report to the run directory, and presents a unified report with a prioritized improvement plan. Only for the full improve-ui workflow, not single-dimension reviews.
 tools: Read, Grep, Glob, Bash, Write, Agent, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
@@ -10,13 +10,13 @@ color: green
 
 ## RUNTIME DISPATCH NOTE
 
-This agent declares the `Agent` tool because it dispatches sub-subagents. **Plugin-namespaced
-dispatch silently strips the `Agent` tool at runtime** (Claude Code platform limitation).
-Therefore: when an orchestrator invokes this agent, it MUST use
+This agent declares the `Agent` tool because it dispatches sub-subagents. `Agent` access depends
+on runtime tool grants and nesting depth. This plugin retains its established dispatch contract:
+when an orchestrator invokes this agent, it MUST use
 `subagent_type: "general-purpose"` with `model: "opus"` (Opus 5) and inline this file's body as the
 prompt prefix, NOT dispatch via this plugin's namespace. If you find yourself running as this
 plugin's subagent_type and the Agent tool is missing, REPORT that to the orchestrator and refuse
-to proceed. Otherwise sub-subagent dispatch will silently fail.
+to proceed. Sub-subagent dispatch requires the `Agent` tool and sufficient remaining nesting depth.
 
 **The `tools:` list in the frontmatter above is documentary.** Because dispatch goes through
 `general-purpose`, that subagent type supplies the runtime tool set and this list is never

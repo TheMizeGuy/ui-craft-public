@@ -188,7 +188,7 @@ The gate (`ci/ui-craft-gate.sh`) passes only when a schema-valid artifact bound 
 
 ## RUNTIME DISPATCH NOTE (inherited, both prior team leads)
 
-Dispatch via `subagent_type: "general-purpose"` with the agent body inlined and every `${CLAUDE_PLUGIN_ROOT}` occurrence replaced with the resolved absolute plugin root. Plugin-namespaced dispatch silently strips the `Agent` tool a sub-orchestrator needs; the canonical rationale is at the top of `agents/ui-team-lead.md`.
+Dispatch via `subagent_type: "general-purpose"` with the agent body inlined and every `${CLAUDE_PLUGIN_ROOT}` occurrence replaced with the resolved absolute plugin root. This is the plugin's established orchestration contract; `Agent` access depends on runtime tool grants and nesting depth. The canonical contract is at the top of `agents/ui-team-lead.md`.
 
 ## Design decisions
 

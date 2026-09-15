@@ -187,7 +187,7 @@ ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 
 ## Step 4: Dispatch the team lead
 
-RUNTIME DISPATCH NOTE: `ui-team-lead` must NOT be dispatched by its plugin-namespaced agent type. Plugin-namespaced dispatch silently strips the `Agent` tool at runtime, and the lead would then simulate seven specialists instead of dispatching them. Dispatch it as `general-purpose` with its body inlined.
+RUNTIME DISPATCH NOTE: `ui-team-lead` must NOT be dispatched by its plugin-namespaced agent type under this plugin's established orchestration contract. `Agent` access depends on runtime tool grants and nesting depth. Dispatch it as `general-purpose` with its body inlined.
 
 Do the placeholder substitution mechanically, in this order:
 

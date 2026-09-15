@@ -138,7 +138,7 @@ Agent frontmatter carries no `model:` pin; every dispatched agent, the `ui-team-
 | `ui-perf-engineer` | Core Web Vitals, bundle size, rendering, hydration (web primary, with cross-platform rendering notes) |
 | `ui-typescript-engineer` | TS6/7 strictness verified via the TS7 type gate, component/state typing, branded primitives |
 | `ui-verifier` | Evidence sufficiency, false-positive filtering, deduplication, severity re-validation |
-| `ui-team-lead` | Adaptive orchestrator: dispatches up to 7 specialists (visual + usability, anti-slop, accessibility, motion, responsive, perf, typescript), then the verifier (always last, never in parallel), and merges into one report written to the run directory |
+| `ui-team-lead` | Inlined `general-purpose` orchestrator; runtime grants and nesting depth govern Agent access. Dispatches up to 7 specialists (visual + usability, anti-slop, accessibility, motion, responsive, perf, typescript), then the verifier (always last, never in parallel), and merges into one report written to the run directory |
 
 ## Knowledge base
 
@@ -313,7 +313,7 @@ Every previously cross-plugin catalogue reference (hardcoded paths into either s
 
 ### Team-lead dispatch fails or the Agent tool is missing mid-run
 
-RUNTIME DISPATCH NOTE: dispatch via `subagent_type: "general-purpose"` with the agent body inlined and every `${CLAUDE_PLUGIN_ROOT}` occurrence replaced with the resolved absolute plugin root. Plugin-namespaced dispatch silently strips the `Agent` tool a sub-orchestrator needs; the canonical rationale is at the top of `agents/ui-team-lead.md`. If you see the team lead running without the `Agent` tool, that dispatch path was bypassed; re-invoke through the skill rather than dispatching the agent file directly.
+RUNTIME DISPATCH NOTE: dispatch via `subagent_type: "general-purpose"` with the agent body inlined and every `${CLAUDE_PLUGIN_ROOT}` occurrence replaced with the resolved absolute plugin root. This is the plugin's established orchestration contract; `Agent` access depends on runtime tool grants and nesting depth. The canonical contract is at the top of `agents/ui-team-lead.md`. If the team lead lacks `Agent`, report the missing capability and check grants, nesting depth, and the skill's dispatch path before retrying.
 
 ### Agent dispatch is slow or hits rate limits
 
