@@ -181,6 +181,7 @@ If any of these fail, the design needs more iteration before ship. These are the
 | 9.7 | Is there a single visible AI tell from the strongest-10 list (catalogue file 01) that we did not deliberately choose to keep? | If yes, fix or document the deliberate exception |
 | 9.8 | Have all empty / error / loading states been designed, or just the populated view? | "Happy path only" is the AI default. Production needs all four states for every screen |
 | 9.9 | The mirror pass: is there one accessory you can remove without losing meaning? | Remove it. If nothing is removable, verify that is discipline and not emptiness -- the quality floor (responsive to mobile, visible keyboard focus, reduced motion respected) must hold without being announced |
+| 9.10 | Subtraction-only: can the whole system be described as a list of things it does not do (one hairline, no frames, no badges, no elevation, colour only for status)? | FAIL. That list is the 2026 AI default, not a point of view (owner directive 2026-09-16). Name what the design adds and what each removed device was replaced with; a removal with no replacement goes back to the owner as an open question |
 
 ## 10. Sign-Off Template
 
@@ -215,6 +216,7 @@ Use at the end of the audit. Save in `design/audit-YYYY-MM-DD.md`.
 - 9.7 Strongest-10 fingerprints? [count present, deliberately kept: ...]
 - 9.8 All four states designed? [pass | fail]
 - 9.9 Mirror pass (one accessory removed)? [pass | fail]
+- 9.10 Subtraction-only system? [pass | fail]
 
 ## Sign-off
 Designer: [name]

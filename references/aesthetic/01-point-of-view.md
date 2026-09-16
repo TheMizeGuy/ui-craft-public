@@ -44,6 +44,8 @@ POV is found in conversation with the user before any pixels are pushed. The que
 
 The answers form the POV brief. Every component decision later is checked against the brief. If a button needs a gradient and the brief says "zero decoration", the button doesn't get a gradient -- the brief gets revisited.
 
+One input is not optional: the **visual reference**. Question 2 answered in the abstract ("Linear's keyboard model") is not enough to design from; the brief carries a screenshot, a named product page, or the product's own existing identity that the owner has approved as the target. Without it, every POV produced by a model collapses toward the same few defaults regardless of subject, so a missing reference is asked for before any token is written, never inferred from the product category.
+
 ### Anti-questions (banned)
 
 | Banned question | Why |
@@ -60,9 +62,11 @@ AI-generated design currently clusters around three looks: (1) a warm cream back
 
 The plan-stage self-test: before building, work through a *similar* brief in your head. If the plan you drafted for this brief would come out roughly the same for that one, the plan is a default wearing this project's name; revise the generic part and say what changed and why. The subject's own world (its materials, instruments, artifacts, vernacular) is where distinctive choices come from, so if the brief does not pin down the subject, pin it yourself: name the concrete subject, its audience, and the page's single job before designing.
 
-## 3. Three POV Templates to Start From
+## 3. Three POV Templates (worked examples, never a routing target)
 
-These are starting points -- never ship a template-rendered POV. Use them as gravity wells; deviate intentionally. Each carries a complete token set, **both schemes**, so the downstream coherence is automatic.
+These are worked examples of what a complete, coherent POV looks like, kept so the token discipline below has something concrete to point at. They are not a menu, and no product category selects one: dense data does not imply Template A, marketing does not imply Template B, a small team does not imply Template C. The POV comes from the § 2 worksheet and from the visual reference the owner supplied (a screenshot, a named product, or the product's own existing identity); a template is reached for only when the brief asks for it by name. Never ship a template-rendered POV. Each carries a complete token set, **both schemes**, so the downstream coherence is automatic.
+
+**Owner directive 2026-09-16.** The dark, flat, chrome-less "terminal" rendering of Template A had become the default answer for every data-dense product, and the owner rejected it. It is not a default anywhere in this library. A POV whose every rule is a removal (one hairline, no frames, no badges, no elevation, colour only for status) is not a POV: it is the 2026 AI default, and the taste audit's smell test 9.10 fails it.
 
 **Collision notes.** Templates B and C each satisfy the catalogue's two-of-three Tasteful Default rule (cream/paper + serif; cream + moss). They stay legitimate only as a stated decision: when a design lands within one axis of either template, change one axis (cool paper for B, a subject-derived accent for C) or mark the token block `anti-slop-allow: <reason>` so the auditor grades it as a choice.
 
@@ -91,6 +95,8 @@ Templates B and C use the same wiring; only the values differ.
 ### Template A: Tactical Operator
 
 POV: Linear / Things / Arc / Things-Mac. Dense, keyboard-first, restrained accent, no decoration. The chrome serves the work. The user is an operator, not an audience.
+
+**Opt-in only.** This template is used when the brief names it or the owner's reference imagery is this look. Nothing about a product's density, data volume, audience, or an existing dark theme selects it (owner directive 2026-09-16).
 
 Dark is this template's primary scheme; the light column is its authored counterpart, not an inversion.
 
@@ -238,6 +244,9 @@ Fill this before opening Figma / writing JSX. Save it in the project as `design/
 
 ## Three adjectives
 [ , , ]
+
+## Visual reference (required, owner-approved)
+[screenshot path | named product page | "the product's existing identity as of <commit>"]
 
 ## Aesthetic anchors (specific products + which aspect)
 - [Product]: [aspect we're stealing]

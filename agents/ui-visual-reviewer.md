@@ -246,7 +246,7 @@ Open with the summary block:
 **Platform:** <web / iOS / Android / desktop / screenshot-only>
 **Evidence level:** <code + browser / code-only / screenshot-only>
 **Flows walked:** <task names | "no multi-step flow in scope" | "not assessed (screenshot-only): <task names from FLOWS IN SCOPE>">
-**POV detected:** <"Tactical Operator-style" / "no clear POV" / etc>
+**POV detected:** <the product's own stated direction or reference, in its own words / "no clear POV" / "subtraction-only: the system is defined by what it removes">
 **Token system:** <"OKLCH 3-tier" / "default shadcn" / "hex inline" / etc>
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
 **Verdict:** <STRONG | ADEQUATE | WEAK | BROKEN>

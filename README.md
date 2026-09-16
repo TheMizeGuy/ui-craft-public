@@ -217,7 +217,7 @@ Agent frontmatter carries no `model:` pin; every dispatched agent, the `ui-team-
 
 | File | Covers |
 |---|---|
-| `01-point-of-view.md` | POV discovery worksheet, AI-default-looks calibration, 3 full templates with complete token sets |
+| `01-point-of-view.md` | POV discovery worksheet, the visual-reference rule, AI-default-looks calibration, 3 worked-example templates with complete token sets (never a routing target) |
 | `02-distinctive-systems.md` | 12 case studies (Linear, Vercel, Stripe, Apple, Things, Arc, Figma, Notion, Raycast, Bear, Cron, Stripe Press) |
 | `03-taste-checklist.md` | The pre-ship taste gate: per-section audit questions (including a responsive and adaptive audit and a flow audit), each row tagged code-checkable or browser-only so a code-only pass can report NOT ASSESSED, plus smell tests |
 | `04-style-taxonomy.md` | Seed vocabulary: 10 style families, domain conventions, the eight landing structures, font-pairing seeds, icon discipline, motion intensity ladder, AI-surface patterns |

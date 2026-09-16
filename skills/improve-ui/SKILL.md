@@ -183,6 +183,10 @@ ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 5. Improvement plan present with each applicable pass.
 6. If PRIOR LEDGER was not "none", a delta section opens the report, above the verdict table.
 7. `<RUN DIRECTORY>/merged-report.md` exists and its path is the first line of the reply.
+8. Every removal in the improvement plan names the device that replaces it (a frame becomes a
+   heading plus spacing, a badge becomes an inline status word, an accent edge becomes a
+   selected-state fill). A design pass that is only removals is rejected (owner directive
+   2026-09-16; taste smell test 9.10).
 ```
 
 ## Step 4: Dispatch the team lead
@@ -223,7 +227,7 @@ Foreground. `model: "opus"` is mandatory: an omitted model inherits the session 
    - "everything in <filename>"
    - "skip"
    ```
-5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer.
+5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement; never turn the report into a "remove the slop" sweep, and never apply a removal whose replacement the user has not seen.
 6. If the harness provides an Artifact tool, offer to render the merged report (verdict table + numbered findings) as a shareable HTML artifact. If no Artifact tool is available, skip this offer silently and don't mention its absence.
 7. Refresh the ledger: write (or overwrite) `.claude/ui-craft/last-review.json` in the reviewed repo.
 

@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.5.3 — 2026-09-16
+
+No POV template is a routing target, and nothing is removed without a
+replacement (owner directive 2026-09-16, after a data-dense product was
+rendered as a flat dark terminal for the third time). Documentation and
+dispatch instructions only: no tell definition changed, no corpus, harness
+or CI change.
+
+- `references/aesthetic/01-point-of-view.md`: the § 3 templates are worked
+  examples, never a routing target; Template A (Tactical Operator) is opt-in
+  only, used when the brief names it or the owner's reference imagery is that
+  look; the visual reference (a screenshot, a named product, or the product's
+  existing identity, owner-approved) is a required worksheet input and is
+  asked for rather than inferred from the product category.
+- `agents/ui-craft-architect.md`: the product-category selection tree is
+  gone. The POV derives from the brief's VISUAL REFERENCE and the worksheet;
+  a missing reference is the one question the architect blocks on; a POV that
+  can be written entirely as removals is rejected before any token is
+  written. New hard rule "Nothing removed without a replacement". The worked
+  example derives its dark ground from an owner-named reference, not from
+  "dense data".
+- `skills/design-ui/SKILL.md`: VISUAL REFERENCE parsed in Step 1 and asked
+  for when absent, carried as its own block in the Step 3 prompt; hard rules
+  against template-by-category and against removal without replacement;
+  acceptance criterion 1 requires the POV statement to name its reference.
+- `skills/improve-ui/SKILL.md` and `agents/ui-team-lead.md`: every removal in
+  an improvement plan names the device that replaces it (acceptance criterion
+  8, team-lead hard rule 13); the orchestrator applies only the findings the
+  user picked, never a "remove the slop" sweep.
+- `references/aesthetic/03-taste-checklist.md`: smell test 9.10, a
+  subtraction-only system fails; sign-off template row added.
+- `references/catalogue/01-ai-tells.md` § How to apply: on an existing
+  product the catalogue audits, it does not redesign. No tell definition or
+  match rule changed, so the corpus scoring is unaffected.
+- `agents/ui-visual-reviewer.md`: the report's POV line no longer offers
+  "Tactical Operator-style" as its example value.
+- `README.md`: the reference table row for `01-point-of-view.md` matches.
+
 ## 0.5.2 -- 2026-09-15
 
 - Correct the delegation rationale: Agent access depends on runtime tool grants and nesting depth. Keep the established orchestration paths, tool grants, and model/effort policy.

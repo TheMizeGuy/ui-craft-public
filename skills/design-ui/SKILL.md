@@ -27,9 +27,10 @@ The user passed a description (may be empty). Extract:
 - Any stated constraints ("dark theme", "minimal", "dense dashboard")
 - Any stated POV ("like Linear", "editorial", "tactical")
 - Any stated framework/platform (React, Next.js, Svelte, SwiftUI, static HTML, etc.)
+- The **visual reference**: a screenshot, a named product, or the repo's existing identity that the owner approved as the target. A brief with none, in a repo with no `design/POV.md`, is missing the one input the architect cannot infer (owner directive 2026-09-16: without it every POV collapses to a template, and a data-dense brief becomes a flat dark terminal).
 - The **display range** the design must survive. If the user did not say, take the default from `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: the narrowest width (320, the WCAG 1.4.10 reflow target), a modern mobile width (390), **900** (the width nobody designs at, where fluid failures live and nowhere else), a laptop width (1440), the most common desktop width (1920, where the density thresholds are calibrated), and the widest the product will realistically see (2560, where dead space becomes measurable). Plus any width where the product's existing breakpoints already fire.
 
-If the brief is empty or too vague to act on, ask one focused question: "What screen or flow should I design? Any aesthetic direction?" Do NOT proceed without knowing what to build.
+If the brief is empty or too vague to act on, ask one focused question: "What screen or flow should I design? Any aesthetic direction?" Do NOT proceed without knowing what to build. If the brief names the screen but carries no visual reference and the repo has no `design/POV.md`, ask instead: "Which screenshot or product should this look like?" and do not dispatch until you have an answer; a POV derived from the product category alone is rejected at Step 6.
 
 ## Step 2: Pre-flight context (run in parallel)
 
@@ -61,6 +62,10 @@ BRIEF:
 
 CONSTRAINTS:
 <aesthetic direction, brand, framework/platform, existing tokens, any stated POV>
+
+VISUAL REFERENCE:
+<the screenshot path, named product, or "the product's existing identity as of <commit>", in the
+owner's words; this is where the POV comes from, never from the product category>
 
 DISPLAY RANGE: <the widths from Step 1, default 320 / 390 / 900 / 1440 / 1920 / 2560>
 
@@ -106,6 +111,10 @@ TASK:
    questions.
 
 HARD RULES:
+- No POV template by product category. The POV derives from VISUAL REFERENCE; dense data, an
+  expert audience, or a dark existing theme never mean flat, chrome-less, or "terminal", and a
+  POV that reads as a list of removals is rejected (taste smell test 9.10).
+- On an existing product, nothing is removed without a named replacement in the same output.
 - No AI-default aesthetic. The internal anti-AI-tells catalogue
   (${CLAUDE_PLUGIN_ROOT}/references/catalogue/01-ai-tells.md) is the floor.
 - OKLCH colors only (no hex, no HSL in the token system).
@@ -129,7 +138,8 @@ HARD RULES:
 - No emojis, no AI slop, no trailing summary.
 
 ACCEPTANCE CRITERIA (output is rejected if any fails):
-1. POV statement present, 3-4 sentences, names what the design does NOT do.
+1. POV statement present, 3-4 sentences, names the VISUAL REFERENCE it derives from and what
+   the design does NOT do; a statement that could be summarised as a list of removals fails.
 2. Token block present; every color value is oklch(...); states derived via relative color syntax or `color-mix()`.
 3. Every requested component has a file path + complete code (no elided bodies).
 4. At least one full composition example in real code.

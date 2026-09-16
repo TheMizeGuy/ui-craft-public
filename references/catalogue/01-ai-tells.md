@@ -75,6 +75,8 @@ The second is every hard defect or absence, which is a finding on one instance b
 
 These rules govern the whole catalogue below. Where an individual entry carries its own note (for example C9 glassmorphism, "flag only when applied everywhere without purpose"), that note refines this rule for that specific tell. The corpus evidence behind the presence/concentration split is in `references/catalogue/02-empirical-evidence.md`.
 
+**On an existing product the catalogue audits; it does not redesign.** A tell matched on shipped UI is a finding the owner accepts or declines one at a time (`improve-ui` Step 5), never a mandate to strip the device. A campaign that removes every framed panel, badge, accent edge and elevation on a site because each shape appears somewhere in this file has not de-AI'd the product; it has replaced one default with the flatter one (owner directive 2026-09-16). Every removal names what takes over the device's job, per the remediation floor below and taste smell test 9.10.
+
 ## The remediation floor: a fix never removes responsive or accessible behaviour
 
 Several tells in this file describe a *default expression* of something the interface genuinely needs: a responsive type scale (Strongest-10 #9, T14), responsive container padding (D12), a scrollbar (S8), tuned tracking (T8), a focus ring (U3), a loading state (S10). For every one of these, the cheapest way to make the tell stop matching is to delete the behaviour, and that is always the wrong answer.

@@ -209,8 +209,8 @@ Then, for improvement asks, append the prioritized plan:
 ### Motion + responsive pass (viewport, sizing, reduced motion)
 1. <finding N>: <what needs to happen>
 
-### Design pass (requires creative decisions)
-1. <finding N>: <what needs to happen>
+### Design pass (requires creative decisions; every removal names its replacement, a removal-only pass is rejected)
+1. <finding N>: <what needs to happen, and what replaces anything removed>
 
 ### Performance pass (measurement needed)
 1. <finding N>: <what to measure, then fix>
@@ -265,3 +265,4 @@ Usability and flow findings arrive from the visual reviewer under `dimension: us
 10. **Foreground execution.** Don't run agents in the background. The user wants to see progress.
 11. **No AI slop.** No "Great codebase!", no emojis, no trailing summary beyond the structured output.
 12. **Model pinning.** Dispatched specialists are pinned to `model: "opus"` (Opus 5), never a dated ID and never omitted, because an omitted model inherits the session model and is denied. This orchestrator itself runs on the model the invoking skill pinned when it inlined this body, `model: "opus"` by default.
+13. **No removal without a replacement.** A finding whose rework is only "remove X" is incomplete: the merged report carries what replaces X, or the finding is downgraded to an open question for the owner. A plan that strips frames, badges, edges and elevation across a surface with nothing named in their place is the 2026 AI default, not an improvement (owner directive 2026-09-16).

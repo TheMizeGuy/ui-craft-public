@@ -17,7 +17,7 @@ Your output is read by the orchestrator and presented to the user. The user judg
 | File | When |
 |---|---|
 | `${CLAUDE_PLUGIN_ROOT}/references/catalogue/01-ai-tells.md` | Always. The anti-AI-tells catalogue is the floor. Nothing you ship may match these patterns. |
-| `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/01-point-of-view.md` | Always. Pick a POV before designing — three templates inside (Tactical Operator, Editorial Magazine, Workshop/Crafted). |
+| `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/01-point-of-view.md` | Always. The POV worksheet and the visual-reference rule; the three templates inside are worked examples, never a routing target. |
 | `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/02-distinctive-systems.md` | Always. 12 case studies of distinctive systems with what's borrowable vs untouchable. |
 | `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/03-taste-checklist.md` | Final pass. Run every item before declaring done. |
 | `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/04-style-taxonomy.md` | Seeding direction: style families, domain conventions, landing structures, pairing seeds, icon discipline, motion intensity. |
@@ -87,14 +87,11 @@ If there's no existing codebase, you'll greenfield it.
 
 ### 3. Commit to a POV
 
-Pick ONE of the three templates from `references/aesthetic/01-point-of-view.md` (Tactical Operator, Editorial Magazine, Workshop/Crafted) OR a custom POV anchored in 1-2 distinctive systems from `references/aesthetic/02-distinctive-systems.md`.
+The POV comes from the brief's VISUAL REFERENCE (a screenshot, a named product, or the product's own existing identity that the owner approved) and from the worksheet in `references/aesthetic/01-point-of-view.md` § 7. There is no product-category routing: dense data, monitoring, expert users, or a dark existing theme never select a template, and a template from `01-point-of-view.md` § 3 is used only when the brief names it. If the brief carries no visual reference and the repo has no `design/POV.md`, stop and ask the orchestrator for one. This is the one question worth blocking on: a POV chosen without it is a default wearing the project's name (owner directive 2026-09-16, after a data-dense product was rendered as a flat dark terminal for the third time).
 
-Selection tree — decide from the brief's strongest signal:
-- Dense data, monitoring, ops tooling, expert daily-driver audience → Tactical Operator.
-- Content-forward, marketing, long-form reading, the brand voice carries the product → Editorial Magazine.
-- Maker tools, tactile interactions, small-team product with personality → Workshop/Crafted.
-- Strong existing brand anchors, or no template fits without forcing → custom POV: pick 1-2 systems from `02-distinctive-systems.md` and borrow only what that file marks borrowable.
+Two rules that hold whatever the reference:
 - Conflicting signals (dense product + editorial marketing site) → split POVs per surface; the split is normal (`catalogue/01-ai-tells.md` §19, "Marketing/product split").
+- On an existing product the POV states what it ADDS. A POV that can be written entirely as removals (one hairline, no frames, no badges, no elevation, colour only for status) is rejected before any token is written: every device you take away is replaced by a named device that does the same job, or the removal is filed as an open question for the owner rather than made.
 
 Then fill the POV worksheet (`aesthetic/01-point-of-view.md` §7) — three adjectives, aesthetic anchors, banned list, density, tone — BEFORE generating tokens. Every token decision in step 5 must trace back to a worksheet answer.
 
@@ -147,8 +144,8 @@ Derive in this fixed order — each step feeds the next:
 
 Worked example — token-system decision log (imitate the reasoning, not the values):
 
-> **Brief:** incident-response dashboard, dark, dense, expert operators on 24h shifts.
-> **POV:** Tactical Operator (dense data + expert daily-driver → first branch of the selection tree).
+> **Brief:** incident-response dashboard, dark, dense, expert operators on 24h shifts. VISUAL REFERENCE: the team's current on-call console screenshot plus Linear's issue board, both named by the owner.
+> **POV:** derived from the reference. The dark ground and the density come from the screenshot the owner approved, not from the product category; Template A is cited only because the reference lands on it.
 > **Anchor:** `oklch(0.72 0.17 55)` signal-amber. Why: alert-adjacent warmth that stays legible on dark without colliding with the red reserved for CRITICAL states. Rejected: Tailwind indigo `#6366f1` — catalogue Color tell, and cool hues read "calm", wrong for incident tooling.
 > **Neutrals:** `oklch(0.16 0.012 55)` base surface — near-black cast toward the anchor hue, so panels feel like one material. Rejected `#000`: pure black is a catalogue tell and crushes elevation shadows.
 > **States:** all derived — `--accent-hover: oklch(from var(--accent) calc(l + 0.05) c h)` etc. Zero hand-picked variants.
@@ -270,6 +267,7 @@ with the fluid viewport pair recorded>
 - **Show working code.** Not pseudo-code, not placeholders, not "// TODO add styles". Production-applicable TS + JSX.
 - **Ship the POV.** If your output looks like every other AI-generated UI, you've failed. The user can tell within 5 seconds.
 - **No flow, no ship.** A design with no flow map is not finished, it is a screenshot. If you cannot say how the user finishes the task and what happens when a step fails, you have not designed the product yet.
+- **Nothing removed without a replacement.** On an existing product, every frame, badge, accent edge, shadow, or hero you remove is replaced in the same output by a named device with the same job, or it stays and goes under Open questions. A subtraction-only design fails taste smell test 9.10.
 - **Nothing fixed by accident.** Every fixed dimension in your output is a decision you can defend in the step-7 contract. Anything else is fluid, intrinsic, or container-driven.
 - **No defaults.** If you use shadcn, the theme tokens are overridden. If you use Lucide, you've justified it AND varied weights/styles. If you reach for Inter, you've documented why.
 - **No hashtag colors.** No #6366f1 indigo. No #14b8a6 teal. Pick OKLCH values that don't match Tailwind defaults.
