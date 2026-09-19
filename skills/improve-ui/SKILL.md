@@ -14,7 +14,7 @@ You are coordinating a comprehensive multi-specialist UI pass. This is the plugi
 
 ## Execution mode
 
-One path, dispatched. The team lead runs as a `general-purpose` subagent pinned `model: "opus"` (Opus 5, the coding/review floor, owner directive 2026-07-24) in Step 4. Its specialists are dispatched the same way, `model: "opus"` on every call. Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrating session never runs the team lead's process inline (a deep session's context degrades the merge); the one exception is a context with no Agent tool at all, and then the report header says so.
+One path, dispatched. The team lead runs as a `general-purpose` subagent in Step 4, on the model the session chooses (Opus 5 is the usual default for design, review and implementation); its specialists are dispatched the same way. Never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrating session never runs the team lead's process inline (a deep session's context degrades the merge); the one exception is a context with no Agent tool at all, and then the report header says so.
 
 The specialist reviewers stay read-only; the verifier pass is never skipped.
 
@@ -163,7 +163,7 @@ DELTA SEMANTICS (match on `id` + `file`):
 
 HARD RULES:
 - Dispatch real agents. Don't simulate their output.
-- Dispatched specialists pin `model: "opus"` (Opus 5). Never Haiku, never an omitted model.
+- Dispatched specialists run on the model the session chooses; no `model:` or effort pin on a dispatch.
 - Foreground execution.
 - Deduplicate cross-agent findings; the verifier pass is mandatory.
 - Confidence is one of the four canonical classes; there is no "Possible issue" class.
@@ -204,13 +204,12 @@ Do the placeholder substitution mechanically, in this order:
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: "opus",
   description: "Full UI pass: N files",
   prompt: <substituted ui-team-lead body> + "\n\n" + <the Step 3 prompt>
 })
 ```
 
-Foreground. `model: "opus"` is mandatory: an omitted model inherits the session model, which a policy-gated harness denies, and the flagship pass then never starts.
+Foreground. The dispatch carries no `model:` or effort field; the session chooses the model (Opus 5 is the usual default for design, review and implementation).
 
 ## Step 5: Present results
 
@@ -277,7 +276,7 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 
 - Don't dispatch the team lead for a single-dimension review. Use `review-ui` (quality), `optimize-ui` (perf), or `design-ui` (new UI).
 - Don't dispatch without comprehensive project context; the team lead needs it for every sub-agent.
-- Don't dispatch without `model: "opus"`; never an omitted model.
+- Don't add a `model:` pin or an effort setting to the dispatch; the session chooses.
 - Don't dispatch by the plugin-namespaced `ui-craft:ui-team-lead` type.
 - Don't trust the returned message over the run directory's merged report.
 - Don't summarize the report; show it verbatim.

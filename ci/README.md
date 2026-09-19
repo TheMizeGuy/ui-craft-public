@@ -177,8 +177,9 @@ on:
 
 jobs:
   ui-craft-gate:
-    # TheMizeGuy repos never use GitHub-hosted labels: self-hosted fleet first,
-    # Namespace as the fallback -- e.g. `runs-on: nscloud-ubuntu-22.04-arm64-2x4`.
+    # TheMizeGuy repos never use GitHub-hosted labels: Linux jobs run on the
+    # self-hosted mizeovh fleet -- e.g.
+    # `runs-on: [self-hosted, ovh, <repo-slug>, Linux]`.
     # The placeholder below is for adopters outside that fleet; swap in
     # whatever hosted or self-hosted runner your org actually uses.
     runs-on: ubuntu-latest

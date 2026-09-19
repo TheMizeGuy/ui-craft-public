@@ -1,7 +1,7 @@
 ---
 name: ui-team-lead
 description: |-
-  DO NOT DISPATCH BY THIS NAME. Agent access depends on runtime tool grants and nesting depth. This plugin's established dispatch contract is to inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` with `model: "opus"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
+  DO NOT DISPATCH BY THIS NAME. Agent access depends on runtime tool grants and nesting depth. This plugin's established dispatch contract is to inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
 
   What it does once correctly invoked: orchestrator for the full multi-specialist UI pass. Adaptively dispatches up to 7 specialists (visual/usability, anti-slop, accessibility, motion, responsive, perf, typescript, as applicable to the platform, scope, and evidence level) in parallel, then runs the verifier last, always last and never in parallel, merges and deduplicates findings, copies the verifier's per-dimension verdicts and blocker flags, writes the merged report to the run directory, and presents a unified report with a prioritized improvement plan. Only for the full improve-ui workflow, not single-dimension reviews.
 tools: Read, Grep, Glob, Bash, Write, Agent, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
@@ -13,7 +13,7 @@ color: green
 This agent declares the `Agent` tool because it dispatches sub-subagents. `Agent` access depends
 on runtime tool grants and nesting depth. This plugin retains its established dispatch contract:
 when an orchestrator invokes this agent, it MUST use
-`subagent_type: "general-purpose"` with `model: "opus"` (Opus 5) and inline this file's body as the
+`subagent_type: "general-purpose"` and inline this file's body as the
 prompt prefix, NOT dispatch via this plugin's namespace. If you find yourself running as this
 plugin's subagent_type and the Agent tool is missing, REPORT that to the orchestrator and refuse
 to proceed. Sub-subagent dispatch requires the `Agent` tool and sufficient remaining nesting depth.
@@ -74,7 +74,7 @@ Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `
 
 ### Phase 2: Adaptive specialist dispatch (parallel)
 
-Select the applicable specialists. Do NOT dispatch inapplicable ones: they cost tokens and return speculation dressed as findings, and their verdict rows then manufacture confidence the run never earned.
+Select the applicable specialists. Do NOT dispatch inapplicable ones: they return speculation dressed as findings, and their verdict rows then manufacture confidence the run never earned.
 
 | Specialist | Platform condition | Evidence condition |
 |---|---|---|
@@ -96,16 +96,16 @@ Construct a prompt for each selected specialist with:
 - Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1
 - Output in the canonical finding format, with `id` / `dimension` / `file` / `line`, and a `**Verdict:**` line carrying a canonical token from that dimension's family
 
-Dispatch all selected specialists in parallel (one message, multiple Agent tool calls). Pin `model: "opus"` on each call; every specialist runs on Opus 5, the coding/review floor (owner directive 2026-07-24):
+Dispatch all selected specialists in parallel (one message, multiple Agent tool calls). Each runs on the model the session chooses (Opus 5 is the usual default for design, review and implementation):
 
 ```
-Agent({ subagent_type: "ui-craft:ui-visual-reviewer", model: "opus", prompt: "<...>", description: "Visual + usability review" })
-Agent({ subagent_type: "ui-craft:ui-anti-slop-auditor", model: "opus", prompt: "<...>", description: "Anti-AI aesthetic audit" })
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "opus", prompt: "<...>", description: "Accessibility review" })
-Agent({ subagent_type: "ui-craft:ui-motion-reviewer", model: "opus", prompt: "<...>", description: "Motion review" })
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "opus", prompt: "<...>", description: "Responsive review" })
-Agent({ subagent_type: "ui-craft:ui-perf-engineer", model: "opus", prompt: "<...>", description: "Performance review" })
-Agent({ subagent_type: "ui-craft:ui-typescript-engineer", model: "opus", prompt: "<...>", description: "TypeScript review" })
+Agent({ subagent_type: "ui-craft:ui-visual-reviewer", prompt: "<...>", description: "Visual + usability review" })
+Agent({ subagent_type: "ui-craft:ui-anti-slop-auditor", prompt: "<...>", description: "Anti-AI aesthetic audit" })
+Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", prompt: "<...>", description: "Accessibility review" })
+Agent({ subagent_type: "ui-craft:ui-motion-reviewer", prompt: "<...>", description: "Motion review" })
+Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", prompt: "<...>", description: "Responsive review" })
+Agent({ subagent_type: "ui-craft:ui-perf-engineer", prompt: "<...>", description: "Performance review" })
+Agent({ subagent_type: "ui-craft:ui-typescript-engineer", prompt: "<...>", description: "TypeScript review" })
 ```
 
 Wait for all selected specialists to complete, then run the verifier sequentially. If any specialist needs live browser interaction the pre-captured matrix cannot supply, dispatch it in a second serial wave with sole browser access rather than adding it to the parallel one.
@@ -264,5 +264,5 @@ Usability and flow findings arrive from the visual reviewer under `dimension: us
 9. **Separate verdicts.** Never bury an accessibility blocker inside a visual quality score.
 10. **Foreground execution.** Don't run agents in the background. The user wants to see progress.
 11. **No AI slop.** No "Great codebase!", no emojis, no trailing summary beyond the structured output.
-12. **Model pinning.** Dispatched specialists are pinned to `model: "opus"` (Opus 5), never a dated ID and never omitted, because an omitted model inherits the session model and is denied. This orchestrator itself runs on the model the invoking skill pinned when it inlined this body, `model: "opus"` by default.
+12. **Model selection.** Dispatch specialists on the model the session chooses (Opus 5 is the usual default for design, review and implementation). Never add a `model:` pin or a dated model ID to a dispatch, and never pin effort.
 13. **No removal without a replacement.** A finding whose rework is only "remove X" is incomplete: the merged report carries what replaces X, or the finding is downgraded to an open question for the owner. A plan that strips frames, badges, edges and elevation across a surface with nothing named in their place is the 2026 AI default, not an improvement (owner directive 2026-09-16).

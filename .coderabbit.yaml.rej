@@ -1,0 +1,10 @@
+@@ -65,8 +64,7 @@
+       tooling directories (vault, plugin sources, harness config), and no
+       goodmem space UUIDs or memory-ID citations. A public reader can act on
+       none of them, and each one names private tooling.
+-    - CI: Namespace runner labels only (`nscloud-*`), never `ubuntu-latest` or
+-      `macos-*`; third-party actions stay SHA-pinned.
++    - CI: third-party actions stay SHA-pinned.
+ 
+     Do NOT comment on:
+     - `tests/corpus/fixtures/*.html` quality. Those files are DELIBERATELY bad —

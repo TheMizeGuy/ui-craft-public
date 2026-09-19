@@ -1,7 +1,7 @@
 ---
 name: optimize-ui
 description: |-
-  Use this skill when the user asks to optimize UI performance: Core Web Vitals (LCP, INP, CLS), bundle size, rendering performance, runtime smoothness, font loading, image optimization, or framework-specific patterns (React compiler, RSC, Suspense, hydration; SwiftUI/Compose re-render stability). Triggers: "optimize my UI", "make the page faster", "fix LCP", "reduce bundle size", "optimize for Core Web Vitals", "UI performance audit", "speed up the page", "reduce CLS", "fix INP", "the UI feels janky", "dropped frames". Dispatches the ui-craft:ui-perf-engineer agent (pinned to Opus 5 at dispatch) which measures first (Lighthouse / tsc / bundle analysis if available), then produces severity-tagged findings with estimated metric impact and concrete code fixes.
+  Use this skill when the user asks to optimize UI performance: Core Web Vitals (LCP, INP, CLS), bundle size, rendering performance, runtime smoothness, font loading, image optimization, or framework-specific patterns (React compiler, RSC, Suspense, hydration; SwiftUI/Compose re-render stability). Triggers: "optimize my UI", "make the page faster", "fix LCP", "reduce bundle size", "optimize for Core Web Vitals", "UI performance audit", "speed up the page", "reduce CLS", "fix INP", "the UI feels janky", "dropped frames". Dispatches the ui-craft:ui-perf-engineer agent, which measures first (Lighthouse / tsc / bundle analysis if available), then produces severity-tagged findings with estimated metric impact and concrete code fixes.
 argument-hint: '[path | file | directory | url | "staged" | "diff" | "pr" | "all"]'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
 ---
@@ -22,7 +22,7 @@ Both halves report under one dimension, `Runtime smoothness`, whose verdict fami
 
 ## Execution mode
 
-The review is dispatched, never run inline in the orchestrating session. The `ui-perf-engineer` runs as an Opus 5 subagent: pin `model: "opus"`, the coding/review floor (owner directive 2026-07-24). Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: scope, context, the prompt, gating, and the ledger. Run the perf engineer's measurement-first process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
+The review is dispatched, never run inline in the orchestrating session. The `ui-perf-engineer` runs as a subagent on the model the session chooses (Opus 5 is the usual default for design, review and implementation); never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrator owns scope, context, the prompt, gating, and the ledger. Run the perf engineer's measurement-first process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -134,7 +134,6 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 ## Step 4: Dispatch
 
 - `subagent_type`: `"ui-craft:ui-perf-engineer"`
-- `model`: `"opus"` (mandatory, see Execution mode; an omitted model inherits the session model, which a policy-gated harness denies)
 - `prompt`: the prompt from Step 3
 - `description`: `"Perf review of N files"`
 - Foreground
@@ -176,7 +175,7 @@ This skill never writes the machine-readable CI gate artifact. The gate schema r
 
 - Don't skip tooling. If build/Lighthouse is available, run it.
 - Don't guess metric impact; measure or cite the reference's documented impact.
-- Don't dispatch without `model: "opus"`; never an omitted model.
+- Don't add a `model:` pin or an effort setting to the dispatch; the session chooses.
 - Don't overwrite the ledger's other dimensions.
 - Don't summarize agent output.
 - Don't auto-apply.

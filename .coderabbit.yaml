@@ -34,11 +34,11 @@ reviews:
     does.
 
     BLOCKING rules (flag as error, not nitpick):
-    - Model policy: agent frontmatter must carry NO `model:` pin, and no dated
-      model ID (e.g. a `-20250101` suffix) may appear anywhere. Models are
-      pinned at DISPATCH with undated aliases only. Flag any reintroduced
-      frontmatter pin, any dated ID, and any change lowering effort below
-      `xhigh`.
+    - Model policy: agent frontmatter must carry NO `model:` pin, no dispatch
+      may add one, and no dated model ID (e.g. a `-20250101` suffix) may appear
+      anywhere. The dispatching session chooses the model per dispatch. Flag any
+      reintroduced frontmatter pin, any `model:` or effort field added to a
+      dispatch, and any dated ID.
     - Version-bump lockstep: a version change must touch all four together in
       the same commit — `.claude-plugin/plugin.json`, `CHANGELOG.md`,
       and `.claude-plugin/marketplace.json`.
@@ -64,7 +64,9 @@ reviews:
       tooling directories (vault, plugin sources, harness config), and no
       goodmem space UUIDs or memory-ID citations. A public reader can act on
       none of them, and each one names private tooling.
-    - CI: third-party actions stay SHA-pinned.
+    - CI: self-hosted fleet labels only — Linux jobs run on the mizeovh
+      runners (`[self-hosted, ovh, <repo-slug>, Linux]`), never `ubuntu-latest`
+      or `macos-*`; third-party actions stay SHA-pinned.
 
     Do NOT comment on:
     - `tests/corpus/fixtures/*.html` quality. Those files are DELIBERATELY bad —

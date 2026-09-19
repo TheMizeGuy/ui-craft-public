@@ -14,7 +14,7 @@ Coordinate a UI quality review: determine scope, map the flows in scope, gather 
 
 ## Execution mode
 
-Reviews are dispatched, never run inline in the orchestrating session. Every specialist runs as an Opus 5 subagent: pin `model: "opus"` on each call, the coding/review floor (owner directive 2026-07-24). Never omit `model` (an omitted model inherits the session model, which a policy-gated harness denies) and never use a dated model ID. The orchestrator conducts on the session model: scope, context, prompts, the merge, and the ledger. Run a specialist's process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
+Reviews are dispatched, never run inline in the orchestrating session. Every specialist runs as a subagent on the model the session chooses (Opus 5 is the usual default for design, review and implementation); never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrator owns scope, context, prompts, the merge, and the ledger. Run a specialist's process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -176,18 +176,18 @@ A report failing any criterion gets ONE re-dispatch naming the failed item; a se
 **Browser evidence has exactly one owner per run: you.** Specialists share a single Playwright browser, and several of them resize the viewport. If they run concurrently, one agent's 320px resize silently invalidates another's geometry measurement, and every spatial finding then trips the unverified-evidence cap.
 
 1. If a browser tool and a URL are both available, capture the matrix yourself BEFORE dispatching: for the default capture set in `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md` (320, 900, the widest realistic width, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), one screenshot plus one geometry dump (bounding boxes and computed styles for the primary content), written under `.claude/ui-craft/runs/<ISO timestamp>/evidence/`. Pass those absolute paths into every specialist prompt as read-only evidence, and instruct specialists not to drive the browser themselves.
-2. Dispatch all chosen specialists in parallel using the Agent tool. Send multiple Agent calls in a single message. Pin `model: "opus"` on each call:
+2. Dispatch all chosen specialists in parallel using the Agent tool. Send multiple Agent calls in a single message:
 
 ```
-Agent({ subagent_type: "ui-craft:ui-visual-reviewer", model: "opus",
+Agent({ subagent_type: "ui-craft:ui-visual-reviewer",
   prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
   description: "Visual quality review" })
 
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", model: "opus",
+Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer",
   prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
   description: "Accessibility review" })
 
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", model: "opus",
+Agent({ subagent_type: "ui-craft:ui-responsive-reviewer",
   prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
   description: "Responsive review" })
 ```

@@ -18,8 +18,9 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    ```
    With no argument, this reviews your uncommitted + staged changes filtered to UI-relevant
    files. Pass a path, a screenshot, `staged`, `pr`, or `all` to target something else.
-4. **What to expect**: every dispatched agent runs on Opus 5 (pinned at dispatch, thinking
-   always on) and never modifies files itself; the invoking session applies findings or
+4. **What to expect**: every dispatched agent runs on the model the session chooses (Opus 5 is
+   the usual default for design, review and implementation; thinking always on) and never
+   modifies files itself; the invoking session applies findings or
    generated code only after you explicitly approve. The exception to read-only is the plugin's own state, all of it under
    `.claude/ui-craft/` in the reviewed repo and all of it announced in one line: the three review
    skills write `last-review.json` on every run without asking (it is what makes the second
