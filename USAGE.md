@@ -48,26 +48,41 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
 **What happens:**
 
 1. The skill parses the brief: what to design (a settings page), stated constraints (dark
-   theme, dense, keyboard-first), any stated framework (here, none, so it checks the repo), and
-   the display range the design must survive (default 320 / 390 / 900 / 1440 / 2560).
+   theme, dense, keyboard-first), any stated framework (here, none, so it checks the repo), the
+   visual reference the owner approved (a screenshot, a named product, or the repo's own
+   identity; asked for once when missing, after which the architect grounds the look in the
+   subject itself and marks the direction proposed), the surface type for the copy budgets
+   (control, content, marketing or article), and the display range the design must survive
+   (default 320 / 390 / 900 / 1440 / 1920 / 2560).
 2. If an existing repo is present, it reads `package.json` (framework, React/Tailwind
    versions), the token system (`globals.css` / `tailwind.config.*`: color format, whether
-   shadcn defaults are still in place), existing `components/ui/*` primitives, and the
-   workspace root. A greenfield project skips this.
+   shadcn defaults are still in place), existing `components/ui/*` primitives, the workspace
+   root, the owner's recorded vetoes and must-haves (`design/POV.md`, the repo's UI rules), and
+   the icons and imagery already on hand. A greenfield project keeps only the fleet-wide vetoes.
 3. It pulls up to three advisory seeds from the internal style taxonomy: a style family, a
    domain convention row, and a font pairing. Seeds are raw material for the architect's
    point-of-view, never a substitute for it, and the anti-AI-tells catalogue wins on conflict.
 4. It builds a self-contained prompt (the architect has zero conversation context) and
    dispatches `ui-craft:ui-craft-architect`.
 5. The architect reads the aesthetic, design, usability, responsive, accessibility and
-   architecture references (catalogue/01 as the hard floor) before writing anything, writes the
-   task flow down before any token exists, commits to a point-of-view, builds the full OKLCH
-   token system, designs each requested component in production-grade code, then runs the
-   taste-checklist audit against its own output before returning.
-6. Generated code is code, so it gets reviewed before you see it: the skill dispatches
+   architecture references (catalogue/01 as the hard floor, aesthetic/06 as the substance floor
+   under it) before writing anything, grounds the design in the subject's own world, drafts a
+   compact plan (named colours with roles, type roles, an ASCII wireframe per screen, the
+   opening) and runs the twin test on it, writes the task flow down before any token exists,
+   commits to a point-of-view, builds the full OKLCH token system with the accent over the
+   chroma floor and three measured surface levels, designs each requested component in
+   production-grade code, states a substance contract and a copy map per screen, emits a
+   self-contained `preview.html`, then runs the taste-checklist audit against its own output
+   before returning.
+6. When a browser tool is in the session, the skill serves the preview locally, renders it at
+   390, 1440 and 1920, looks at it (the stranger's word test: if the first word is grey, flat
+   or template, it goes back), and runs the density and substance measurement scripts.
+7. Generated code is code, so it gets reviewed before you see it: the skill dispatches
+   `ui-craft:ui-visual-reviewer`, `ui-craft:ui-anti-slop-auditor`,
    `ui-craft:ui-responsive-reviewer` and `ui-craft:ui-accessibility-reviewer` in parallel over
-   the fresh output, read-only. Any CRITICAL or HIGH finding goes back to the architect in the
-   one re-dispatch allowed.
+   the fresh output and the screenshots, read-only. Any CRITICAL or HIGH finding, and any
+   recommended removal with no named replacement, goes back to the architect in the one
+   re-dispatch allowed.
 
 **You get:**
 
@@ -76,8 +91,13 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
 
 ### Point of view
 A dense, keyboard-first control surface for people who live in it eight hours a day, not a
-marketing-site settings page. [...full 3-4 sentence POV statement, including what it explicitly
-does NOT do.]
+marketing-site settings page. [...full 3-4 sentence POV statement naming the visual reference
+and the subject-world device it carries, including what it explicitly does NOT do.]
+
+### Design plan
+[subject, audience, job; the five things from the subject's world; palette as names plus roles;
+type roles; an ASCII wireframe per screen with alignment and the focal element; the opening;
+principles; the twin-test paragraph beginning "Changed"]
 
 ### Token system
 ```css
@@ -100,6 +120,19 @@ does NOT do.]
 [a full page assembling the components above]
 ```
 
+### Substance contract
+| Screen | Accent roles (S1) | Chroma (S2) | Surface levels (S3) | Containment (S4) | Focal visual (S5) | Imagery (S6) | Channels (S7) |
+|---|---|---|---|---|---|---|---|
+| Settings | primary action (fill), current nav item (fill), focus ring | 0.14 | base, raised, overlay: 1.22:1, 1.27:1 | 1px edge 1.4:1 plus top rim | the settings form with section icons | section icons, the account avatar | weight, size, colour, containment |
+
+### Copy map
+| Paragraph | Section and heading | Position | Words | Measure | Why |
+|---|---|---|---|---|---|
+| Lede | Page header | above, the only prose above | 18 | 45ch | says what the page is |
+
+### Preview
+[`preview.html`: one self-contained file, tokens inlined, both schemes, no build]
+
 ### Taste audit
 | Section | Result |
 |---|---|
@@ -111,14 +144,19 @@ does NOT do.]
 - Should the danger-zone actions (reset, delete) get a confirmation modal or inline expand?
 ```
 
-The skill gates this output against seven mechanical acceptance criteria before showing it to
+The skill gates this output against twelve mechanical acceptance criteria before showing it to
 you: POV present and naming what the design does NOT do, every color value `oklch(...)`, no
 elided component bodies, at least one full composition, taste audit table present, zero hits for
-tells like `#6366f1`, `lorem`, `"Get started"`, and a four-part responsive floor (a stated
+tells like `#6366f1`, `lorem`, `"Get started"`, a four-part responsive floor (a stated
 behavior at every width in the display range with no horizontal overflow at the narrowest, no
 fixed pixel sizing on layout containers, no `100vh`/`h-screen` on full-height surfaces, and
-`@container` rather than `sm:`/`md:`/`lg:` on portable components). The pre-ship audit findings
-print below the design under a `## Pre-ship audit` heading. Then it asks what to apply:
+`@container` rather than `sm:`/`md:`/`lg:` on portable components), the design plan with its
+twin test, a six-part substance floor (a visible accent over the chroma floor, three measured
+surface levels, containment on every data panel, a focal visual per screen, imagery and icons,
+hierarchy in three channels), the copy map (nothing above the product beyond the lede, no
+orphan paragraphs, no text-only runs), the preview, and zero template-chrome strings or vetoed
+devices. The screenshots, the stranger's word, the measurement numbers and the pre-ship audit
+findings print below the design under a `## Pre-ship audit` heading. Then it asks what to apply:
 
 ```
 Apply this design to the project? Options:
@@ -155,6 +193,10 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 3. It gathers project context in parallel: for web, the framework, `tailwind.config.*` or
    `globals.css` token system, and `tsconfig.json` strictness. It then establishes the evidence
    level explicitly rather than assuming one: code + browser, code-only, or screenshot-only.
+   It also audits the repo's own doctrine (UI rules in `CLAUDE.md`, `design/*.md`, theme
+   READMEs, lint rules and tests that pin visual values or word counts) for anything that
+   enforces flatness or text volume, reporting each as a `Doctrine:` finding for you to keep or
+   retire, and distils the owner's recorded vetoes into a block every specialist receives.
 4. It decides which 3-5 specialists to dispatch, by rank. A web component always gets
    `ui-craft:ui-visual-reviewer` and `ui-craft:ui-accessibility-reviewer`; web also defaults in
    `ui-craft:ui-responsive-reviewer` on any adaptive platform. `ui-craft:ui-anti-slop-auditor` runs on
@@ -162,9 +204,10 @@ touched, then reports any breakage with the fix. Code that does not compile is n
    `ui-craft:ui-perf-engineer` if performance is a stated concern or a runtime is measurable, and
    `ui-craft:ui-typescript-engineer` on TS projects (five agents on this checkout form).
 5. If a browser and a URL are both available, the skill captures the viewport matrix itself
-   (one screenshot plus one geometry dump per width) before dispatching, and hands those files
-   to every specialist as read-only evidence. Specialists share one browser, so letting them
-   each resize would invalidate each other's measurements.
+   (one screenshot plus one geometry dump per width, 1920 always included) before dispatching,
+   runs the density and substance measurement scripts at 1920 and the widest width, and hands
+   those files and numbers to every specialist as read-only evidence. Specialists share one
+   browser, so letting them each resize would invalidate each other's measurements.
 6. All chosen specialists run in parallel, each reading its own reference files (the universal
    rubric, the internal catalogue where relevant, the evidence pipeline, plus the platform
    overlay for scope) before reviewing.
@@ -259,7 +302,9 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
    that this will take several minutes before proceeding.
 2. Pre-flight context gathering is comprehensive: every dependency, every `tsconfig` strictness
    flag, the full token system, component/page counts, font and icon usage, existing perf
-   tooling.
+   tooling, plus the doctrine audit (repo rules, lints and tests that enforce flatness or text
+   volume, each reported for you to keep or retire) and the owner's recorded vetoes, which the
+   team lead forwards to every specialist.
 3. Instead of dispatching specialists directly, the skill dispatches `ui-craft:ui-team-lead`.
    Per this plugin's orchestration contract (the RUNTIME DISPATCH NOTE at the top of
    `agents/ui-team-lead.md`), this happens via
@@ -275,7 +320,9 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
    than dispatching them for completeness, because an undispatched dimension is an honest gap
    while a speculative verdict row manufactures confidence the run never earned.
 5. The team lead merges everything into one report with a per-dimension verdict table, so an
-   accessibility gap can never get buried under an otherwise-strong visual score, and writes it
+   accessibility gap can never get buried under an otherwise-strong visual score, and every
+   recommended removal names the device that replaces it (a plan that only strips frames, badges
+   and elevation is rejected as the flat 2026 default), and writes it
    to `.claude/ui-craft/runs/<timestamp>/merged-report.md` before returning. That file, not the
    returned message, is the deliverable: a seven-specialist report with code extracts routinely
    exceeds the ~60KB at which a subagent's reply truncates.

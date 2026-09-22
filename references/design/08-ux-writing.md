@@ -103,8 +103,11 @@ sentence was clear, correctly toned and accurate.
 **The bar.** In a control surface (dashboard, settings, form, admin panel, any
 interface where words sit between a person and their task), a visible paragraph
 runs to **30 words**. That is roughly three lines at a 35em measure. Marketing
-pages, documentation and onboarding are exempt; they are surfaces people came to
-read.
+pages, documentation and onboarding are no longer exempt: every other surface
+has its own bar, and every surface has placement rules
+(`references/design/12-copy-placement-and-volume.md` § 3). That exemption is
+what let a four-paragraph introduction sit above a data table through every copy
+review it ever had.
 
 **Lead and detail, not deletion.** Over the bar, split it: the load-bearing
 fact stays visible, the qualifications move into a `<details>` with a summary
@@ -143,7 +146,10 @@ Run over any surface that ships prose (the content-quality dimension of `referen
 - Sentence case throughout unless the POV explicitly commits otherwise; small caps for overlines via `font-feature-settings`, not shouting uppercase body text.
 - Copy tone matches the POV brief's stated register, including in errors: a tactical product does not suddenly get whimsical at failure.
 - **No visible paragraph in a control surface runs past 30 words** (section 4b). Count them on the RENDERED page with disclosure bodies excluded, rather than reading for a general impression of wordiness. The impression test is what passed a page carrying a 121-word hint.
-- Explanatory prose is not the first thing above the primary data on first paint.
+- No running prose above the primary content beyond the lede budget: 25 words on a product or marketing surface, 40 on a content or reference page, and no paragraph inside the hero at all. Explanation, methodology and search copy live below the primary content, behind a `<details>` whose summary names its content, or on their own route (`references/design/12-copy-placement-and-volume.md` § 2, § 3).
+- Every paragraph sits in a headed section, among prose rather than dropped between components of another kind, at a 45-75ch measure set on the prose block (design/12 § 1).
+- No run of three text-only sections, and no text-only first viewport off an article template; the fix is a non-text device, never more words (design/12 § 4).
+- Layout never depends on a third-party slot rendering: the slot is reserved or collapsed, prose never reflows into a different position when it fails to fill, and no copy is written to occupy it (design/12 § 5).
 
 ## 6. Cross-References
 
@@ -154,6 +160,7 @@ Run over any surface that ships prose (the content-quality dimension of `referen
 | Content-quality review dimension | `references/review/01-universal-rubric.md` |
 | Type system the copy renders in | `references/design/02-typography.md` |
 | Length thresholds, disclosure rules, measurement | `references/review/05-density-and-economy.md` |
+| Where a paragraph may sit, the per-surface volume budgets, the copy map | `references/design/12-copy-placement-and-volume.md` |
 | Confirm-versus-undo decision rule, undo requirements, bulk and partial-failure rules | `references/usability/02-forms-and-error-recovery.md` |
 | The state set each of these strings belongs to (empty, error, offline, permission denied) | `references/usability/04-states-feedback-and-affordances.md` |
 | Nav labels, one term per destination across nav, title, heading and breadcrumb | `references/usability/03-navigation-and-information-architecture.md` |

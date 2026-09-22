@@ -11,7 +11,7 @@ Twelve products with strong, defensible point of view. For each: aesthetic posit
 
 ## How to Read These Case Studies
 
-Each system is summarized in the same shape so they're comparable.
+Each system is summarized in the same shape so they're comparable. A product that resembles Template A without an owner-named visual reference behind it is the V13 flat-terminal tell rather than a fit (`references/catalogue/01-ai-tells.md`, `references/aesthetic/06-substance-floor.md` § 1); resemblance runs from the case study to the template, never from a product category to a template.
 
 | Field | What it captures |
 |-------|-----------------|
@@ -19,7 +19,7 @@ Each system is summarized in the same shape so they're comparable.
 | **Distinctive choices** | The 5-8 specific decisions that compose the POV |
 | **Borrowable principles** | What you can take without becoming derivative |
 | **Untouchable / over-imitated** | Patterns so closely associated with this product they read as "we copied X" if you use them verbatim |
-| **POV template fit** | Which of the three POV templates from file 01 this exemplifies |
+| **Closest worked example (never a classification or routing target)** | Which of the POV templates in file 01 this system happens to resemble. It describes the case study; it never selects a template for a project |
 
 ---
 
@@ -44,7 +44,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Their exact warm-graphite gray ramp (every "Linear-clone" uses it). The exact Linear purple. The Linear-style "issue card with status pill + assignee avatar" -- if you ship this verbatim, it reads as a Linear clone, not your product.
 
-**POV template fit**: Tactical Operator (Template A in file 01).
+**Closest worked example (never a classification or routing target)**: Tactical Operator (Template A in file 01).
 
 ---
 
@@ -67,7 +67,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Geist Sans + Geist Mono unmodified -- every Vercel-deployed AI project ships with this; it now reads as "deployed via Vercel CLI" not "designed by humans". The dark-hero-with-light-mesh is a recognisable Vercel-clone signal when it arrives with the rest of the stack (Geist + black-and-white + mesh); the catalogue's corpus data rates mesh gradients alone as weak, and ranks the frosted sticky nav as the strongest single-component fingerprint. Black-and-white minimalism is the AI default for "premium" -- it has lost meaning.
 
-**POV template fit**: Marketing = Editorial Magazine (Template B); Product = Tactical Operator (Template A).
+**Closest worked example (never a classification or routing target)**: Marketing = Editorial Magazine (Template B); Product = Tactical Operator (Template A).
 
 ---
 
@@ -90,7 +90,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Their exact gradient hero (the rainbow mesh) was distinctive in 2018, now done to death by every fintech imitator. Stripe purple is recognizable -- if you use it as a primary, you read as Stripe-derivative.
 
-**POV template fit**: Marketing = Editorial Magazine (Template B); Dashboard = Workshop / Crafted (Template C); Checkout = its own POV.
+**Closest worked example (never a classification or routing target)**: Marketing = Editorial Magazine (Template B); Dashboard = Workshop / Crafted (Template C); Checkout = its own POV.
 
 ---
 
@@ -113,7 +113,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: SF Pro is Apple-licensed for Apple platforms only. Don't ship it on web. The large-rounded-icon-grid (iOS Springboard) is too closely Apple-associated.
 
-**POV template fit**: Workshop / Crafted (Template C) with editorial elements.
+**Closest worked example (never a classification or routing target)**: Workshop / Crafted (Template C) with editorial elements.
 
 ---
 
@@ -136,7 +136,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Their exact yellow and blue palette. The iOS-style filled checkbox circle. The "magic plus button" for quick-add.
 
-**POV template fit**: Workshop / Crafted (Template C) with editorial calm.
+**Closest worked example (never a classification or routing target)**: Workshop / Crafted (Template C) with editorial calm.
 
 ---
 
@@ -159,7 +159,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: The Spaces concept itself. The exact color-mixing pattern. Arc-shaped sidebar (highly recognizable).
 
-**POV template fit**: Workshop / Crafted (Template C) leaning Tactical.
+**Closest worked example (never a classification or routing target)**: Workshop / Crafted (Template C) leaning Tactical.
 
 ---
 
@@ -182,7 +182,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: The entire toolset metaphor (it IS Figma). The frame / artboard concept. The blue selection accent.
 
-**POV template fit**: Tactical Operator (Template A) with creative-tool extensions.
+**Closest worked example (never a classification or routing target)**: Tactical Operator (Template A) with creative-tool extensions.
 
 ---
 
@@ -205,7 +205,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Their exact gray-paper aesthetic. The Notion sidebar pattern. The block-handle-on-hover affordance.
 
-**POV template fit**: Workshop / Crafted (Template C) with editorial calm.
+**Closest worked example (never a classification or routing target)**: Workshop / Crafted (Template C) with editorial calm.
 
 ---
 
@@ -228,7 +228,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: The exact pink default accent. The Raycast launcher form factor (highly recognizable).
 
-**POV template fit**: Tactical Operator (Template A).
+**Closest worked example (never a classification or routing target)**: Tactical Operator (Template A).
 
 ---
 
@@ -251,7 +251,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Their exact theme system (Solarized-style multi-theme picker is recognizable). Their tag syntax.
 
-**POV template fit**: Editorial Magazine (Template B) for the writing surface.
+**Closest worked example (never a classification or routing target)**: Editorial Magazine (Template B) for the writing surface.
 
 ---
 
@@ -274,7 +274,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: The exact pastel palette. The command bar interaction (clearly a Linear-derived pattern at this point).
 
-**POV template fit**: Tactical Operator (Template A) with calmer color.
+**Closest worked example (never a classification or routing target)**: Tactical Operator (Template A) with calmer color.
 
 ---
 
@@ -297,7 +297,7 @@ Each system is summarized in the same shape so they're comparable.
 
 **Untouchable / over-imitated**: Their exact Camphor + Tiempos pairing. The Stripe Press masthead style.
 
-**POV template fit**: Editorial Magazine (Template B) at its most refined.
+**Closest worked example (never a classification or routing target)**: Editorial Magazine (Template B) at its most refined.
 
 ---
 

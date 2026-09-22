@@ -220,7 +220,7 @@ it most, so the rules are strict.
 | Ungrouped fields in one block | `input`, `select`, `textarea` with no `fieldset` or heading between them | 6 |
 | Unexplained domain terms | Nouns on the screen a new user cannot define from the screen itself | 0 on any first-run or public surface |
 | Facts to remember between steps | Shown on step N, needed on step N+1, not displayed on N+1 | 0 |
-| Words to read before the first action is possible | Word count above the primary control on first paint | 50 in a control surface |
+| Words to read before the first action is possible | Word count above the primary control on first paint. Nav links, breadcrumbs, skip links and theme toggles are chrome, not the first control; a page with no qualifying control is measured against its primary content element instead | 50 in a control surface. Other surface types use the per-surface lede budgets in `references/design/12-copy-placement-and-volume.md` section 3: 25 words on a product or marketing surface, 40 on a content or reference page, no volume bar on an article template |
 | Competing calls to action | Elements with primary visual weight | 1 |
 | Simultaneous states on screen | Loading, error, and empty regions rendered at once | 2 is a smell, 3 is a broken screen composition |
 
@@ -233,15 +233,43 @@ Counting recipe:
   fieldsets: document.querySelectorAll('form fieldset').length,
   primaries: document.querySelectorAll('[data-variant=primary], .btn-primary, [type=submit]').length,
   wordsBeforeFirstControl: (() => {
-    const ctl = document.querySelector('main button, main input, main a[href]');
-    if (!ctl) return 0;
+    const main = document.querySelector('main') || document.body;
+    // Chrome is not the first control. A skip link, a breadcrumb, a nav item or
+    // a theme toggle sits above the task on every page, so counting them reports
+    // 0 words on exactly the pages with a blob at the top.
+    const chrome = (el) => {
+      if (el.closest('nav, [role=navigation], [role=search], [aria-label*="breadcrumb" i]')) return true;
+      const label = `${el.getAttribute('aria-label') || ''} ${el.textContent || ''}`.trim();
+      if (label.length > 40) return false;
+      return /^(skip|jump)\s+to\b/i.test(label) ||
+             /\b(theme|dark mode|light mode|appearance|language|locale)\b/i.test(label);
+    };
+    const control = [...main.querySelectorAll(
+      'button, input, select, textarea, a[href], [role=button], [role=tab]',
+    )].find((el) => el.offsetParent !== null && !chrome(el));
+    // No qualifying control: the page's job is its content, so measure against
+    // the primary content element rather than reporting a clean 0.
+    const primary = control || main.querySelector(
+      'table, form, [data-primary], [role=grid], canvas, [data-chart], article',
+    );
+    if (!primary) return { words: 0, measuredAgainst: 'no primary element found' };
     const r = document.createRange();
-    r.setStart(document.querySelector('main'), 0);
-    r.setEndBefore(ctl);
-    return r.toString().trim().split(/\s+/).filter(Boolean).length;
+    r.setStart(main, 0);
+    r.setEndBefore(primary);
+    return {
+      words: r.toString().trim().split(/\s+/).filter(Boolean).length,
+      measuredAgainst: primary.tagName.toLowerCase() + (primary.id ? `#${primary.id}` : ''),
+      via: control ? 'first non-chrome control' : 'primary content element',
+    };
   })(),
 });
 ```
+
+`measuredAgainst` is part of the finding, not debug output: a word count is only
+arguable once the reader knows which element was taken as the thing the words sit
+in front of. The per-surface budgets this count is compared against, and the
+placement rules that bind even where no budget does, are
+`references/design/12-copy-placement-and-volume.md` section 3.
 
 Every cognitive-load finding carries its count. "This screen presents 11 peer
 options and 3 competing primary actions" survives triage. The impression does not.
@@ -358,8 +386,8 @@ Run at every step, not only at the end. This is the whole method.
 | Severity | Flow defects |
 |---|---|
 | CRITICAL | The primary task cannot be completed on a supported path; typed input is destroyed with no warning and no recovery; an irreversible action fires with neither confirmation nor undo; a dead end on the primary path |
-| HIGH | Input lost on back or refresh; a step re-asks for data the system holds; no way back from a step; the success state does not confirm success; zero results with no relaxation; no save-and-exit past 3 steps; state a user would share is absent from the URL; a half-created record with no path to finish it |
-| MEDIUM | 4 to 5 steps where 3 suffice; unnamed wizard steps; a disclosure hiding what most users need; more than 9 peer options at one level; two competing primary actions; explanatory prose above the primary control |
+| HIGH | Input lost on back or refresh; a step re-asks for data the system holds; no way back from a step; the success state does not confirm success; zero results with no relaxation; no save-and-exit past 3 steps; state a user would share is absent from the URL; a half-created record with no path to finish it; running prose above the primary control exceeding the surface's lede budget, or any paragraph inside the hero (`references/design/12-copy-placement-and-volume.md` section 3) |
+| MEDIUM | 4 to 5 steps where 3 suffice; unnamed wizard steps; a disclosure hiding what most users need; more than 9 peer options at one level; two competing primary actions; explanatory prose above the primary control that stays inside the surface's lede budget but still delays the task |
 | LOW | Step indicator without a count; debounce outside the useful window; no recent-search affordance; a skippable step with no skip |
 | TASTE | Step ordering preference with no measured cost |
 

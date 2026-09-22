@@ -28,7 +28,7 @@ reviews:
   instructions: |
     ui-craft is a Claude Code plugin, not an
     application: four user-invoked skills, ten dispatched specialist agents, and
-    a 57-file reference knowledge base, plus a zero-dependency Node scorer and
+    a 60-file reference knowledge base, plus zero-dependency Node measurement scripts, a scorer and
     a CI gate script. Content IS the product — a change to a reference file or
     an agent body changes runtime behaviour exactly as much as a code change
     does.

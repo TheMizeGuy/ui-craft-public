@@ -42,6 +42,15 @@ review measures.
 These are review thresholds, not design law. A finding needs a measurement, and
 these say which measurements are worth reporting.
 
+**Every number on this page is a ceiling, and this is the only place that needs
+saying it.** There is no minimum word count, no minimum paragraph length, no
+minimum section count anywhere in this file or in the script that implements it.
+A floor is a padding generator: a test, a lint or a doctrine line demanding a
+minimum turns every attempt to cut copy red, and four independent fix lanes in
+one wave rediscovered the same floors (`references/design/12-copy-placement-and-volume.md`
+section 3). Where long-form copy is genuinely needed it lives in its own section
+below the primary content or on its own route, and it is measured there.
+
 ### Viewport utilisation
 
 Measure at the widest viewport in the matrix, and at 1920px.
@@ -97,15 +106,34 @@ that hides a fault is worse than the scroll it saved.
 
 ### Copy economy
 
+Volume, by surface. The budgets are
+`references/design/12-copy-placement-and-volume.md` section 3; this table is the
+review-threshold view of them, and that file is the source of truth for the
+numbers.
+
 | Condition | Severity |
 |---|---|
-| Any visible paragraph > 30 words in a control surface (dashboard, settings, form) | MEDIUM, or HIGH if there are three or more |
-| Explanatory prose above the primary data on first paint | MEDIUM |
+| Control surface (dashboard, settings, form, admin): any visible paragraph > 30 words | MEDIUM, or HIGH if there are three or more |
+| Content or reference page (entity page, database page, guide index): any visible paragraph > 60 words | MEDIUM, or HIGH if there are three or more |
+| Marketing page: any visible paragraph > 50 words | MEDIUM, or HIGH if there are three or more |
+| Article, documentation, long-form guide: no volume bar. The template is for reading | Not a finding on volume. Every placement row below still binds |
 | A qualifying clause that could sit behind a disclosure without loss | LOW each, MEDIUM as a pattern |
 
-30 words is about three lines at a 35em measure. Marketing and documentation
-surfaces are exempt; this is about interfaces where the words sit between an
-operator and their task.
+Placement, on every surface type, including the ones with no volume bar.
+
+| Condition | Severity |
+|---|---|
+| Running prose above the primary content exceeding that surface's lede budget on first paint (25 words on a product or marketing surface, 40 on a content or reference page), or any paragraph inside the hero (W11) | HIGH |
+| Orphan paragraphs -- a `p` of running prose whose nearest sectioning ancestor carries no heading, whose parent is `main` or `body`, or whose siblings are components of another kind -- at two or more, or one over 60 words (W12) | MEDIUM |
+| Three or more consecutive text-only sections, or a text-only first viewport on a surface that is not an article template (L14) | MEDIUM |
+| A paragraph whose position depends on a third-party slot rendering: an unreserved ad, embed, widget or feed with prose as a flow sibling | HIGH |
+
+30 words is about three lines at a 35em measure, and each surface's bar is set
+where that surface stops being scannable. **No surface is exempt any more.** The
+marketing-and-documentation exemption that used to sit on this line is what let
+the blobs through: every review asked how the words read and none asked where
+they sat, so a reference page absorbed a four-paragraph, 300-word introduction
+above the product and passed. Volume is negotiable by surface; placement is not.
 
 **Where this copy comes from matters for the fix.** Long UI copy is usually not
 one bad writer. It is accretion. Each review round that found a figure
@@ -136,8 +164,14 @@ note that gets dismissed as taste, which is how this class survived review in
 the first place.
 
 `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` (evaluated through the browser tool) prints the utilisation, page-economy, copy, action-distance
-and slack-hoarding numbers for a live page; the duplicate-list, 400px control-separation,
-prose-above-data, admin-above-task and action-rank rows are checked by hand. Or inline:
+and slack-hoarding numbers for a live page. Pass `surface` -- `control` (the default),
+`content`, `marketing` or `article` -- so the copy numbers are graded against the right
+budget. The placement numbers it prints are `wordsBeforePrimary` alongside the
+`primarySelector` it took as the primary content, `orphanParagraphs` with a 64-character
+prefix of each, `textOnlySections` and `longestTextOnlyRun`, `longestParagraph`,
+`totalVisibleWords` and `wordsPerSection`, and `slotReflowRisk`; paste them onto the
+finding's `Measurement:` line. The duplicate-list, 400px control-separation,
+admin-above-task and action-rank rows are checked by hand. Or inline:
 
 ```js
 // Viewport utilisation and page economy
@@ -172,7 +206,9 @@ const used = main.getBoundingClientRect().width;
 ```
 
 ```js
-// Copy economy: visible paragraphs by word count, disclosures excluded
+// Copy economy: visible paragraphs by word count, disclosures excluded.
+// The 30 below is the control-surface bar; swap it for the calling surface's
+// budget (60 content, 50 marketing, no bar on an article).
 [...document.querySelectorAll('p')]
   .filter((p) => !p.closest('details') && p.offsetParent !== null)
   .map((p) => ({ words: p.textContent.trim().split(/\s+/).length,

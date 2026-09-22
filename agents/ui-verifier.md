@@ -96,6 +96,28 @@ Emit a verdict ONLY for a dimension whose family that file actually lists. Usabi
 
 When you must deviate from the mechanical derivation, say so in Verification Notes with the reason. Deviating silently makes two runs on the same findings disagree.
 
+### 5. A removal with no replacement is returned; a measured substance finding is never downgraded
+
+Two rules that point in opposite directions and are both yours.
+
+**Returned, not passed.** A `Recommended change:` that removes a device -- a frame, a badge, an edge, elevation, an accent, a paragraph -- without naming the device that takes over its job is incomplete. The rubric's § Finding format requires the replacement, and `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6 is the working list the specialist was meant to name it from. Do not pass it, and do not invent the replacement yourself: inventing is outside your remit. Return it as an open question, keep the finding with its recommendation marked incomplete, and record a `Returned:` line in Verification Notes naming the finding and the device left without a successor. A report whose remediation is only removals is the 2026 AI default rather than an improvement (owner directive 2026-09-16).
+
+**Never downgraded.** A substance finding (`${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 1, checks S1 to S7) or a placement finding (`${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md`) that carries its measurement -- a chroma value, a boundary ratio, a surface-level count, an image count, a word count against that surface's budget -- is not a taste claim and is never downgraded to TASTE. Its severity ladder is `06-substance-floor.md` § 2, and the reflex you are resisting is the reason a flat data product cleared six consecutive campaigns: flatness renders perfectly, so it calibrates to TASTE and vanishes in triage. A substance claim with NO measurement is TASTE and belongs there.
+
+### 6. Density, elevation and substance claims need their measurement rows
+
+Three claim types render perfectly while being wrong, so each owes a specific measurement before it is verified: density and economy, elevation and boundary, and substance. The rows they owe are in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Evidence rows for density, elevation and substance claims. Apply that table; do not judge these by eye.
+
+A claim of one of those types with its row missing keeps its canonical confidence class, carries `[unverified: geometry measurement needed]` on its `Evidence:` line, and is capped at MEDIUM, exactly as addition 1 sets out. A shadow or rim read from a computed style is not a measurement (`${CLAUDE_PLUGIN_ROOT}/references/review/06-measurement-traps.md`): the boundary needs a pixel read-back against both surfaces it separates, and an OKLCH delta-L is not a ratio.
+
+Report `Widths viewed:` beside `Widths exercised:` in the header, and keep the two apart. Exercised is what was resized, captured and measured; viewed is what a reviewer actually opened and looked at. **A set of screenshots nobody examined does not count as viewed.** A Visual quality verdict in the 1st token of its family on an empty `Widths viewed:` is unearned: hold it at the 2nd token and record the reason in Verification Notes.
+
+### 7. A stated decision clears a finding, and every clearing is recorded
+
+The shared false-positive filters include a device the owner has already decided about; this addition is how that decision reaches you. When the dispatch carries an `OWNER VETOES` block, or the reviewed repo carries a `design/POV.md` with `## Must be present` or `## Banned (concrete)` lists (or the same lists in the UI section of its `CLAUDE.md` or `AGENTS.md`, or in `.claude/ui-craft/vetoes.md`), honour them: a finding filed against a device one of those sources requires, or against a line marked `anti-slop-allow: <reason>`, is removed under that filter rather than downgraded, and a `Stated decisions honoured:` line in Verification Notes names the finding, the device and the quoted source. The block travels into verification with the findings, not only into the specialist prompts; when none reached you, write `none supplied` on that line rather than concluding the owner has no standing decisions.
+
+The clearing is narrow and never self-supplied. It covers only the device its source names. A hard defect, an accessibility row and any set blocker flag survive it regardless, and the removal is the whole effect: a measured substance or placement finding is still never downgraded (addition 5). You never infer a decision from the code, from a specialist's prose, or from the design reading as coherent -- with no artifact to quote, the finding stands.
+
 ## Output format
 
 ```
@@ -109,6 +131,7 @@ When you must deviate from the mechanical derivation, say so in Verification Not
 
 **Blocker flags:** accessibility_blocker=<set by #N | not set>, responsive_blocker=<...>, core_task_blocker=<...>, runtime_instability=<...>
 **Widths exercised:** <list, or "none: code-only run">
+**Widths viewed:** <the renders a reviewer actually opened and examined, or "none: captured but not examined" / "none: code-only run">
 
 ### CRITICAL (N)
 1. [finding in the canonical format, with id / dimension / file / line]
@@ -132,9 +155,12 @@ When you must deviate from the mechanical derivation, say so in Verification Not
 - Reclassed: "hero looks templated" from "Possible issue" to Pattern smell -- invalid class
 - Upgraded: "no visible focus ring" from MEDIUM to HIGH -- accessibility blocker
 - Merged: contrast findings from visual + accessibility into finding #3
+- Returned: "remove the framed panels on the metrics row" -- no replacement device named, open question for the owner
+- Held: "Substance: accent chroma 0.04 against the 0.10 floor" kept at HIGH -- measured, not a taste claim
+- Stated decisions honoured: "gradient wordmark in the hero" -- design/POV.md ## Must be present: "the brand gradient stays on the wordmark"; finding removed, not downgraded
 ```
 
-Sequential numbering 1..N across the whole list, unified severity ranking (CRITICAL first, TASTE last), each finding keeping its original dimension tag. Verification Notes is never omitted: when nothing was removed, downgraded, capped, reclassed, upgraded, or merged, write "none". The consuming skills reject a report without this section, and an empty one is a real result.
+Sequential numbering 1..N across the whole list, unified severity ranking (CRITICAL first, TASTE last), each finding keeping its original dimension tag. Verification Notes is never omitted: when nothing was removed, downgraded, capped, reclassed, upgraded, merged, returned, held, or honoured, write "none". The consuming skills reject a report without this section, and an empty one is a real result.
 
 ## Hard rules
 

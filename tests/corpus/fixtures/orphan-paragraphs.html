@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billing overview</title>
+<style>
+  :root { --paper: oklch(0.98 0.004 250); --ink: oklch(0.24 0.016 250); --dim: oklch(0.52 0.012 250);
+          --line: oklch(0.88 0.008 250); --slate: oklch(0.52 0.13 250); }
+  body { margin: 0; background: var(--paper); color: var(--ink); line-height: 1.6;
+         font-family: system-ui, sans-serif; padding: clamp(1rem, 0.5rem + 2vw, 2.5rem); }
+  main { width: min(100%, 56rem); margin: 0 auto; }
+  h1, h2 { font-family: Poppins, system-ui, sans-serif; font-weight: 600; letter-spacing: -0.015em; }
+  h1 { font-size: clamp(1.5rem, 1.25rem + 1.2vw, 2rem); margin: 0 0 1.25rem; }
+  h2 { font-size: 1.125rem; margin: 1.75rem 0 0.5rem; }
+  .tiles { display: grid; gap: 1rem; margin: 0 0 1.5rem; padding: 0; list-style: none;
+           grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+  .tiles li { border: 1px solid var(--line); border-radius: 10px; padding: 1rem; }
+  .tiles .k { color: var(--dim); font-size: 0.875rem; } p { max-inline-size: 70ch; }
+  .tiles .v { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+  th, td { text-align: left; padding: 0.55rem 0.5rem 0.55rem 0; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--dim); font-size: 0.875rem; } td.n { font-variant-numeric: tabular-nums; }
+  td.due { color: var(--slate); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Billing overview</h1>
+  <ul class="tiles">
+    <li><div class="k">Open balance</div><div class="v">$18,420</div></li>
+    <li><div class="k">Invoices in flight</div><div class="v">7</div></li><li><div class="k">Average days to pay</div><div class="v">23</div></li>
+  </ul>
+  <p>Balances refresh once an hour from the ledger service, so a payment cleared in the last few minutes may not be reflected in the figures above yet.</p>
+  <p>Invoices move to the collections queue after sixty days past due, and once they are in that queue the finance team handles them directly rather than through this page, which is why a customer can disappear from the table below without the balance changing and without any action on your part being recorded anywhere in the audit log that this page reads from.</p>
+  <p>Credits applied by support are netted against the oldest open invoice first, never against the newest one, and the netting runs at midnight UTC.</p>
+  <table>
+    <thead><tr><th>Customer</th><th>Invoice</th><th>Amount</th><th>Due</th></tr></thead>
+    <tbody>
+      <tr><td>Harrow Logistics</td><td>INV-4182</td><td class="n">$6,200</td><td class="due">14 Mar 2026</td></tr>
+      <tr><td>Beckman Foundry</td><td>INV-4177</td><td class="n">$4,850</td><td class="due">21 Mar 2026</td></tr>
+      <tr><td>Nolan Dairy</td><td>INV-4169</td><td class="n">$7,370</td><td class="due">2 Apr 2026</td></tr>
+    </tbody>
+  </table>
+  <section><h2>How balances are calculated</h2>
+    <p>The open balance is the sum of every issued invoice minus payments received and credits applied, taken from the ledger rather than from the billing provider.</p>
+    <p>Disputed lines stay in the balance until the dispute closes. They are not written back out when a dispute is opened, because reversing them early made the monthly close harder to reconcile.</p>
+  </section>
+  <section><h2>Payment terms</h2>
+    <p>Standard terms are net thirty from the issue date. Enterprise agreements override the standard terms and are stored on the contract record, not on the customer record.</p>
+    <p>Late fees accrue daily but are only assessed when an invoice closes, so an invoice paid on day thirty-five carries five days of fees and nothing more.</p>
+  </section>
+  <section><h2>Who to contact</h2>
+    <p>Billing questions from customers go to the finance inbox. Questions about what this page shows go to the platform team, who own the ledger service behind it.</p>
+    <p>Escalations on anything in the collections queue go to the finance lead directly, and the platform team cannot change a collections record from here.</p></section>
+</main>
+</body>
+</html>

@@ -95,7 +95,7 @@ Two setup facts change what a review can tell you:
 /ui-craft:design-ui a settings page for a developer tool: dark theme, dense, keyboard-first
 ```
 
-Dispatches `ui-craft-architect`, which writes down the task flow before any token exists, commits to a distinctive aesthetic point-of-view, builds a full OKLCH token system, and produces production-grade TS + React + Tailwind v4 code (or the equivalent for whatever stack the project uses, since the universal design principles apply beyond TS/React). It runs the taste checklist on its own output, then the skill gates that output against seven mechanical acceptance criteria (including a four-part responsive floor) and puts the fresh code through a read-only responsive and accessibility audit before you see it. Generated code is code: it gets reviewed before it is presented, not after it ships.
+Dispatches `ui-craft-architect`, which grounds the design in the subject's own world, drafts a compact plan (named colours with roles, type roles, an ASCII wireframe, the opening) and runs the twin test on it, writes down the task flow before any token exists, commits to a distinctive aesthetic point-of-view, builds a full OKLCH token system that clears the substance floor (a visible saturated accent, three measured surface levels, real edges, a focal visual, imagery), places every paragraph on a copy map, and produces production-grade TS + React + Tailwind v4 code (or the equivalent for whatever stack the project uses) plus a self-contained static preview. It runs the taste checklist on its own output; then the skill gates that output against twelve mechanical acceptance criteria (a four-part responsive floor, a six-part substance floor, the copy map), renders the preview at three widths and looks at it when a browser tool exists (the stranger's word test plus the density and substance measurement scripts), and puts the fresh design through a read-only visual, anti-slop, responsive and accessibility audit before you see it. Generated code is code: it gets reviewed before it is presented, not after it ships.
 
 ### Review existing UI: `/ui-craft:review-ui`
 
@@ -129,15 +129,15 @@ Agent frontmatter carries no `model:` pin, and no dispatch adds one; the dispatc
 
 | Agent | Purpose |
 |---|---|
-| `ui-craft-architect` | Greenfield design: commits to a POV, generates the token system, produces production-grade code |
-| `ui-visual-reviewer` | Visual quality, POV coherence, affordances, state completeness, anti-pattern detection, and usability: task flow, navigation, error recovery, cognitive load. Usability has no separate agent; it is this one's second lens, which is why it is briefed with the flow map |
-| `ui-anti-slop-auditor` | Walks the internal canonical AI-tell catalogue (both catalogue files) for shipped-default detection |
+| `ui-craft-architect` | Greenfield design: grounds in the subject, plans and twin-tests, commits to a POV, generates the token system against the substance floor, maps every paragraph, produces production-grade code and a static preview |
+| `ui-visual-reviewer` | Visual quality, POV coherence, affordances, state completeness, anti-pattern detection, measured visual substance and copy placement, density on every surface, and usability: task flow, navigation, error recovery, cognitive load. Usability has no separate agent; it is this one's second lens, which is why it is briefed with the flow map |
+| `ui-anti-slop-auditor` | Walks the internal canonical AI-tell catalogue (both catalogue files) for shipped-default detection, including the flat-terminal subtraction-only system and the text-placement tells; every finding names its replacement device and the report lists what the surface needs added |
 | `ui-accessibility-reviewer` | Semantics, keyboard, focus, contrast, touch targets, WCAG 2.2 + APCA |
 | `ui-motion-reviewer` | Animation timing and purpose, interruptibility, reduced motion, compositor-safe properties |
 | `ui-responsive-reviewer` | Fluid and intrinsic sizing, breakpoints vs container queries, viewports, overflow and clipping, zoom and reflow, orientation, safe areas |
 | `ui-perf-engineer` | Core Web Vitals, bundle size, rendering, hydration (web primary, with cross-platform rendering notes) |
 | `ui-typescript-engineer` | TS6/7 strictness verified via the TS7 type gate, component/state typing, branded primitives |
-| `ui-verifier` | Evidence sufficiency, false-positive filtering, deduplication, severity re-validation |
+| `ui-verifier` | Evidence sufficiency (density, elevation and substance claims need their measurement), false-positive filtering, deduplication, severity re-validation; a removal with no named replacement is returned as an open question |
 | `ui-team-lead` | Inlined `general-purpose` orchestrator; runtime grants and nesting depth govern Agent access. Dispatches up to 7 specialists (visual + usability, anti-slop, accessibility, motion, responsive, perf, typescript), then the verifier (always last, never in parallel), and merges into one report written to the run directory |
 
 ## Knowledge base
@@ -180,7 +180,7 @@ Agent frontmatter carries no `model:` pin, and no dispatch adds one; the dispatc
 | `03-motion-reduce.md` | prefers-reduced-motion detection and substitution patterns |
 | `04-screen-reader.md` | Semantic HTML, heading hierarchy, landmarks, ARIA states, live regions |
 
-### usability/ (4 files): whether a person can actually get through it
+### usability/ (5 files): whether a person can actually get through it
 
 | File | Covers |
 |---|---|
@@ -188,6 +188,7 @@ Agent frontmatter carries no `model:` pin, and no dispatch adds one; the dispatc
 | `02-forms-and-error-recovery.md` | Validation timing, error message content, inline errors vs summaries and where focus goes, required/optional marking, input types and autofill, data-loss prevention, destructive actions (confirm, undo, or both), partial failure, submission state |
 | `03-navigation-and-information-architecture.md` | Navigation models and when each fails, depth vs breadth, wayfinding, breadcrumbs, back behaviour, deep links and refresh survival, grouping and labelling, overflow on small viewports |
 | `04-states-feedback-and-affordances.md` | The complete state set and why a missing empty or error state is HIGH rather than MEDIUM, skeleton vs spinner vs progress vs nothing, feedback latency budgets, signifiers, disabled-state anti-patterns, optimistic UI and rollback, procedures for forcing every state |
+| `05-app-shells-and-content-layout.md` | The shell contract (what a top bar and a left rail each own, and the two-primary-menus defect), choosing and sizing the shell with the published bands and the named disagreements, collapse and the icon-rail penalty, in-page navigation, entity-page anatomy, canonical panes, list vs table vs card, first-viewport contents by page type, reading measures, text-to-control placement (no prose between controls), promo and embed slotting, detection snippets, severity anchors |
 
 ### responsive/ (3 files): fluid sizing and adaptive context
 
@@ -197,7 +198,7 @@ Agent frontmatter carries no `model:` pin, and no dispatch adds one; the dispatc
 | `02-breakpoints-vs-container-queries.md` | The decision rule between the two, container query syntax and containment gotchas, container units, when a media query is still right, migrating a viewport-styled component, severity guide, style and scroll-state queries |
 | `03-zoom-orientation-and-adaptive.md` | WCAG 1.4.4 resize-to-200% and 1.4.10 Reflow with their real numbers, page vs text-only zoom, orientation as an aspect ratio, multi-window/foldable/split-screen width, density and pixel ratio, the two-part safe-area rule |
 
-### design/ (11 files)
+### design/ (12 files)
 
 | File | Covers |
 |---|---|
@@ -212,16 +213,18 @@ Agent frontmatter carries no `model:` pin, and no dispatch adds one; the dispatc
 | `09-token-drift-and-retints.md` | Why a palette change ships half-applied: literals that shadow tokens, the drift audit, and keeping a retint coherent end to end |
 | `10-hero-and-section-architectures.md` | Six named hero architectures, hero typography/palette/atmosphere specs, the objection sequence, per-type section architectures, and the visual-rhythm rules that prevent the wall-of-same page |
 | `11-image-to-code-replication.md` | Seven-layer extraction for screenshot-to-code work: proportional grid measurement, font identification by letterform, color sampling from compressed sources, radius language, atmosphere fidelity, responsive inference, the artistic-asset rule, the replication diff |
+| `12-copy-placement-and-volume.md` | Where words go and how many: every paragraph has a headed home at a measure, the product comes first (one lede above it), per-surface budgets that replace the old marketing and documentation exemption, text-only runs, slot independence, the copy map, and the three placement tells |
 
-### aesthetic/ (5 files)
+### aesthetic/ (6 files)
 
 | File | Covers |
 |---|---|
-| `01-point-of-view.md` | POV discovery worksheet, the visual-reference rule, AI-default-looks calibration, 3 worked-example templates with complete token sets (never a routing target) |
+| `01-point-of-view.md` | POV discovery worksheet with its substance and copy-map fields, the visual-reference rule, the six-look AI-default calibration (including the flat-terminal second face), 4 worked-example templates with complete token sets (never a routing target) |
 | `02-distinctive-systems.md` | 12 case studies (Linear, Vercel, Stripe, Apple, Things, Arc, Figma, Notion, Raycast, Bear, Cron, Stripe Press) |
 | `03-taste-checklist.md` | The pre-ship taste gate: per-section audit questions (including a responsive and adaptive audit and a flow audit), each row tagged code-checkable or browser-only so a code-only pass can report NOT ASSESSED, plus smell tests |
 | `04-style-taxonomy.md` | Seed vocabulary: 10 style families, domain conventions, the eight landing structures, font-pairing seeds, icon discipline, motion intensity ladder, AI-surface patterns |
 | `05-brand-direction-and-reference-generation.md` | The two pre-design lanes: implementation-ready reference-image generation (one image per section, composition-anchor variety, negative prompting) and brand-mark direction (symbol from meaning, the reduction ladder, the hard constraints, generated-logo bans, frozen geometry) |
+| `06-substance-floor.md` | The floor under every ban: seven measured checks (accent presence and chroma floor, surface ladder with boundary ratios, edges on data panels, a focal visual per screen, imagery and icons, hierarchy in three channels), the severity rule that keeps measured flatness out of TASTE, the stranger's word test, the ornament-versus-substance earning test, the dark-mode rim rule, and the pairing table that names a replacement for every removable tell |
 
 ### dataviz/ (4 files + validator script)
 
@@ -268,7 +271,11 @@ Three operational surfaces added in 0.1.2 that keep the catalogue, the auditor, 
 
 ### Regression corpus
 
-`tests/corpus/` holds 21 labeled fixtures (5 drawn from anti-slop's MIT-licensed test corpus, 16 authored, five of them clean controls) pairing an HTML/CSS surface with its ground-truth findings. Scoring is a deliberate two-step loop, not an automatic run: dispatch `ui-anti-slop-auditor` over `tests/corpus/fixtures/`, capture its findings as a canonical JSON array, then run `node tests/harness/score-review.mjs <findings.json>` to compare that array against the labels and compute recall. The script is a pure comparator; it never opens a fixture or invokes an agent. A run fails below 0.8 recall, below 0.8 precision, or when a clean control exceeds its tolerance. The loop is meant to run on every change to the two catalogue files, the auditor or visual-reviewer bodies, the finding shape, or a dispatching skill (the canonical trigger list is `tests/harness/README.md` § When to run this); `tests/harness/README.md` § The two-step loop is the runbook. Zero-dependency (Node >=18, no npm packages).
+`tests/corpus/` holds 40 labeled fixtures (19 drawn from anti-slop's MIT-licensed design corpus, 21 authored, thirteen of them clean controls, seven of those near-miss controls that sit one step from a tell) pairing an HTML/CSS surface with its ground-truth findings. Scoring is a deliberate two-step loop, not an automatic run: dispatch `ui-anti-slop-auditor` over `tests/corpus/fixtures/`, capture its findings as a canonical JSON array, then run `node tests/harness/score-review.mjs <findings.json>` to compare that array against the labels and compute recall. The script is a pure comparator; it never opens a fixture or invokes an agent. A run fails below 0.8 recall, below 0.8 precision, or when a clean control exceeds its tolerance. The loop is meant to run on every change to the two catalogue files, the auditor or visual-reviewer bodies, the finding shape, or a dispatching skill (the canonical trigger list is `tests/harness/README.md` § When to run this); `tests/harness/README.md` § The two-step loop is the runbook. Zero-dependency (Node >=18, no npm packages).
+
+### Measurement scripts
+
+`scripts/` holds three zero-dependency browser or Node scripts the reviewers paste numbers from, because a number cannot be dismissed as taste: `validate_palette.js` (chart palettes, Node CLI), `measure_density.js` (viewport utilisation, page economy, copy volume and placement: words before the primary content, orphan paragraphs, text-only sections, slot reflow risk; evaluated in the browser) and `measure_substance.js` (the substance floor: accent presence and chroma, surface levels and boundary ratios, the hairline-alpha trap, the focal visual, imagery per section, hierarchy channels; evaluated in the browser, with the shadow and rim boundaries it cannot see listed for a pixel read-back). `measure_density.js` also prints the shell rows from the app-shells reference (prose wedged between controls, tab strips wrapping to a second row, destinations held by both the top bar and the rail). A fourth, `audit_doctrine.mjs`, is a Node CLI that scans a reviewed repository's own docs, lint rules and tests for anything that enforces flatness or text volume (word-count floors, CSS pin tests, blanket bans on shadows, borders or badges) and prints them as canonical findings for the owner to keep or retire; `review-ui` and `improve-ui` run it in their doctrine-audit step. A fifth, `scan_tells.mjs`, is the deterministic first pass ported from the anti-slop plugin's design rules and mapped to this catalogue's codes: it finds the exact-signature tells a regex can see in milliseconds, applies presence versus concentration per file, honours `anti-slop-allow`, and marks its heuristic candidates for the 0.6.0 tells as such; the semantic auditor runs after it, never instead of it. A sixth, `check_references.mjs`, verifies that every citation and section reference in the plugin's own agents, skills and references resolves, because an unresolved pointer degrades an agent silently.
 
 ### CI gate
 
@@ -276,7 +283,7 @@ Three operational surfaces added in 0.1.2 that keep the catalogue, the auditor, 
 
 ### Review ledger
 
-`.claude/ui-craft/last-review.json`, written in the *reviewed* repo (not in ui-craft itself), persists the prior run's findings and the list of dimensions that run actually covered. All three review skills read and refresh it, and each carries forward every prior entry whose dimension it did not review, so a perf-only `optimize-ui` pass cannot delete the visual and accessibility history. The next run against the same scope opens with a delta rather than a cold re-listing: **NEW**, **RESOLVED** (absent now and re-verified as fixed, not merely unreported), **STILL OPEN**, **REGRESSED** (severity up), **IMPROVED** (severity down), and carried forward (a prior finding whose dimension this run did not cover, so a narrow review cannot erase a wider one).
+`.claude/ui-craft/last-review.json`, written in the *reviewed* repo (not in ui-craft itself), persists the prior run's findings and the list of dimensions that run actually covered. All three review skills read and refresh it, and each carries forward every prior entry whose dimension it did not review, so a perf-only `optimize-ui` pass cannot delete the visual and accessibility history. The next run against the same scope opens with a delta rather than a cold re-listing: **NEW**, **RESOLVED** (absent now and re-verified as fixed, not merely unreported), **STILL OPEN**, **REGRESSED** (severity up), **IMPROVED** (severity down), **SUBSTANCE REGRESSED** (since 0.6.0 the ledger stores the substance and density numbers measured at 1920 on a browser run, and a later run whose accent chroma, surface levels or imagery fell, or whose words above the product rose, files a HIGH finding with both numbers, so a campaign that strips the previous campaign's substance is caught by the number), and carried forward (a prior finding whose dimension this run did not cover, so a narrow review cannot erase a wider one).
 
 `review-ui`, `improve-ui` and `optimize-ui` all write this file on every run without asking, and say so in one line when they do. `design-ui` does not write one. If your repo runs a clean-tree check or a pre-commit hook, add `.claude/ui-craft/` to `.gitignore`. Do not blanket-ignore `.claude/`: gate artifacts under `.claude/ui-craft-artifacts/` are meant to be committed, since `ui-craft-gate.sh` reads them out of the tree it is gating. See **Data contracts** in [ARCHITECTURE.md](ARCHITECTURE.md) for the ledger schema.
 
@@ -298,6 +305,8 @@ ui-craft was built 2026-07-07 following a feasibility audit of the non-Apple UI 
 - **From typescript-ui (0.3.0):** the design architect, the TypeScript engineer and its type gate, the perf engineer's React/CWV depth, the base 88-tell + 20-deep-cuts catalogue, the OKLCH/typography/spacing/motion/Tailwind-v4/shadcn design references, the POV/distinctive-systems/taste-checklist aesthetic references, and all typescript/ and architecture/ references: ported.
 - **From ui-review (1.0.1):** the universal rubric, the evidence pipeline and its geometry evidence rule, the viewport matrix, the accessibility checklist, the web/Apple/Android platform overlays, the verifier, the responsive and motion reviewers, and the runtime reviewer (merged into `ui-perf-engineer`): ported and merged.
 - **From anti-slop (1.6.0, UI-only subset):** the AI Component Fingerprints, the Strongest-10 Fingerprints, the logo-swap test, the empirical 3.2M-post clearance-rate study: distilled into the two catalogue files, leaving anti-slop's prose/code-quality rules untouched in anti-slop itself.
+
+0.6.0 re-audited the retired `frontend-design` guidance against the plugin and folded the behavioural steps that had stayed outside the architect's process into it (subject grounding, the plan-first pass with the twin test, the template-chrome and single-accented-word tells, the terracotta accent, self-critique on a render), and added the substance floor and the copy-placement doctrine as the counterweight to the catalogue.
 
 0.2.0 extended the same consolidation to three external UI surfaces that 0.1.x had left installed alongside: the bundled `dataviz` chart method (now `references/dataviz/` plus `scripts/validate_palette.js`), the `frontend-design` direction-setting guidance (folded into `aesthetic/01`, `aesthetic/03` and `design/08-ux-writing.md`), and the `ui-ux-pro-max` style/domain/pairing database (distilled into `aesthetic/04-style-taxonomy.md`). Those plugins are retired rather than integrated: ui-craft has no third-party plugin integration point, and `design-ui` seeds its advisory style candidates from the internal taxonomy file. `CHANGELOG.md` § 0.2.0 itemizes what came from where.
 

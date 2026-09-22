@@ -14,8 +14,8 @@ The single dense checklist for pre-ship taste audit. Run it before any UI ships.
 | Step | Action |
 |------|--------|
 | 0 | Two evidence classes. Rows whose Verify column is a grep, a token read, or a code inspection are answerable from source. Rows that need a rendered page (resize, zoom, tab order, hover, throttled network, Lighthouse, OS reduce-motion, an end-to-end walk) are NOT ASSESSED in any code-only pass. Report them as `NOT ASSESSED (needs browser: <what>)`, never PASS. A section with any NOT ASSESSED row cannot be reported as a section PASS; report `PASS (code checks) / NOT ASSESSED (browser rows: <list>)`. Every Verify cell below opens with `[code]` or `[browser]` so the class is mechanical; a cell carrying both markers has a code half and a browser half, reported separately. Where a `[code]` cell says walk, inspect or trigger, read the component, its tokens and its strings. Steps 1 and 1b are the browser pass; when they are skipped, every `[browser]` row is NOT ASSESSED |
-| 1 | Open the URL or local dev server in browser. Walk every page, every modal, every empty/error/loading state |
-| 1b | Walk it again at 320px, 390px, 768px, 1440px and 1920px wide, plus one landscape phone (844x390) and one 400% browser zoom pass. Section 3b is unanswerable from a single desktop window |
+| 1 | Open the URL or local dev server in browser. Walk every page, every modal, every empty/error/loading state. Evaluate `scripts/measure_substance.js` in the page on the way through: every browser half of section 1b quotes its numbers (`accentRoles`, `accentArea`, `surfaceLevels`, `firstViewportVisual`, `imagesPerSection`, `textOnlySections`, `hueCount`, `weightCount`) |
+| 1b | Walk it again at 320px, 390px, 768px, 1440px, 1920px and 2560px wide, plus one landscape phone (844x390) and one 400% browser zoom pass. Section 3b is unanswerable from a single desktop window, and the wide-display half of it (3b.10) is unanswerable below 1920 |
 | 2 | For each section below, answer every question. Note severity of any failure |
 | 3 | Tally: any CRITICAL = block ship. Any HIGH = block launch. Show user the CRITICAL/HIGH list before merging |
 | 4 | The "Smell Tests" at the end are the final pass. If any of those fail, the design needs more iteration |
@@ -31,10 +31,29 @@ The single dense checklist for pre-ship taste audit. Run it before any UI ships.
 | 1.4 | Contrast clears BOTH the APCA size/weight ladder and the WCAG floor? | [code] Two sub-checks, each failing independently. (a) **APCA Lc**, computed with `apca-w3` or `apcach`, never eyeballed: `90+` small and regular-weight body text, `75+` larger or bold body text, `60+` headlines and large UI text, `45+` icons, borders and focus rings. Contrast requirements go UP as text gets smaller and thinner, never down. (b) **WCAG 2.x floor**, computed the same way: every text pair at least `4.5:1`, or at least `3:1` for large text (24px regular / 18.66px bold and above). A pair that passes APCA and fails WCAG still fails this row, because that is the bar most external audits use. Table source of truth: `references/design/01-color-oklch.md` §6. Copy the values from there, never paraphrase them, so the two tables cannot drift | CRITICAL (a11y) |
 | 1.5 | Each surface has its own neutral tuned to its background lightness? | [code] Cards on dark bg should not have the same gray as cards on light bg. Surface-1, surface-2 each should be derived from base | MEDIUM |
 | 1.6 | Dark mode uses `light-dark()` CSS function or `@media (prefers-color-scheme)`, not a class-toggle hack? | [code] Dark mode uses `light-dark()` under `color-scheme: light dark`, with `prefers-color-scheme` as the default and any manual override as a `[data-theme]`/class variant layered on top (design/01 §5, design/05 §8). Fail only when the toggle ignores the OS setting (catalogue §13, MEDIUM) or when colors are duplicated per theme instead of resolved by `light-dark()` | MEDIUM (catalogue §13) when the OS setting is ignored; LOW otherwise |
-| 1.7 | No more than 2 accent colors on a screen? | [code] Walk the page. Count distinct accent uses (excluding semantic green/red/yellow). If >2, you have palette drift | HIGH |
+| 1.7 | No more than 2 accent colors on a screen, and no fewer than one doing real work? | [code] Walk the page. Count distinct accent uses (excluding semantic green/red/yellow). If >2, you have palette drift. The floor is the same row read from the other side: an accent that does not appear on the primary action AND on the current or selected state has failed substance check S1, and no accent at all on first paint is palette absence, not discipline | HIGH |
 | 1.8 | Destructive color distinct from warning color? | [code] Destructive should be saturated red/blood (`oklch(0.62 0.22 25)`), warning should be amber/honey (`oklch(0.75 0.16 70)`) -- not both red-ish | MEDIUM |
 
-## 2. Typography Audit (9)
+## 1b. Substance Audit (7)
+
+Every other section here fails a design for excess. This one fails a design for
+having too little, which is the failure six consecutive review campaigns on one
+data product had no row to catch. `references/aesthetic/06-substance-floor.md`
+§ 1 is the source of truth for these seven checks and this section copies it,
+thresholds and severities included; where the two ever disagree, that file wins.
+A failure without a stated reason is a finding at the severity in the last column.
+
+| # | Question | Verify | Severity if failed |
+|---|----------|--------|--------------------|
+| S1 | Accent presence: is the brand accent visible on first paint in at least two roles (primary action, current or selected nav item, focus ring, key figure, section marker, link colour), with at least one of them a fill rather than text? | [code] Read the token map and the first-viewport markup. [browser] `scripts/measure_substance.js` reports `accentRoles` and `accentArea` | HIGH on a product or marketing surface; MEDIUM on a document |
+| S2 | Accent chroma floor: is the primary accent at OKLCH chroma `0.10` or more at its rendered lightness (`0.12`+ is the working range)? | [code] Read the accent token. The dark-scheme value may sit below the light one by at most `0.03` -- dark-surface craft dims a chip, it does not grey it. Below the floor is a muted brand, which carries `anti-slop-allow: muted brand <reason>` or it is a finding | HIGH |
+| S3 | Surface ladder: does a product or data surface carry at least three surface levels (base, raised, overlay or hover) with every adjacent boundary perceivable -- a tint step of at least `1.15:1`, or an edge (border, rim, shadow) of at least `1.3:1` against the surface it sits on? | [code] Compute the tint steps from tokens. [browser] Rasterise each boundary and measure it in pixels, since computed style cannot see a shadow. OKLCH delta-L is not a measurement: the same `0.04` delta is `1.04:1` at `L 0.13` and `1.11:1` at `L 0.23` | HIGH when no boundary is perceivable at all; MEDIUM when one level is missing |
+| S4 | Edges and containment: do panels, cards, grouped controls and data tables have a findable boundary at 100% zoom on the target display? | [code] Read the border and shadow tokens with their alpha: a hairline at `<= 0.10` alpha of white on a near-black ground computes to roughly `1.1:1` and is not an edge, it is the flat-terminal signature. [browser] Measure the edge against both surfaces it separates | HIGH on data surfaces; MEDIUM elsewhere |
+| S5 | Focal visual per screen: does every screen carry one element that holds the eye and belongs to the subject (a photograph, a product shot, a commissioned illustration, a chart, a large figure with context, an entity list with its real icons, a typographic poster hero)? | [code] Inspect the first-viewport markup for `img`, non-icon `svg`, `figure`, `canvas`, `video` or a display-scale heading. [browser] `scripts/measure_substance.js` reports `firstViewportVisual`. A first viewport that is only text fails on any surface that is not an article template | HIGH on marketing and product; MEDIUM on settings and admin |
+| S6 | Imagery and iconography: at least one real image or figure per two sections on marketing and content pages, and an icon, thumbnail, logo or avatar on every entity row whose domain has one? | [code] Count `img` / `picture` / `figure` per `section`, and icons per entity row. [browser] `scripts/measure_substance.js` reports `imagesPerSection` and `textOnlySections` | HIGH when a marketing or content page carries zero images; MEDIUM below the ratio |
+| S7 | Hierarchy in more than one channel, and identity colour at full strength: is hierarchy carried by at least three of weight, size, colour, containment, space and iconography, and where the domain owns a colour vocabulary (item quality, class or faction, tier, brand line) do those colours render at their canonical saturation? | [code] Read the type scale (at least three distinct weights or optical sizes in use), the neutral ramp, and any identity palette. A system where every element sits under chroma `0.03` with no containment is monochrome by accident, and a desaturated identity colour is a defect rather than restraint. [browser] `scripts/measure_substance.js` reports `hueCount` and `weightCount` | HIGH when only one channel carries hierarchy; MEDIUM when identity colours are muted |
+
+## 2. Typography Audit (10)
 
 | # | Question | Verify | Severity if failed |
 |---|----------|--------|--------------------|
@@ -47,6 +66,7 @@ The single dense checklist for pre-ship taste audit. Run it before any UI ships.
 | 2.7 | `text-wrap: balance` on headlines? | [code] Inspect h1, h2 CSS. Should have `text-wrap: balance` to avoid orphan words | LOW |
 | 2.8 | No all-caps tracking-wide subtitles unless intentional? | [code] Search for `text-transform: uppercase` or `tracking-widest`. If used, is it a deliberate small-caps design choice? Or default Tailwind reflex? | MEDIUM |
 | 2.9 | No monospace face on human-readable text (headings, body, labels, kickers, stats, prices, timestamps)? | [code] Search `font-family` for mono faces outside genuine code/log/identifier surfaces. Digit alignment must come from `tabular-nums` on the sans, not a mono family. The mono+uppercase+tracked "terminal" kicker is a standing maintainer-rejected pattern (2026-07-17) | CRITICAL (T13 per catalogue §18) |
+| 2.10 | Three weights or optical sizes in use, and a display face distinct from the sans? | [code] The checkable type rule (`references/design/02-typography.md` § 2): a `--font-display` distinct from `--font-sans`, an explicit heading weight and tracking, and at least three weights or optical sizes actually rendered on the surface. One system-stack family at 400 and 700 is the stack at its defaults, which is no type decision and fails substance check S7 | MEDIUM |
 
 ## 3. Layout Audit (8)
 
@@ -81,7 +101,7 @@ whether it passed. Depth on each technique: `references/responsive/01-fluid-and-
 | 3b.7 | Tables, nav, and sidebars have a defined narrow-viewport restructure? | [code] At 360px each one must have a real answer (stacked cards, a disclosure, a drawer), not `overflow-x: auto` standing in for a design decision | HIGH |
 | 3b.8 | Full-height surfaces use `svh`/`dvh` and edge-anchored bars use `env(safe-area-inset-*)`? | [code] `grep -rn "100vh" src/` returns zero. [browser] Check the bottom bar on a notched phone in both orientations | MEDIUM |
 | 3b.9 | Landscape phone and open keyboard survive the vertical budget? | [browser] At 844x390, fixed chrome (header plus bottom bar plus safe areas) must leave usable content height; with the keyboard open the budget drops to roughly 180 to 200px. Modals and sheets scroll internally rather than pushing the primary action off-screen | HIGH |
-| 3b.10 | Content adapts above 1600px instead of dead-spacing? | [browser] At 1920px and 2560px, measure content width as a percentage of viewport. Under 60% with no second column, sidebar, or reading-measure reason is a failure. Centring is not the fix: two 500px gutters waste what one 1000px gutter did | MEDIUM |
+| 3b.10 | Content adapts above 1600px instead of dead-spacing? | [browser] At 1920px and 2560px, measure content width as a percentage of viewport. Under 60% with no second column, sidebar, or reading-measure reason is a failure. Centring is not the fix: two 500px gutters waste what one 1000px gutter did. On a control, content, reference or dashboard surface the shell spends the width (75% or more used, through extra columns, a supporting pane or a wider table; `references/usability/05-app-shells-and-content-layout.md` § 3b) and the reading measure sits on the prose block, never on the shell | HIGH under 60% with no reason (`references/review/05-density-and-economy.md`); MEDIUM at 60-75% |
 | 3b.11 | Orientation is not locked, and orientation-sensitive layout keys off aspect ratio? | [code] No `screen.orientation.lock()` and no manifest orientation lock unless essential (WCAG 1.3.4). Layout that must differ by orientation uses `@media (orientation: landscape)` or an aspect-ratio query, never a width breakpoint: a 568px width cannot tell a landscape phone from a small tablet | MEDIUM |
 
 ## 4. Component Audit (11)
@@ -110,7 +130,7 @@ whether it passed. Depth on each technique: `references/responsive/01-fluid-and-
 | 5.4 | No bounce on serious confirms (delete, payment, sign-out)? | [code] Trigger destructive confirms. Motion should be subtle/serious, not bouncy | MEDIUM |
 | 5.5 | Page transitions <400ms (and use View Transitions API where supported)? | [code] Time page transitions. Over 400ms feels broken | LOW (M3 per catalogue §18) |
 
-## 6. Copy Audit (5)
+## 6. Copy Audit (9)
 
 | # | Question | Verify | Severity if failed |
 |---|----------|--------|--------------------|
@@ -119,6 +139,10 @@ whether it passed. Depth on each technique: `references/responsive/01-fluid-and-
 | 6.3 | Dates have explicit format (not ambiguous `1/2/26`)? | [code] Inspect every date display. Should be `Jan 2, 2026`, `2026-01-02`, or relative (`2 days ago`) | MEDIUM |
 | 6.4 | Plurals handled correctly (not "1 items" or "0 item")? | [code] Trigger 0, 1, 2, many counts. Use `Intl.PluralRules` | HIGH |
 | 6.5 | Empty states have voice (not "Nothing here" or "No data")? | [code] Walk every empty state. Should have personality matching POV: tactical/editorial/workshop tone | MEDIUM |
+| 6.6 | No running prose above the primary content beyond the lede budget? | [code] Identify the primary content element (the first `table`, `form`, entity list, chart root or non-nav control inside `main`) and sum the words of running prose before it: 25 on product and marketing surfaces, 40 on content and reference pages (`references/design/12-copy-placement-and-volume.md` § 3). Any paragraph inside the hero fails regardless of the count | HIGH (W11 per catalogue §18) |
+| 6.7 | Does every paragraph sit in a headed section at a 45-75ch measure, with no orphans? | [code] Walk each `p` of running prose up to its nearest `section`, `article` or `aside`: that ancestor carries a heading or an `aria-labelledby`, the paragraph's siblings are prose rather than a card grid, table, form or chart, and the measure is capped on the prose block rather than on the page shell | MEDIUM (W12 per catalogue §18) |
+| 6.8 | No text-only run of three sections, and no text-only first viewport off an article template? | [code] Count each `section`'s non-text children (`img`, `picture`, `svg`, `video`, `canvas`, `table`, `form`, `ul`, `ol`, `dl`, `button`, `figure`) and flag a run of three with none. [browser] Confirm the first viewport carries the focal visual. Never fixed by adding prose: the rule is a non-text child, not a word count | MEDIUM (L14 per catalogue §18) |
+| 6.9 | No word-count floor in the tests or lints? | [code] Grep the copy assertions for a minimum word, heading or paragraph count (`toBeGreaterThan` on a word count, an H2 minimum, a description-length floor). A floor is a padding generator: every attempt to cut copy turns the gate red. The guard is a ceiling, never a floor (`references/design/12-copy-placement-and-volume.md` § 3) | MEDIUM |
 
 ## 7. Accessibility Audit (5 critical baseline)
 
@@ -180,8 +204,10 @@ If any of these fail, the design needs more iteration before ship. These are the
 | 9.6 | Would a designer at the reference product (Linear, Stripe, etc.) approve this without changes? | If no, identify the specific component that fails the bar and rebuild it |
 | 9.7 | Is there a single visible AI tell from the strongest-10 list (catalogue file 01) that we did not deliberately choose to keep? | If yes, fix or document the deliberate exception |
 | 9.8 | Have all empty / error / loading states been designed, or just the populated view? | "Happy path only" is the AI default. Production needs all four states for every screen |
-| 9.9 | The mirror pass: is there one accessory you can remove without losing meaning? | Remove it. If nothing is removable, verify that is discipline and not emptiness -- the quality floor (responsive to mobile, visible keyboard focus, reduced motion respected) must hold without being announced |
+| 9.9 | The mirror pass, both directions: one accessory you can remove without losing meaning, AND one device you can add or strengthen so it carries more of the design's job? | Name both and do both in the same pass. A pass that only removes is not a mirror pass, it is the subtraction reflex 9.10 catches one step later. If nothing is removable, verify that is discipline and not emptiness -- the quality floor (responsive to mobile, visible keyboard focus, reduced motion respected, and the substance floor of `references/aesthetic/06-substance-floor.md` § 1) must hold without being announced |
 | 9.10 | Subtraction-only: can the whole system be described as a list of things it does not do (one hairline, no frames, no badges, no elevation, colour only for status)? | FAIL. That list is the 2026 AI default, not a point of view (owner directive 2026-09-16). Name what the design adds and what each removed device was replaced with; a removal with no replacement goes back to the owner as an open question |
+| 9.11 | The stranger's word test (runs on a render, never on source): show the rendered page to someone with no context, or look at it yourself after a minute away, and write down the first word | "Grey", "flat", "empty", "plain", "unfinished", "template", "wireframe" or "terminal" fails the design whatever the audit tables said. "Busy", "loud", "gaudy" or "decorated" sends it to the mirror pass. The mechanical proxy when nobody is available: `hueCount >= 2`, `surfaceLevels >= 3`, `firstViewportVisual = true`, `weightCount >= 3` on the first viewport; three of four failing predicts the word will be grey (`references/aesthetic/06-substance-floor.md` § 3) |
+| 9.12 | Is there a paragraph above the product? | The page leads with prose instead of the thing the person came for. One lede stays (25 words on product and marketing surfaces, 40 on content and reference pages); explanation, methodology and search copy move below the primary content, behind a `details` whose summary names its content, or onto their own route (`references/design/12-copy-placement-and-volume.md` § 2) |
 
 ## 10. Sign-Off Template
 
@@ -203,6 +229,7 @@ Use at the end of the audit. Save in `design/audit-YYYY-MM-DD.md`.
 - [item] — accepted because [reason]
 
 ## Section gates
+- 1b Substance floor: [pass | fail | not assessed: <rows>]. S1-S7 measured against: [the rendered page | tokens only]
 - 3b Responsive and adaptive: [pass | fail | not assessed: <rows>]. Narrowest viewport walked: [320px | ... | none, code-only pass]. 400% zoom reflow: [pass | fail | not assessed]
 - 8b Flow: [pass | fail | not assessed]. Primary task completed end to end without instructions: [yes | no | not walked]
 
@@ -215,8 +242,10 @@ Use at the end of the audit. Save in `design/audit-YYYY-MM-DD.md`.
 - 9.6 Reference designer would approve? [pass | fail]
 - 9.7 Strongest-10 fingerprints? [count present, deliberately kept: ...]
 - 9.8 All four states designed? [pass | fail]
-- 9.9 Mirror pass (one accessory removed)? [pass | fail]
+- 9.9 Mirror pass (one accessory removed AND one device added or strengthened)? [pass | fail]
 - 9.10 Subtraction-only system? [pass | fail]
+- 9.11 Stranger's word test? [the first word: ... | not assessed, no browser pass]
+- 9.12 Paragraph above the product? [pass | fail]
 
 ## Sign-off
 Designer: [name]

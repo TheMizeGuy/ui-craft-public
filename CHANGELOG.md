@@ -1,5 +1,260 @@
 # Changelog
 
+## 0.6.0 — 2026-09-22
+
+The substance-and-placement overhaul (owner directive 2026-09-22, after six
+review-and-fix campaigns on one data product each rendered it flatter, greyer
+and more text-heavy, and after the same product's rebuild audit named five
+places in 0.5.3 that pushed it there). Every rule the plugin shipped before was
+a rule against excess, and a model clears every such rule fastest by removing
+the device: grey neutrals, one hairline at 8% alpha for every boundary, no
+elevation, badges and edges stripped, the accent reduced to status colour, the
+system stack at default weights everywhere, and paragraphs dropped wherever the
+cursor was. This release adds the other direction, with measurements, and binds
+it on every path. It also re-audits Anthropic's `frontend-design` guidance and
+folds the behavioural steps that had stayed outside the architect's process
+into it, adds the app-shell and content-layout reference the owner asked for,
+and closes the wide-display gap (narrow centred columns on 1920 and 2560).
+
+**The five pointers from the site audit, and what changed at each.**
+
+- `references/aesthetic/01-point-of-view.md` house-font paragraph (the system
+  stack as the house default, applied sitewide): the system stack is now a base
+  for UI text only when `design/02` § 2's checkable rule holds (a distinct display
+  face, explicit weights and tracking, at least three weights in use); applied
+  sitewide at default weights it has made no type decision (T2) and fails
+  substance check S7. Poppins or the brand's display face carries headline and
+  hero moments. The mono directive is untouched.
+- `references/aesthetic/01-point-of-view.md` Template A (a review classified the
+  product as this template and concluded nothing needed changing): templates are
+  worked examples, never a classification target. The visual reviewer's `POV
+  detected:` line never classifies a product into a template; a product whose
+  rendering matches Template A without an owner-named reference is reported as
+  "subtraction-only (V13)", and `aesthetic/02`'s "POV template fit" field is now
+  "Closest worked example (never a classification or routing target)". Template
+  A's own Decoration and Card rows are rewritten two-sided so the example itself
+  clears the substance floor, and a fourth template, "Restrained Premium
+  Reference" (the owner's taste as a worked example: boxed panels with real
+  edges, a gold accent over the chroma floor, identity colours at full
+  saturation, three measured surface levels, a rim in dark), sits beside it.
+- `references/catalogue/01-ai-tells.md` C12 ("Most surfaces should be flat"):
+  rewritten. The tell is an identical shadow everywhere, not the presence of
+  shadow; the fix is a three-level elevation scale with measured boundaries, a
+  rim in dark, and a findable boundary on every resting surface.
+- `references/catalogue/01-ai-tells.md` Strongest-10 #1 (a card with border,
+  shadow and radius flagged on a single instance): rows 1, 4 and 6 are
+  uniformity fingerprints and fire only on their repeated signature (row 1 on
+  every card of a surface with two or more, or three or more anywhere; row 4 on
+  an overline above three or more headings or every table header and label;
+  row 6 at three or more identical tinted icon wrappers). One framed card, one
+  deliberate uppercase label, one framed icon is a choice, and framed panels
+  with real edges are named as the reference for data products. The corpus
+  pins this with the new `framed-panels-clean.html` control.
+- `references/catalogue/01-ai-tells.md` Strongest-10 #4 (uppercase overlines
+  banned on presence, outside the concentration escape hatch): same rescope;
+  the remediation keeps the label's information (small-caps or weight), never
+  removes it.
+
+**New references (57 to 60).**
+
+- `references/aesthetic/06-substance-floor.md`: the seven substance checks with
+  thresholds (S1 accent presence in two roles with a fill; S2 accent chroma at
+  least 0.10; S3 three surface levels with boundaries measured as ratios, tint
+  1.15:1 or edge 1.3:1, in pixels where a shadow or rim is involved; S4 real
+  edges on data panels, a hairline at 0.10 alpha or less on dark is not an
+  edge; S5 a focal visual per screen; S6 imagery per section and icons on
+  entity rows; S7 hierarchy in three channels and identity colours at full
+  strength), the severity rule that keeps measured flatness out of TASTE, the
+  stranger's word test, the ornament-versus-substance earning test, the
+  dark-mode rim rule (a token refresh once measured 1.0015:1 in dark), and the
+  pairing table that names a replacement device for every removable tell.
+- `references/design/12-copy-placement-and-volume.md`: every paragraph has a
+  headed home at a measure; the product comes first with one lede above it (25
+  words on product and marketing surfaces, 40 on content and reference pages);
+  per-surface budgets that replace the marketing and documentation exemption in
+  `design/08` § 4b and `review/05`; no text-only runs; the layout never depends
+  on a third-party slot rendering; a word-count floor in a test or lint is a
+  padding generator and is itself a finding; the copy map.
+- `references/usability/05-app-shells-and-content-layout.md`: researched
+  against current platform and design-system guidance. The shell contract (what
+  a top bar and a left rail each own; the two-primary-menus defect), choosing
+  and sizing the shell with the published bands and the named disagreements,
+  collapse and the icon-rail penalty, in-page navigation, entity-page anatomy
+  (identity and key facts inside the first viewport), canonical panes, list vs
+  table vs card, first-viewport contents by page type, reading measures (with
+  Material named as the 40-60ch outlier), text-to-control placement and the
+  no-prose-between-controls rule, chunking for the scan, promo and embed
+  slotting, § 3b spending the width on wide displays, detection snippets,
+  severity anchors.
+
+**Catalogue.** Six new tells, all with corpus fixtures: V13 flat-terminal
+subtraction-only system (HIGH, presence), W11 prose blob above the primary
+content (HIGH, presence), W12 orphan paragraph (MEDIUM), L14 text-only section
+run (MEDIUM), T15 template chrome strings and the single accented word (middle
+dot meta strings, `WORD — fragment` labels, `→` on links, one accented headline
+word; MEDIUM), I8 no real imagery on a visual product (HIGH, presence). The
+terracotta accent near `#D97757` is named in the Tasteful Default section with
+its reason. Remediation floor rule 3: a fix never leaves the surface flatter,
+and every removal names its replacement from the pairing table. C5 and C6 name
+a replacement instead of "a flat colour". The V5 fingerprint no longer
+prescribes a single accented word as the fix. The section-9 intro states that
+a device encoding selection, severity, rarity or category is substance, not a
+tell. The intro names the 2026 second face of the default.
+
+**Architect and design-ui.** Step 3b grounds the design in the subject's own
+world (subject, audience and job proposed when the brief leaves them open),
+drafts a compact plan (named colours with roles, one or two type families with
+roles, an ASCII wireframe per screen with the focal element and the surface
+ladder, the opening, principles) and runs the twin test with a paragraph
+beginning "Changed". Token rules carry the accent chroma floor, hue-cast
+neutrals, the measured surface ladder and the rim in dark. Step 7b is the
+substance contract per screen; 7c the copy map; the output gains `### Design
+plan`, `### Substance contract`, `### Copy map` and `### Preview`
+(`preview.html`, self-contained, tokens inlined, both schemes). The
+responsive contract names 1920 and 2560 and carries a surplus-width plan per
+screen (at least 75% of the viewport used on control, content, reference and
+dashboard surfaces; the reading measure on the prose block, never the shell;
+nothing sized by the leftover). The self-check gains rows for all of it plus the
+template-chrome strings, the terracotta hex, the family count and owner vetoes;
+the hard rules gain their positive half (ship substance; focal budget in one
+place, material everywhere; copy has a home; two families; owner vetoes bind).
+`design-ui` parses the surface type, sources an OWNER VETOES block and the
+assets on hand, carries acceptance criteria 8 to 12 (design plan, substance
+floor, copy map, preview, template chrome) and 7e (the width is spent), and
+gains Step 5a: when a browser tool exists the preview is served locally,
+rendered at 390, 1440, 1920 and the widest width, looked at (the stranger's
+word test) and measured with both scripts; Step 5b dispatches the visual
+reviewer and the anti-slop auditor alongside the responsive and accessibility
+reviewers. Step 7 writes `design/POV.md` and `design/notes.md` on apply.
+
+**Review side.** The rubric's `Recommended change:` field rule is the canonical
+source for "a removal names its replacement or is filed as an open question";
+"Flatness is not automatically TASTE" sits beside the waste rule; the Colour and
+Content rows carry the absence and placement signals. `review/04` gains
+evidence rows for density, elevation and substance claims, the never-downgrade
+rule for measured findings, the `Widths viewed:` line (a STRONG visual verdict
+needs a non-empty one), and false-positive filters for encoding devices and
+single framed cards. `review/05` carries per-surface copy budgets and placement
+rows; `review/07` says upgrade means replace, adds floors beside its ceilings
+and five defect-to-cure rows. The visual reviewer runs density on every surface
+and gains lens 18 (visual substance, measured); the anti-slop auditor detects
+the new tells, reports substance rows in its summary, runs smell test 9.10 and
+the stranger's word test, and ends with "What this surface needs added"; the
+verifier returns removals without a replacement as open questions. `review-ui`
+and `improve-ui` gain the doctrine audit (the reviewed repo's own docs, lints
+and tests that enforce flatness or text volume, reported as `Doctrine:`
+findings for the owner to keep or retire), the OWNER VETOES and DOCTRINE
+CONSTRAINTS blocks every specialist receives, 1920 pinned in the capture set,
+both measurement scripts at 1920 and the widest width, and apply guards (never
+a sweep, never an unseen replacement, never a vetoed device). Taste checklist:
+section 1b (substance), 1.7's floor clause, 2.10, copy rows 6.6 to 6.9, a
+two-sided 9.9, smell tests 9.11 and 9.12, and 3b.10 at HIGH under 60%.
+
+**Scripts.** `scripts/measure_substance.js` (new) measures the floor on a live
+page: accent presence and chroma (computed `oklch()`, `oklab()` and `color()`
+values parse), surface levels and their ratios, boundaries and the hairline
+trap, the focal visual, imagery per section, hierarchy channels; shadow and rim
+boundaries it cannot see are listed for a pixel read-back.
+`scripts/measure_density.js` gains a `surface` option and the placement numbers
+(`wordsBeforePrimary`, `orphanParagraphs`, `textOnlySections`,
+`longestParagraph`, `totalVisibleWords`, `slotReflowRisk`). Every number is a
+ceiling.
+
+**Doctrine and recurrence guards (added after a Jev confidence pass rated
+navigation layout and repo doctrine as rules-only).** `scripts/audit_doctrine.mjs`
+(new, Node CLI) scans a reviewed repository's own docs, lint rules and tests for
+text-volume floors, CSS pin assertions that freeze visual literals, doctrine lines
+that ban a substance device without naming a replacement, and lint rules that
+forbid a visual property, and prints them as canonical `Doctrine:` findings; on
+the affected site's repository it found 122 pin tests, 19 word-count floors and
+57 flat-doctrine lines. `review-ui` Step 3b and `improve-ui` Step 2c run it, and
+`improve-ui` gains the doctrine gate: a fix that an open constraint would revert
+is applied together with the constraint's retirement or held with the blocker
+named. `measure_density.js` prints the shell rows from the app-shells reference
+(prose wedged between two controls, tab strips wrapping to a second row,
+destinations held by both the top bar and the rail), each graded HIGH. The
+review ledger moves to schema v3 with an optional `measurements` block (the
+substance and density numbers at 1920 from a browser run), and the delta gains
+**SUBSTANCE REGRESSED**: a later run whose accent chroma, surface levels or
+imagery fell, or whose words above the product rose, files a HIGH finding with
+both numbers, so a campaign that strips the previous campaign's substance is
+caught by the number.
+
+**Freedom pass (owner directive: do not over-restrict the model's creativity,
+reasoning and freedom).** A 23-agent adversarial audit (six lenses, batched
+skeptics defaulting to "not a restriction") verified 47 over-restrictions and
+kept 12 rules on purpose. Applied: a "do no harm" core principle in the
+architect, the design skill, the anti-slop auditor and the visual reviewer (a
+rule that makes this design worse is skipped and named on an `anti-slop-allow`
+line; the brief's words and the owner's reference always win; rigid compliance
+is its own detectable pattern); the acceptance criteria are declared a floor,
+not the brief, with the hatch quoting the brief's source; the substance-floor
+criterion is scoped by surface type with `n/a` cells; the visual-reference
+question is asked once and, unanswered, the design is grounded in the subject
+and only a category-routed POV is rejected; fleet-wide preferences move from
+OWNER VETOES to a rebuttable HOUSE DEFAULTS block; the catalogue's presence list
+narrows to verbatim-signature fingerprints while convention compositions fire on
+generic content or three co-occurring; the verifier honours stated decisions and
+records them; hand-grep criteria are replaced by one `scan_tells.mjs` run; the
+architect proposes missing facts marked `assumed` or `proposed` instead of
+stopping; artifacts scale to the brief; the substance reference shows a passing
+monochrome page, an image-led page and a text-first product beside the
+boxed-panel example. Kept as written: the chroma floor, the imagery ratio, the
+stranger's word test, the two user-banned devices, the twin test. The pass is
+held in place by `tests/harness/freedom.mjs`, a release gate with a committed
+ceiling on the prohibition load of each steering file (absolute rules with no
+hatch on their line, and the count of acceptance criteria): a future edit that
+adds a ban without a hatch fails the gate.
+
+**Anti-slop ports (selected by a Jev judgment over twelve of the sibling
+plugin's mechanisms; the seven rated a high-confidence benefit that adds no
+restriction).** `scripts/scan_tells.mjs` (a zero-dependency regex scanner for
+the catalogue's exact-signature tells, ported from anti-slop's design rules,
+mapped to ui-craft codes, honouring `anti-slop-allow`, presence versus
+concentration applied per file, with heuristic candidates for T15, W11, I8 and
+V13 marked as such); `scripts/check_references.mjs` (every plugin citation and
+section reference resolves, run as a gate, because an unresolved pointer is a
+silent capability loss); `tests/harness/dogfood.mjs` (the plugin's own shipped
+markdown scanned with its own scanner and doctrine audit, one committed count
+per file); fourteen corpus fixtures ported from anti-slop's design corpus (seven
+labelled, seven clean controls, six of them near-miss at tolerance zero); a corpus label
+contract test (every label's severity agrees with catalogue section 18); a
+sampling-disclosure rule for large scopes (prioritise, say what was read, mark
+the rest NOT ASSESSED). Not ported, by the same judgment: the UI copy
+vocabulary lists (rated as adding restriction), the per-project allowlist
+config, the inline self-check reference, and the scan-history dashboard.
+
+**Corpus (21 to 40).** `flat-terminal.html` (V13), `prose-blob-top.html` (W11),
+`orphan-paragraphs.html` (W12, L14), `icon-cards-no-imagery.html` (I8), and the
+clean control `framed-panels-clean.html` (one framed card, one uppercase label,
+one framed icon: the choices the rescope protects). Blind baseline
+`tests/corpus/baseline-2026-09-22.json`: recall 0.882 (30 of 34 labels), precision 1.0, all six clean controls at zero. The four misses are the same-span folding documented at the 2026-09-01 baseline (one finding covering several enumerated labels); two longstanding misses closed (C5 on `gradient-hero`, T1 on `legacy-marketing-page`). Two label corrections, both recorded in `labels.json` meta: V1 retired from `frosted-nav-neon.html` (one tinted wrapper; the tell now needs three) and T15 added to `fixed-desktop-shell.html` (three middle-dot meta rows). The answer key carries the six new labels and the harness selftest holds the newest blind baseline, not frozen history, to precision 1.
+
+**References touched for the floor.** `aesthetic/01` (six-look calibration,
+worksheet Q11 must-be-present and Q12 copy map, the focal budget split from the
+material, `## Must be present` and `## Copy map` worksheet fields),
+`aesthetic/04` (structure is not decoration), `design/01` (chroma floor,
+identity as a colour job, hue-cast neutrals in every code block, dark-surface
+craft measured in pixels), `design/02` (checkable rule part c, the focal-figure
+floor), `design/06` (small-caps eyebrow, no middle dot, commitment instead of
+"flatten", real category colour allowed), `design/07` (elevation floor, the
+inverse litmus, the rim recipe), `design/08` (exemption removed), `design/10`
+(text-only sections, the floor beside the three-hue cap).
+
+**Confidence.** Two rounds of TypeSafe Jev judgments (`jev-1.13.0`) over the
+described problems, causes, changes and enforcement placed all eight areas
+(flat output, text blobs, navigation and layout, wide displays, reviews passing
+bad UI, repo doctrine, recurrence, creativity and freedom) at the "addressed and
+enforced by something that fails" level, with navigation and layout the weakest
+at about 0.77 (rules and density measurements, no corpus fixture yet). Jev also
+selected the anti-slop ports above. The judgments read descriptions of the
+plugin, not the rendered site: the first design and improve runs on the
+affected product with a browser tool present are the real test.
+
+No CI schema change: substance and doctrine findings ride `dimension: visual`.
+The review ledger moves to schema v3 (an optional `measurements` block).
+Version lockstep across the four manifests; the public mirror regenerated.
+
 ## 0.5.3 — 2026-09-16
 
 No POV template is a routing target, and nothing is removed without a

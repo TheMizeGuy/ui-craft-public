@@ -161,7 +161,7 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 
 Perf findings must survive into the run-over-run story, and a later `review-ui` pass must not erase them. Write (or overwrite) `.claude/ui-craft/last-review.json`:
 
-- Emit this run's `performance`-dimension findings in the canonical shape, each with `"status": "open"`.
+- Write `"schemaVersion": 3` (the shape `review-ui` Step 8 documents) and emit this run's `performance`-dimension findings in the canonical shape, each with `"status": "open"`. Carry forward the prior ledger's `measurements` block unchanged; this pass does not re-measure substance.
 - Set `"dimensions": ["performance"]` for this run.
 - **Carry forward, unchanged, every prior entry whose dimension is not `performance`.** The ledger is a union across runs, not a snapshot of the last one. Without this, a perf-only pass silently deletes the visual, accessibility, and responsive history.
 

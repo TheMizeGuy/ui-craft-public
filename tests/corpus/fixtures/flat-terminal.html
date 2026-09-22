@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet throughput</title>
+<style>
+  :root {
+    --ground: oklch(0.12 0.003 270);
+    --panel: oklch(0.13 0.003 270);
+    --hair: oklch(1 0 0 / 0.08);
+    --text: oklch(0.88 0.004 270);
+    --dim: oklch(0.6 0.004 270);
+    --accent: oklch(0.6 0.02 270);
+    --ok: oklch(0.72 0.16 148);
+    --bad: oklch(0.63 0.19 25);
+  }
+  body { margin: 0; background: var(--ground); color: var(--text); line-height: 1.5;
+         font-family: system-ui, sans-serif; font-weight: 400;
+         padding: clamp(1rem, 0.5rem + 2vw, 2rem); }
+  main { width: min(100%, 60rem); margin: 0 auto; }
+  nav { display: flex; gap: 1.25rem; margin-bottom: 1.5rem; }
+  nav a { color: var(--dim); text-decoration: none; }
+  nav a[aria-current="page"] { color: var(--accent); }
+  h1 { font-size: 1.125rem; font-weight: 600; margin: 0 0 1.25rem; }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+  .panel { background: var(--panel); border: 1px solid var(--hair); padding: 1rem; }
+  .k { color: var(--dim); font-size: 0.8125rem; margin-bottom: 0.35rem; }
+  .v { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+  th, td { text-align: left; padding: 0.5rem 0.5rem 0.5rem 0; border-bottom: 1px solid var(--hair); }
+  th { font-weight: 600; color: var(--dim); font-size: 0.8125rem; }
+  td.n { font-variant-numeric: tabular-nums; }
+  .ok { color: var(--ok); }
+  .bad { color: var(--bad); }
+</style>
+</head>
+<body>
+  <main>
+    <nav><a href="/fleet" aria-current="page">Fleet</a><a href="/shards">Shards</a><a href="/audit">Audit log</a></nav>
+    <h1>Fleet throughput, last 24 hours</h1>
+    <div class="grid">
+      <div class="panel"><div class="k">Messages drained</div><div class="v">1,482,930</div></div>
+      <div class="panel"><div class="k">Median lag</div><div class="v">41 ms</div></div>
+      <div class="panel"><div class="k">Shards online</div><div class="v">36 of 36</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Shard</th><th>Owner</th><th>Lag</th><th>State</th></tr></thead>
+      <tbody>
+        <tr><td>shard-07</td><td>ingest-b</td><td class="n">38 ms</td><td class="ok">Draining</td></tr>
+        <tr><td>shard-11</td><td>ingest-b</td><td class="n">52 ms</td><td class="ok">Draining</td></tr>
+        <tr><td>shard-19</td><td>ingest-c</td><td class="n">610 ms</td><td class="bad">Backed up</td></tr>
+        <tr><td>shard-24</td><td>ingest-a</td><td class="n">44 ms</td><td class="ok">Draining</td></tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

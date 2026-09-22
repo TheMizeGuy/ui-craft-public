@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thornfang Blade</title>
+<style>
+  :root { --ground: oklch(0.15 0.012 45); --raised: oklch(0.21 0.014 45); --line: oklch(0.36 0.018 45);
+          --text: oklch(0.93 0.008 60); --dim: oklch(0.72 0.012 60); --ember: oklch(0.7 0.17 45); }
+  body { margin: 0; background: var(--ground); color: var(--text); line-height: 1.6;
+         font-family: system-ui, sans-serif; padding: clamp(1rem, 0.5rem + 2vw, 2.5rem); }
+  main { width: min(100%, 58rem); margin: 0 auto; }
+  h1, h2 { font-family: Poppins, system-ui, sans-serif; font-weight: 600; letter-spacing: -0.015em; }
+  h1 { font-size: clamp(1.625rem, 1.3rem + 1.4vw, 2.25rem); margin: 0 0 0.35rem; }
+  h2 { font-size: 1.25rem; margin: 2rem 0 0.75rem; }
+  .ident { display: flex; gap: 1.25rem; align-items: flex-start; background: var(--raised);
+           border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; }
+  .ident img { border-radius: 8px; } .lede { max-inline-size: 60ch; margin: 0 0 0.75rem; color: var(--dim); }
+  .facts { display: flex; flex-wrap: wrap; gap: 1.25rem; margin: 0; font-size: 0.875rem; }
+  .facts dt { color: var(--dim); } .facts dd { margin: 0; font-weight: 600; }
+  .facts dd.rare { color: var(--ember); }
+  p { max-inline-size: 68ch; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 0.55rem 0.5rem 0.55rem 0; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--dim); font-size: 0.875rem; } td.n { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<main>
+  <header class="ident">
+    <img src="items/thornfang-blade.png" alt="Thornfang Blade, a notched one-handed sword" width="72" height="72">
+    <div>
+      <h1>Thornfang Blade</h1>
+      <p class="lede">A one-handed sword from the Emberfall wing, still in the melee rotation four patches after its tuning pass, and still the most argued-about drop in the expansion.</p>
+      <dl class="facts"><dt>Item level</dt><dd>412</dd><dt>Slot</dt><dd>Main hand</dd><dt>Rarity</dt><dd class="rare">Ember</dd></dl>
+    </div>
+  </header>
+  <section>
+    <h2>About the Thornfang Blade</h2>
+    <p>The Thornfang Blade has been part of the Emberfall loot table since the Ashen Expanse patch, and players have argued about its place in the melee rotation ever since. Its base damage sits below the two other weapons that drop in the same wing, but the bleed it applies stacks with poison in a way the tooltip does not spell out, which is why parse sites keep ranking it higher than its raw numbers suggest.</p>
+    <p>Our figures come from combat logs uploaded over the last thirty days, filtered to encounters completed on the highest difficulty with a full group. Logs from practice attempts and from groups that wiped before the second phase are excluded, because partial fights weight the early burst window too heavily and make every bleed weapon look stronger than it plays across a whole encounter.</p>
+    <p>Drop rates are harder to pin down. The blade is a guaranteed drop from one chest and a chance drop from three others, and the chance rolls appear to share a single hidden counter rather than rolling independently, so a player who has opened all four in the same week sees a different rate than the community average printed below.</p>
+    <p>Enchant choices have shifted twice since launch. The community settled on sharpening early, moved to the bleed-duration enchant after the Ashen Expanse tuning pass, and has drifted back towards sharpening now that the poison cap is enforced server side. The table below lists what the top hundred logged parses actually used, not what the guides recommend.</p>
+  </section>
+  <section>
+    <h2>Drop sources</h2>
+    <table>
+      <thead><tr><th>Source</th><th>Wing</th><th>Rate</th><th>Logged drops</th></tr></thead>
+      <tbody>
+        <tr><td>Ashbound Reliquary</td><td>Emberfall</td><td class="n">100%</td><td class="n">4,118</td></tr>
+        <tr><td>Cinderwarden cache</td><td>Emberfall</td><td class="n">12%</td><td class="n">907</td></tr>
+        <tr><td>Molten stash</td><td>Lower Emberfall</td><td class="n">9%</td><td class="n">612</td></tr>
+        <tr><td>Thornfang hoard</td><td>Lower Emberfall</td><td class="n">7%</td><td class="n">455</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

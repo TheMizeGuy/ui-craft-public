@@ -70,7 +70,9 @@ Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `
    - For Android: Compose vs XML, Material version, min SDK
    - Glob for component structure
 4. Confirm the evidence level you were given: browser available (web)? source available? screenshots only? running app reachable? If the orchestrator did not supply one, determine it before dispatching. It decides which specialists may run at all.
-5. If a browser and a URL are both available, capture the viewport matrix ONCE yourself, per `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: a screenshot plus a geometry dump for each width in the default capture set (320, 900, the widest realistic width, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), written under `<RUN DIRECTORY>/evidence/`. Pass those absolute paths to the specialists as read-only evidence and tell them not to drive the browser themselves. Specialists share one browser, and a concurrent resize invalidates every other agent's geometry.
+5. If a browser and a URL are both available, capture the viewport matrix ONCE yourself, per `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: a screenshot plus a geometry dump for each width in the default capture set (320, 390, 900, 1440, 1920, 2560, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), written under `<RUN DIRECTORY>/evidence/`. **1920 is pinned**: it is the width the density thresholds are calibrated at, so it stays in the set even when 2560 is open, and a run that captured only the narrowest and the widest has not measured waste. Pass those absolute paths to the specialists as read-only evidence and tell them not to drive the browser themselves. Specialists share one browser, and a concurrent resize invalidates every other agent's geometry.
+
+   Then measure, at 1920 and again at the widest width you opened: evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` through the browser tool and call `measureDensity()` and `measureSubstance()` (usage in each header; `measureDensity()` takes a `surface` option so its copy budgets match the surface type). Write both outputs under `<RUN DIRECTORY>/evidence/` beside the captures, and pass the numbers into every specialist prompt. They are what turns "feels grey" and "feels empty" into findings nobody can wave off, and they are the evidence the visual reviewer's substance and density lenses are required to quote.
 
 ### Phase 2: Adaptive specialist dispatch (parallel)
 
@@ -88,12 +90,18 @@ Select the applicable specialists. Do NOT dispatch inapplicable ones: they retur
 
 On a screenshot-only run this reduces to Visual + Accessibility + Anti-Slop. Name every skipped dimension in the Phase 5 header and do NOT give it a verdict row. A row for a dimension nobody reviewed is worse than a missing row.
 
+Deterministic pre-pass: run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none` in Phase 1 and hand its `findings` array to the Anti-Slop Auditor as a `SCANNER FINDINGS` block; the auditor confirms, dedupes and extends it, treats suppressed hits (`anti-slop-allow`) as stated decisions, and verifies the `heuristic: true` candidates rather than filing them as they are.
+
+Scope and sampling on large inputs: above about 40 UI files a specialist prioritises the routes and screens in FLOWS IN SCOPE, then the shell and token files, then the files with the most changed lines, states which files it read and why, and marks the rest NOT ASSESSED; an undisclosed sample reported as a verdict is a finding against the review. Put that rule in every specialist prompt.
+
 Construct a prompt for each selected specialist with:
 - Absolute file paths, base URL, or screenshot paths in scope
 - Platform identification and full project context (tsconfig, framework, package.json highlights)
 - The `FLOWS IN SCOPE` block, verbatim
+- The `OWNER VETOES` block, verbatim. These are the owner's standing, non-negotiable decisions about this product (no pill chips, no emoji, no rainbow bars, mono for code only, and whatever else the orchestrator sourced). A specialist that never sees them proposes a remediation the owner has already rejected, which is how a technically correct fix violated a recorded veto
+- The `DOCTRINE CONSTRAINTS` block, verbatim, so a specialist reports a repo rule that would revert its fix rather than proposing a fix CI will undo. The reviewed repo's own doctrine files, CSS pin tests and word-count floors are what enforced the flatness on the product that six campaigns failed to improve
 - Instruction to read their relevant plugin references FIRST
-- Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1
+- Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1 and the `measureDensity()` / `measureSubstance()` numbers at 1920 and at the widest width
 - Output in the canonical finding format, with `id` / `dimension` / `file` / `line`, and a `**Verdict:**` line carrying a canonical token from that dimension's family
 
 Dispatch all selected specialists in parallel (one message, multiple Agent tool calls). Each runs on the model the session chooses (Opus 5 is the usual default for design, review and implementation):
@@ -142,8 +150,10 @@ Write the full report to `<RUN DIRECTORY>/merged-report.md` BEFORE returning, an
 **Dimensions not reviewed:** <each skipped dimension and the reason, or "none">
 **Evidence level:** <code + browser / code-only / screenshot-only>
 **Widths exercised:** <from the verifier, or "none: code-only run">
+**Widths viewed:** <from the verifier: the renders a reviewer actually opened, or "none: code-only run">
 **Flows reviewed:** <task names from FLOWS IN SCOPE | "single component, no flow" | "not assessed (screenshot-only): task flow, navigation and error recovery cannot be judged from static frames">
 **Token system:** <OKLCH 3-tier / shadcn default / hex>
+**Substance:** <one line from the measured numbers: accent chroma, surface levels, focal visual, image count | "NOT ASSESSED: code-only run">
 **Primary font:** <name, PASS/FAIL>
 **CWV:** <LCP Xs / INP Xms / CLS X, with the tool that measured them | "not measured: code-only run"> (web)
 **TS strictness:** <all flags / partial / weak / N/A>
@@ -155,6 +165,7 @@ Write the full report to `<RUN DIRECTORY>/merged-report.md` BEFORE returning, an
 - **STILL OPEN** (N), same severity
 - **REGRESSED** (N), higher severity now
 - **IMPROVED** (N), lower severity now
+- **SUBSTANCE REGRESSED** (N), a measurement fell since the prior run (both numbers shown; filed as a `visual` finding at HIGH)
 - **Carried forward** (N), dimension not reviewed this run
 Match on `id` + `file`.
 [end if]
@@ -189,18 +200,40 @@ are copied from the verifier, never derived here. A set blocker flag caps its di
 ### Verification Notes
 
 [pass through the verifier's Verification Notes verbatim: removed, downgraded, capped, reclassed,
-upgraded, merged. If the verifier reported nothing, write "none". Never omit this section: the
-consuming skill rejects a report without it, and it is the only visible record of what the
-verifier took out.]
+upgraded, merged, returned, held. If the verifier reported nothing, write "none". Never omit this
+section: the consuming skill rejects a report without it, and it is the only visible record of what
+the verifier took out.]
+```
+
+When the orchestrator supplied a `DOCTRINE CONSTRAINTS` block, or a specialist reported a repo rule
+that would revert its fix, add this section directly above the improvement plan. Omit it entirely
+when there are none; never write an empty one.
+
+```
+### Doctrine constraints
+
+Repo rules that enforce the current rendering, each with the choice they force. These are not
+findings against the UI; they are findings against the rules, and the owner decides each.
+
+| Rule | Where | What it enforces | Which finding it would revert | Keep or retire |
+|---|---|---|---|---|
+| <rule, in one line> | <file:line> | <flatness: bans edges/badges/elevation/accent use; or volume: a word-count or heading-count floor> | <finding N, or "none yet"> | <owner's choice> |
 ```
 
 Then, for improvement asks, append the prioritized plan:
 
+Every line of the plan that removes a device names the device that takes over its job -- in EVERY
+pass, quick wins included, not only the design pass. A one-line quick win that reads "drop the card
+frames" is the same defect as a removal-only design pass, in a place nobody audits.
+`${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6 is the working list of
+replacement devices; a removal whose replacement cannot be named goes under Open questions for the
+owner rather than into a pass.
+
 ```
 ## Improvement plan (ordered by impact)
 
-### Quick wins (under 30 min each)
-1. <finding N>: <one-line action>
+### Quick wins (under 30 min each; a removal here names its replacement too)
+1. <finding N>: <one-line action, and what replaces anything removed>
 2. ...
 
 ### Flow pass (task completion, recovery, navigation)
@@ -265,4 +298,4 @@ Usability and flow findings arrive from the visual reviewer under `dimension: us
 10. **Foreground execution.** Don't run agents in the background. The user wants to see progress.
 11. **No AI slop.** No "Great codebase!", no emojis, no trailing summary beyond the structured output.
 12. **Model selection.** Dispatch specialists on the model the session chooses (Opus 5 is the usual default for design, review and implementation). Never add a `model:` pin or a dated model ID to a dispatch, and never pin effort.
-13. **No removal without a replacement.** A finding whose rework is only "remove X" is incomplete: the merged report carries what replaces X, or the finding is downgraded to an open question for the owner. A plan that strips frames, badges, edges and elevation across a surface with nothing named in their place is the 2026 AI default, not an improvement (owner directive 2026-09-16).
+13. **No removal without a replacement, anywhere.** This applies to EVERY finding in the merged list and EVERY pass of the improvement plan, quick wins included, not only the design pass. A finding or a plan line whose rework is only "remove X" is incomplete: the merged report carries what replaces X, or it becomes an open question for the owner. The canonical source is `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Finding format; `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6 is the working list of replacement devices. A plan that strips frames, badges, edges and elevation across a surface with nothing named in their place is the 2026 AI default, not an improvement (owner directive 2026-09-16).

@@ -205,9 +205,9 @@ body { letter-spacing: 0; }    /* never track body */
 .eyebrow {
   font-family: var(--font-sans);  /* never the mono face -- system/brand sans with weight doing the work */
   font-weight: 600;
-  text-transform: uppercase;
+  font-feature-settings: 'smcp';   /* small caps, never text-transform: uppercase (catalogue T5) */
   font-size: 0.6875rem;
-  letter-spacing: 0.08em;      /* loosen all-caps labels */
+  letter-spacing: 0.05em;      /* small caps need less air than shouted caps */
 }
 ```
 
@@ -235,8 +235,8 @@ After (no border, custom shadow, asymmetric padding, tabular-nums metric on the 
 <article className="bg-(--card) p-6 pb-8
                     shadow-[0_1px_0_var(--border),0_24px_48px_-32px_oklch(0_0_0_/_0.18)]">
   <header className="flex items-baseline justify-between mb-4">
-    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em]
-                     text-(--muted-foreground)">Revenue · 30d</span>
+    <span className="text-[0.6875rem] font-semibold [font-feature-settings:'smcp'] tracking-[0.05em]
+                     text-(--muted-foreground)">Revenue, last 30 days</span>
     <DeltaPill value={+0.12} />
   </header>
   <div className="text-4xl font-medium tabular-nums tracking-tight">
@@ -462,15 +462,15 @@ Run this list before shipping. Each line that's true = one AI-tell to fix. The e
 | Default border-radius applied uniformly to every primitive | Pick one radius (often 0 or `0.125rem` or `1rem`) and commit, OR vary deliberately by primitive class |
 | Generic hero -> CTA -> 3-feature grid -> testimonials -> footer landing | Lead with the product surface (an actual screenshot or live demo). Skip the rote feature grid |
 | Newsreader + JetBrains Mono pairing | Specifically rejected as too common in AI output. Pick a sans-led pairing instead: Instrument Serif + Söhne, Author + Switzer, or one variable family carrying both roles. Mono stays inside code blocks, never in the brand pairing |
-| Rounded cards | If the design reads as "polished AI default", flatten. Sharp corners (`--radius: 0`) signal intent |
+| Rounded cards left at the kit's default radius | Commit a radius and mean it: `0` architectural, `2px` precise, `6-8px` friendly -- then pair it with a committed border weight and a committed elevation step so the shape belongs to a system. The uncommitted `rounded-md` is the tell; roundness is not, and flattening a committed 6px radius to `0` to look less AI-generated only trades one unexamined default for another |
 | Colored-left-border sections (`border-l-4 border-blue-500 pl-4`) | Replace with typographic hierarchy or a true sidebar. The colored left border is a 2023 Notion clone tell |
 | Emoji indicators in product UI (status, callouts, headers) | Use icons from your chosen set, or color/typographic differentiation. No emojis in the product surface |
 | Large decorative serif numerals (`01 / 02 / 03` at 72-96px) | Specifically rejected. If numbering matters, use functional headers with tabular figures (`tabular-nums`) and small caps |
-| Editorial newspaper / "The X Log" masthead aesthetic | Specifically rejected as a default direction. Only ship if the brand is genuinely editorial |
-| Per-category color borders | Specifically rejected. Use one accent color and one feedback color; categorize via typography or layout |
+| Editorial newspaper / "The X Log" masthead aesthetic | Specifically rejected as a default direction; ship it only if the brand is genuinely editorial. The replacement is a product-first header: the page's own name at display weight, the entity's identity block beside it, and the primary action, on a surface with a real edge |
+| Per-category color borders | Decorative per-row keylines are specifically rejected (owner directive): a coloured left border on every card, all in the same colour, encodes nothing. A category system is allowed where the categories are real and the colour is what tells them apart -- derive the set from the one accent (`oklch(from var(--accent) l c calc(h + 40))` and so on down the set), keep it to the categories a reader must distinguish, and pair it with a label or icon so colour is not the only signal |
 | Expand/collapse cards as the primary disclosure pattern | Specifically rejected. Prefer single-focus mode with sidebar navigation OR a dedicated detail page |
-| Skeleton screens for sub-300ms loads | Adds perceived latency; remove and just render the data |
-| Default Vercel/v0 visual language (Geist + Vercel-blue + black + dotted-grid bg) | Recognizable in seconds. Pick a different palette + a different background treatment |
+| Skeleton screens for sub-300ms loads | Adds perceived latency. Render the data as soon as it arrives, and where the wait is genuinely long, acknowledge the action in place instead -- a pressed or disabled control, then the content |
+| Default Vercel/v0 visual language (Geist + Vercel-blue + black + dotted-grid bg) | Recognizable in seconds. Pick a different palette, and replace the dotted grid with a background that belongs to this product: a committed brand field, one photograph or product shot, or grain under `0.05` |
 | Soft gradients everywhere as background filler | Remove. One bold surface beats five gradient washes |
 | 3 boxes side-by-side as the dominant page rhythm | Vary cadence — full-bleed feature, asymmetric split, dense list, then a hero |
 

@@ -108,6 +108,10 @@ The table below applies it per finding type:
 | Contrast failure | Computed color values + contrast ratio | Remove if based on screenshot color estimation only |
 | Responsive failure | Evidence at specific viewport width(s) | Keep if code analysis or screenshot at that width exists |
 | Performance claim | Metric measurement, code analysis, or trace data | Keep the class; add `[unverified: runtime measurement needed]`; cap at MEDIUM |
+| Density or waste claim, including a claim that space IS well used | `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` output at 1920 and at the widest width in the matrix | Keep the class; add `[unverified: geometry measurement needed]`; cap at MEDIUM. This row is symmetric on purpose: "the layout uses its width well" asserted without the numbers is recorded as not assessed, not as clean |
+| Elevation, depth or boundary claim, including a claim that shadows carry hierarchy | The computed surface colours for the two adjacent levels plus the calculated contrast ratio between them; a shadow or rim boundary needs a pixel read-back across the edge (`references/review/06-measurement-traps.md`: computed style cannot see a shadow) | Keep the class; add `[unverified: geometry measurement needed]`; cap at MEDIUM. An OKLCH delta-L is not a ratio and does not satisfy this row -- the same 0.04 delta measures 1.04:1 at one lightness and 1.11:1 at another, which is how a shipped elevation system measured 1.0015:1 in dark while its tokens read as correct |
+| Substance claim (flat, grey, no accent, no imagery) | `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` output, or the code-level token reading with the numbers quoted: accent chroma, surface levels and the ratio between adjacent ones, images per section, hue and weight counts | Without numbers it is TASTE and is routed there. With them it keeps the severity `references/aesthetic/06-substance-floor.md` section 2 assigns, and the taste-downgrade row below does not touch it |
+| Copy placement claim | The `measure_density.js` placement numbers: words before the primary content with the element taken as primary, the orphan count, the longest text-only section run | Keep the class; add `[unverified: measurement needed]`; cap at MEDIUM (`references/design/12-copy-placement-and-volume.md` section 7) |
 
 ### False-positive filters
 
@@ -120,6 +124,11 @@ Remove or downgrade findings that:
 - Escalate pure taste preferences to HIGH or CRITICAL severity
 - Flag intentional asymmetry as misalignment
 - Criticize a design system for not following a different design system
+- Flag a device that encodes selection, severity, rarity or category as ornament. Substance encodes; ornament repeats (`references/aesthetic/06-substance-floor.md` section 4). An accent fill on the current nav item, a coloured edge on the selected row, an identity colour on an item tier: each is doing a job, and stripping it is a regression filed as a fix
+- Flag one framed card, one deliberate uppercase label, or one framed icon under a uniformity fingerprint. Strongest-10 rows 1, 4 and 6 fire only on their repeated signature -- the trio on every card of a surface that has two or more, the overline above three or more headings, three or more icons in the identical tinted container (`references/catalogue/01-ai-tells.md` section How to apply). One instance is a choice, not a tell
+- Flag a device the owner has stated a decision about. A stated decision is one of: an `anti-slop-allow: <reason>` on the line; a `## Must be present` or `## Banned (concrete)` entry in the reviewed repo's `design/POV.md`, the UI section of its `CLAUDE.md` or `AGENTS.md`, or `.claude/ui-craft/vetoes.md`; or a device the dispatch's `OWNER VETOES` block names as required. Record it on a `Stated decisions honoured:` line in Verification Notes with the source quoted, and do not file it. The decision clears only the device it names, and never a hard defect, an accessibility row, or a set blocker flag. The model never supplies the decision itself: with no such source, the finding stands
+
+The last row only works if the gate can see the decision, so the `OWNER VETOES` block travels into verification with the findings, not only into the specialist prompts.
 
 ### Cross-dimension deduplication
 
@@ -145,6 +154,8 @@ Grouping rules -- collapsing repeated instances of the same finding within one d
 | Core task blocked at any width in the default matrix, or primary content scrolling horizontally at 320px, at MEDIUM/LOW | Upgrade to HIGH |
 | Pattern smell at CRITICAL | Downgrade to MEDIUM unless evidence supports objective failure |
 | Quality defect without user impact | Downgrade to LOW |
+| A substance or placement finding carrying a measurement from `references/aesthetic/06-substance-floor.md` or `references/design/12-copy-placement-and-volume.md` | Never downgraded to TASTE for lack of objectivity. It keeps the severity its measurement earns; the taste-comment row above applies only to a finding with no number attached. A stated decision does not downgrade it either -- it clears it under the stated-decision filter above, which is how `06-substance-floor.md` section 1 already scopes its severities to a check that fails `without a stated reason` |
+| A `Recommended change:` that removes a device and names no replacement | Return the finding as an open question for the owner rather than passing it through (`references/review/01-universal-rubric.md` section Finding format). Record it on the "Returned:" line in Verification Notes |
 
 The accessibility-blocker upgrade rule is the one direction severity re-validation always
 moves toward stricter, never looser: any finding that represents a genuine accessibility
@@ -160,6 +171,7 @@ The verifier's output is a re-ranked, deduplicated findings list, not a raw pass
 2. Unified severity ranking (CRITICAL first -> TASTE last)
 3. Each finding retains its original dimension tag
 4. Removed/downgraded findings listed separately as "Verification notes" with explanation
+5. `Widths viewed:` in Verification Notes, naming the screenshots actually opened and examined, by file
 
 ```
 ## Verified Findings (N total)
@@ -183,4 +195,18 @@ The verifier's output is a re-ranked, deduplicated findings list, not a raw pass
 - Capped: "header alignment off by 2px" held at MEDIUM -- [unverified: geometry measurement needed], screenshot-only assertion
 - Downgraded: "generic color palette" from MEDIUM to TASTE -- no objective quality impact
 - Merged: contrast findings from visual + accessibility into finding #3
+- Returned: "remove the coloured left border from every table row" returned as an open question -- the recommendation names no device that takes over the border's job (`references/review/01-universal-rubric.md` section Finding format; replacement devices: `references/aesthetic/06-substance-floor.md` section 6)
+- Widths viewed: 320 (evidence/320.png), 900 (evidence/900.png), 2560 (evidence/2560.png). 1440 captured, not opened
 ```
+
+`Widths viewed:` is not the responsive verdict's widths-exercised line. Exercised
+means the browser was resized to that width; viewed means a screenshot at that
+width was opened and looked at. Name the files, and name the captured widths
+nobody opened -- an unopened screenshot is not evidence.
+
+**On a run with a browser, Visual quality cannot take the 1st token of its family
+with an empty `Widths viewed:`.** STRONG on screenshots nobody opened is an
+unearned verdict, and the derivation table's 1st-token row already requires driven
+or measured evidence: this line is the proof of it. With no widths viewed, the run
+is a static-evidence run for that dimension and takes the 2nd token with
+`(evidence: static, no screenshot opened)` appended.

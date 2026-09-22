@@ -51,7 +51,7 @@ Every step keeps the `rem` intercept (design/02 §4): both ramps are derived fro
 
 Support hierarchy: eyebrow at `0.75rem`, small-caps via `font-feature-settings: 'smcp'` with `letter-spacing: 0.05em` (catalogue T5 / Strongest-10 #4 'Instead'), never `text-transform: uppercase` at `tracking-widest`; or no eyebrow, letting the heading carry the section. Subtext at most ~20 words, `max-width: 45ch`, muted; ONE CTA (a second "Learn more" link halves the first CTA's weight and is a catalogue tell).
 
-**Palette: three hues, hard cap.** Dark heroes: off-black `oklch(0.14 0.005 270)` ground (pure `#000` is a dead surface that cannot hold atmosphere) + warm off-white text + one accent on at most 1-2 small elements. Light heroes: warm off-white ground + near-black `oklch(0.21 0.01 60)` text + one accent -- and note the cream + serif + sage/forest-green combination is itself the current top emerging tell (`catalogue/01-ai-tells.md` § The Tasteful Default), so a light hero needs its palette anchored to the brand, not to "tasteful."
+**Palette: three hues, hard cap.** Dark heroes: off-black `oklch(0.14 0.005 270)` ground (pure `#000` is a dead surface that cannot hold atmosphere) + warm off-white text + one accent on at most 1-2 small elements. Light heroes: warm off-white ground + near-black `oklch(0.21 0.01 60)` text + one accent -- and note the cream + serif + sage/forest-green combination is itself the current top emerging tell (`catalogue/01-ai-tells.md` § The Tasteful Default), so a light hero needs its palette anchored to the brand, not to "tasteful." The cap has a floor under it: that one accent sits at OKLCH chroma `0.10` or more and is visibly present on first paint, and the ground, the panels and anything raised above them are three findable surface levels rather than one flat field (`references/aesthetic/06-substance-floor.md` S2, S3). A hero with one hue, no accent and no boundaries has not cleared the three-hue cap, it has skipped the palette.
 
 **Atmosphere: never flat.** Two recipes that register without being seen:
 
@@ -97,6 +97,8 @@ The "wall of same" is the page-level tell -- every section `py-20`, centered hea
 - Heading scale varies section to section; a monotone scale is a monotone page.
 - Max two grid-based sections in a row; the third must break the pattern (asymmetric split, full-width, single column).
 - Vertical padding varies by role: content-heavy sections generous, proof strips tight, visual breaks near-zero. One uniform `py-24` everywhere is `catalogue/01-ai-tells.md` L7 (section padding overload).
+- No two consecutive sections are text-only. Every second section carries a non-text device: a figure, a table, an image, a control, a chart, an entity list with its icons. Three text-only sections in a row is `catalogue/01-ai-tells.md` L14, and the fix is a non-text child, never more prose.
+- The first viewport carries the focal visual -- a photograph, a product shot, a chart, an entity list with real icons, or a display-scale heading that is itself the graphic. A first viewport that is only type fails on any surface that is not an article template (`references/aesthetic/06-substance-floor.md` S5).
 
 ## 6. Section architectures by type
 
@@ -120,7 +122,7 @@ Pick one per section; the notes carry only what is specific to the type.
 
 ## 7. Content floor
 
-No placeholder text, no "[Feature Name]", no lorem. Copy specific over generic: "Process 10k API calls/sec" not "Lightning fast performance". Microcopy and banned-vocabulary rules are owned by `design/08-ux-writing.md` and the catalogue; this file adds only the structural rule that every section answers exactly one visitor question -- a section doing features AND testimonials AND pricing is three sections.
+No placeholder text, no "[Feature Name]", no lorem. Copy specific over generic: "Process 10k API calls/sec" not "Lightning fast performance". Microcopy and banned-vocabulary rules are owned by `design/08-ux-writing.md` and the catalogue. How much copy a section may carry, and where a paragraph may sit relative to the product, are owned by `references/design/12-copy-placement-and-volume.md` (§ 3 the per-surface budgets, § 2 product-first placement, § 4 text-only runs); this file does not restate them. What it adds is the structural rule that every section answers exactly one visitor question -- a section doing features AND testimonials AND pricing is three sections.
 
 ## See also
 
@@ -130,4 +132,6 @@ No placeholder text, no "[Feature Name]", no lorem. Copy specific over generic: 
 - `references/design/03-spacing-rhythm.md` -- the spacing scale the rhythm rules draw from
 - `references/design/04-motion.md` -- entry choreography, spring palette, stagger
 - `references/design/07-depth-and-overlays.md` -- scrims and text-over-image contracts
+- `references/aesthetic/06-substance-floor.md` -- the floor every architecture here must clear: accent presence, surface ladder, focal visual, imagery ratio
+- `references/design/12-copy-placement-and-volume.md` -- copy volume per surface, where a paragraph may sit, the copy map
 - `references/catalogue/01-ai-tells.md` -- the tells every architecture here must clear

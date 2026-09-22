@@ -5,7 +5,7 @@ review's known tells ui-craft actually catches. It turns "the catalogue looks
 good" into two numbers: recall and precision against ground truth, both gated at
 `>= 0.8`.
 
-- Corpus: `../corpus/fixtures/*.html` + `../corpus/labels.json` (ground truth).
+- Corpus: `../corpus/fixtures/*` (HTML, CSS and TSX fixtures) + `../corpus/labels.json` (ground truth).
 - Scorer: `score-review.mjs` (node >= 18, stdlib only, no installs).
 - Worked example of a findings file: `examples/sample-findings.json`.
 - Degenerate input the gate must reject: `examples/tellref-stubs.json`.
@@ -55,7 +55,7 @@ Two ways:
   `ui-anti-slop-auditor` (a `general-purpose` agent with the auditor body inlined)
   and point it at `tests/corpus/fixtures/`. Instruct it, verbatim:
 
-  > Audit every `.html` file in `tests/corpus/fixtures/` against the internal
+  > Audit every file in `tests/corpus/fixtures/` (HTML, CSS and TSX) against the internal
   > catalogue (`references/catalogue/01-ai-tells.md`). Emit a single JSON array of
   > findings and nothing else. Each finding object uses the canonical shape:
   > `{ "id": "<dimension>-<kebab-slug>", "dimension": "anti-ai", "severity": "...",
@@ -115,29 +115,86 @@ node tests/harness/score-review.mjs tests/harness/examples/sample-findings.json
 
 ### Which number is the baseline
 
-Two findings files ship, they measure different things, and neither is "the"
-recall of the plugin. Do not conflate them.
+Five findings files ship. Two of them are live -- the answer key and the current
+blind baseline -- and they measure different things, so neither on its own is "the"
+recall of the plugin. The other three are frozen history and gate nothing. Do not
+conflate them.
 
 | File | What it is |
 |---|---|
 | `examples/sample-findings.json` | The **answer-key ceiling**: a hand-authored findings file written against `labels.json`. It is the best score the labels permit, and its misses are label-granularity artifacts, not detection failures. No agent produced it, so it is not evidence of detection. |
-| `../corpus/baseline-2026-09-01.json` | The **current committed blind baseline**: a real run of the `ui-anti-slop-auditor` body over every fixture in the 0.5.0 corpus with every answer key kept out of context. This is the measured number, and the one a detection regression is judged against. Its score and readings are in the dated section below. |
-| `../corpus/baseline-2026-07-27.json` | **Superseded, kept as history.** The 0.3.0 blind run over 15 fixtures. It scored recall 0.917 / precision 0.957 against the 24-label corpus after the 2026-09-01 label split (0.900 / 0.783 before it) and predates the six fixtures added the same day, so its recall against the current corpus is lower by construction. Do not gate on it. |
-| `../corpus/baseline-0.1.2.json` | **Superseded, kept as history.** The 0.1.2 blind run, captured against an 18-label corpus. It scores well below threshold today only because it predates eleven fixtures and the 2026-09-01 label split. Do not read that as a regression and do not gate on it. |
+| `../corpus/baseline-2026-09-22.json` | The **current committed blind baseline**: a real run of the `ui-anti-slop-auditor` body over every fixture in the 0.6.0 corpus with every answer key kept out of context. This is the measured number, and the one a detection regression is judged against. It clears both thresholds and fails one clean control, on purpose: that failure is a live over-fire report against a detection rule, not a corpus defect. Its score and readings are in the dated section below. |
+| `../corpus/baseline-2026-09-01.json` | **Superseded, kept as history.** The 0.5.0 blind run over 21 fixtures, which scored recall 0.828 / precision 0.960 against the 29-label corpus of its day. It predates everything added in 0.6.0, so against the current 46-label corpus it reads 0.500 / 0.920. That drop is the corpus growing, not detection getting worse. Do not gate on it. |
+| `../corpus/baseline-2026-07-27.json` | **Superseded, kept as history.** The 0.3.0 blind run over 15 fixtures. It scored recall 0.917 / precision 0.957 against the 24-label corpus after the 2026-09-01 label split (0.900 / 0.783 before it) and predates every fixture added since, so against the current corpus it reads 0.457 / 0.913. Do not gate on it. |
+| `../corpus/baseline-0.1.2.json` | **Superseded, kept as history.** The 0.1.2 blind run, captured against an 18-label corpus. It reads 0.304 / 0.933 against the current corpus, well below threshold, only because it predates thirty fixtures, the 2026-09-01 label split and everything added in 0.6.0. Do not read that as a regression and do not gate on it. |
 
 At the 0.1.2 corpus (18 labels across 10 fixtures) the answer key scored 0.889
 and the blind run scored 0.833. Quoting 0.889 as "the" recall overstated measured
 detection by a full label and hid that the auditor's real `gradient-hero`
 performance was 1 of 3, not 2 of 3.
 
-**Both files go stale when the corpus grows, and staleness looks exactly like a
+**Both live files go stale when the corpus grows, and staleness looks exactly like a
 regression.** Adding fixtures or labels adds expectations neither file was
 written against, so both recalls drop through no fault of the auditor. Widening
-the corpus therefore carries an obligation: commit a fresh dated blind baseline
-over the whole corpus (retiring the previous one to history in this file), and
-extend `sample-findings.json` to cover the new labels. Until
-that happens, a sub-threshold score on either file means "the baseline is out of
-date", not "detection got worse", and the two must not be confused.
+the corpus therefore carries a three-part obligation: commit a fresh dated blind
+baseline over the whole corpus (retiring the previous one to history in this file),
+extend `sample-findings.json` to cover the new labels, and re-run
+`node tests/harness/label-contract.mjs` so no new label carries a severity the
+catalogue's section 18 disagrees with. Until that happens, a sub-threshold score on
+either live file means "the baseline is out of date", not "detection got worse", and
+the two must not be confused.
+
+**Retiring a label has the mirror effect, and it lands on the frozen files.**
+When a catalogue change makes a label wrong about its fixture and the label is
+removed, every findings file that already reported that tell keeps a finding
+with nothing left to match, so its precision drops by one. That is the correct
+reading of a retired label, not a hallucination in an old run, and a frozen
+historical baseline is never edited to hide it (see "never delete correct
+findings from the baseline" under the 2026-09-01 label split). The answer key is
+the exception: it is regenerated against the current labels, so it is the one
+file that is kept at precision 1.
+
+#### Blind baseline, 2026-09-22 (0.6.0 corpus, 40 fixtures)
+
+`../corpus/baseline-2026-09-22.json` is a blind run of the shipped
+`ui-anti-slop-auditor` body (with the deterministic pre-pass it now runs itself,
+`scripts/scan_tells.mjs`) over all 40 fixtures of the 0.6.0 corpus, captured
+with `labels.json`, `sample-findings.json`, every prior baseline, both corpus
+READMEs, the scorer, the selftest and the label contract withheld from the
+reviewer. It supersedes `baseline-2026-09-01.json` as the current detection
+measurement. Two earlier runs were captured on the same date and overwritten at
+the same filename: one over the 26-fixture corpus before the anti-slop design
+port (0.882 / 1.000 against 34 labels), and one over the 40-fixture corpus
+before three auditor defects that run exposed were fixed (0.830 / 0.886, with
+`near-miss-controls.html` tripping on a capped width inside a `min-width` query
+that the auditor read as L13, D2 firing at two `transition-all` declarations
+against the D rows' three, and an absent viewport meta cited as P4 instead of
+L13). This run is the one after those fixes.
+
+| Metric | Value | Reading |
+|---|---|---|
+| recall | **0.957** (45/47) | The detection signal against the 47-label corpus. Not comparable with 0.882 against 34 labels: that run predates every ported fixture. |
+| precision | 0.918 (45/49) | Forty-nine findings, four unmatched, every one a correct reading the labels cannot cite (below). |
+| clean controls | 13 of 13 within tolerance | Every near-miss control drew nothing above its tolerance, including `near-miss-controls.html` at 0 after the L13 fix. |
+
+**The two misses.** The second `section 14` label on `token-drift.html` (the
+same-span folding documented at 2026-09-01: one finding covering several
+enumerated labels) and M6 on `motion-rhythm.html`, a genuine miss of an absence
+(decorative transitions with no `prefers-reduced-motion` handling in either
+direction) worth watching at the next run.
+
+**The four unmatched findings, all correct.** T1 on `cream-serif-sage.html`
+(the fixture declares Inter as its only sans face; the copied label set never
+enumerated it); alternative text on `gallery-unlabelled.html` (a real defect the
+auditor files under `accessibility` with WCAG 1.1.1, which no catalogue row
+names, so no label can cite it); D1 on `legacy-theme.css` (repeated literal
+radii with no radius identity; the port dropped that label because the literals
+are 6px and 12px rather than the row's 8px and 10px example, and the auditor read
+the row by its rule, not its example); and the same-span fold's other half. None
+is noise: a finding a label cannot cite lowers precision without lowering the
+review's value, which is why the selftest holds the blind baseline to the gate
+threshold rather than to 1.
+
 
 ### Verify the scorer itself
 
@@ -275,17 +332,65 @@ a busy fixture makes misses ambiguous.
 
 ## Corpus provenance
 
-Five fixtures (`gradient-hero`, `shadcn-card-kit`, `frosted-nav-neon`,
-`legacy-marketing-page`, `small-avatar-clean`) are copied verbatim from
-`anti-slop`'s design corpus (same owner, MIT); their labels are that corpus's
-ground truth translated to ui-craft catalogue IDs. Five (`presence-single`,
-`cream-serif-sage`, `token-drift`, `missing-states`, `clean-intentional`) are new,
-covering gaps the copied set left: a single-fingerprint presence test, the full
-cream+serif+sage combination, design-token drift, missing states + demo-ware, and a
-second clean control with a non-shadcn committed point of view. See
-`labels.json` `meta` for the per-tell translation notes and the one deliberately
-dropped tell (anti-slop's `z-index-escalation` has no ui-craft home: the catalogue
-scopes z-index stacking out to code review, `01-ai-tells.md` section 19).
+Nineteen fixtures are copied verbatim from `anti-slop`'s design corpus (same owner,
+MIT), and their labels are that corpus's ground truth re-derived against
+`references/catalogue/01-ai-tells.md`. Five came first (`gradient-hero`,
+`shadcn-card-kit`, `frosted-nav-neon`, `legacy-marketing-page`,
+`small-avatar-clean`); the remaining fourteen were ported on 2026-09-22. Seven of
+those carry tells (`hero-triplet-verbatim`, `uniform-control-radius`,
+`bootstrap-unthemed.css`, `marketing-defaults`, `motion-rhythm`,
+`gallery-unlabelled`, `legacy-theme.css`) and seven are clean controls: six
+near-miss controls at tolerance 0 (`near-miss-controls`, `chosen-border-gray.css`,
+`tokens-clean.css`, `hatched-wordmark`, `responsive-type-clean`,
+`media-control-glyph.tsx`) and `hero-scroll-poster` at tolerance 1, whose planted
+tell has no ui-craft catalogue home. Everything else is authored
+for ui-craft: `presence-single`, `cream-serif-sage`, `token-drift`, `missing-states`
+and `clean-intentional` cover gaps the first copied set left, five more came with the
+0.3.0 responsive work, six with the 2026-09-01 catalogue review, and five with the
+0.6.0 substance and copy-placement rows. `../corpus/README.md` carries the
+fixture-by-fixture tables.
+
+**A translated label is re-derived, never carried across.** anti-slop's severities and
+confidences are discarded at the boundary; the ui-craft class comes from catalogue
+section 18, and a label survives only where the catalogue's presence or concentration
+rule actually holds on the file at the instance count that file carries. Nine of the
+twenty anti-slop labels on the 2026-09-22 batch did not survive that test, five for a
+threshold (two `transition-all` against D2's three, one uppercase overline against
+T5's three, and so on) and four for having no ui-craft catalogue row at all. Those
+counts are the point of the exercise, not an accounting footnote: a corpus that
+imported a sibling tool's thresholds would score this plugin against a rule set it
+does not ship.
+
+Translation also runs in the other direction, and the blind run is what finds it. Two
+ui-craft labels written during this port were withdrawn the same day for failing the
+same test (`cream-serif-sage` on `hero-scroll-poster.html`, one of the combination's
+three named markers rather than two; `L7` on `motion-rhythm.html`, three sections but
+not three identical paddings), and two were added for defects the files really carry
+that the port missed (`M6` on `motion-rhythm.html`, decorative transitions with no
+`prefers-reduced-motion` query in either direction; `section 14` on
+`bootstrap-unthemed.css`, the whole untouched framework theme layer). Writing a label
+and measuring it against a blind run in the same change is the point: a label nobody
+has ever scored is an assertion, not ground truth.
+
+**Two porting hazards worth knowing before the next one.** First, a sibling corpus's
+*clean control* is clean against that corpus's rules, not against this catalogue, so
+every ported control has to be re-read against the larger rule set before it is given
+a tolerance; `../corpus/labels.json` records the measurement behind each one.
+Second, the ported files are not all HTML: four are raw stylesheets and one is a TSX
+component, so any run that globs `fixtures/*.html` scores five fixtures fewer than it
+reports. The dispatch instruction in "The two-step loop" above still says `.html` and
+should be read as "every file in `tests/corpus/fixtures/`".
+
+Five anti-slop tells are deliberately dropped for having no ui-craft home, and
+`labels.json` `meta.droppedTells` states each one: `z-index-escalation` (the catalogue
+scopes z-index stacking out to code review, `01-ai-tells.md` section 19), `missing-alt`
+and `img-no-dimensions` (no catalogue row names image alt text or intrinsic
+dimensions; they belong to the accessibility and performance reviewers),
+`hero-scroll-hint` (no row; W2 is vague benefit copy and W5 is SaaS-speak, and neither
+describes a scroll affordance), and `media-control-glyph` (bare U+25B6 / U+23F8 /
+U+23ED carry `Emoji_Presentation=No`, so a transport sign is typography rather than
+the emoji-as-UI chrome V12 names; its fixture became a clean control for exactly that
+reason).
 
 ## Committed baseline (0.1.2)
 

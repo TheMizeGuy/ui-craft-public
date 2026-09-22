@@ -33,7 +33,7 @@ Primary sources cited inline: MDN, web.dev, W3C, and the APCA reference implemen
 | Component | Range | Notes |
 |---|---|---|
 | `L` (Lightness) | `0` (black) .. `1` (white), or `0%` .. `100%` | `0.5` is mid-gray. Use percentages for legibility in `--vars` |
-| `C` (Chroma) | `0` (gray) .. `~0.4` typical max | Saturation. `>0.37` may exceed P3, browser clamps |
+| `C` (Chroma) | `0` (gray) .. `~0.4` typical max | Saturation. `>0.37` may exceed P3, browser clamps. There is a floor at the other end: a primary accent under `0.10` at its rendered lightness is a muted brand and needs a stated reason (`references/aesthetic/06-substance-floor.md` S2), with `0.12` to `0.18` as the working range. Neutrals are not `0` either -- they carry `0.004` to `0.02` of cast toward the brand hue, which is what makes a grey belong to a palette instead of sitting beside it |
 | `H` (Hue) | `0` .. `360` (deg) | 30=orange, 100=yellow-green, 145=green, 200=cyan, 260=blue, 320=magenta |
 | `alpha` | `0` .. `1`, or `0%` .. `100%` | Same as RGB alpha |
 
@@ -52,10 +52,10 @@ The ramp below is a syntax demonstration on a face-value blue, not a palette rec
 --blue-800: oklch(0.28 0.14 250);
 --blue-900: oklch(0.20 0.10 250);
 
-/* Neutral grays — chroma 0 */
---gray-50:  oklch(0.98 0 0);
---gray-500: oklch(0.55 0 0);
---gray-900: oklch(0.18 0 0);
+/* Neutrals — cast toward the brand hue, never chroma 0 */
+--gray-50:  oklch(0.98 0.004 250);
+--gray-500: oklch(0.55 0.010 250);
+--gray-900: oklch(0.18 0.012 250);
 
 /* Vibrant accents — chroma at the high end */
 --accent-violet: oklch(0.65 0.30 295);
@@ -78,8 +78,8 @@ Three layers: primitive, semantic, component. Components only ever read semantic
   /* Tier 1: primitive ramp (hue 95 is the section-4 worked example, not a recommendation) */
   --brand-500: oklch(0.58 0.20 95);
   --brand-600: oklch(0.48 0.20 95);
-  --gray-50:   oklch(0.98 0 0);
-  --gray-900:  oklch(0.18 0 0);
+  --gray-50:   oklch(0.98 0.004 95);   /* neutrals carry the brand cast, never chroma 0 */
+  --gray-900:  oklch(0.18 0.012 95);
   --red-500:   oklch(0.62 0.24 25);
 
   /* Tier 2: semantic */
@@ -112,6 +112,8 @@ Semantic colors are signifiers: **blue = trust/information, red = danger/urgency
 
 - Never repurpose a semantic hue decoratively where feedback lives (a red promotional chip beside a form invites misreads).
 - Let color find its function before its aesthetics: the announcement bar that must grab attention, the focus ring on an input, the green "New" chip on a nav item. If a saturated element has no meaning to signify, it is decoration — question it.
+
+**Identity is a color job too.** The dataviz color-jobs model (`references/dataviz/02-color-jobs-and-validation.md`) separates categorical, sequential, diverging, highlight and status work. Interface color adds one more job: identity -- brand, category, tier, rarity, class. The brand accent's meaning is "this is our product, and this is the thing to act on", so a surface where the accent never appears has failed to signify that as surely as a success state with no green on it. The same holds wherever the domain already owns a color vocabulary (item quality, faction, plan tier, product line): those hues render at their canonical saturation, because the reader arrives knowing them, and a desaturated one is a defect rather than restraint. So "question a saturated element with no meaning to signify" runs in both directions -- color with no job is decoration, and a job with no color on it is an unsignified meaning (`references/aesthetic/06-substance-floor.md` S1, S7).
 
 Pair every semantic color with a shape or icon (see anti-patterns) so color-blind users get the same signal.
 
@@ -152,10 +154,14 @@ Change `--brand` once, the whole ramp regenerates. Chroma tapers at the extremes
   color-scheme: light dark;
   --brand-hue: 95;   /* derive from the brief, as in section 4 */
 
-  --text:        light-dark(oklch(0.20 0 0), oklch(0.92 0 0));
-  --surface:     light-dark(oklch(0.98 0 0), oklch(0.16 0 0));
-  --surface-2:   light-dark(oklch(0.95 0 0), oklch(0.21 0 0));
-  --border:      light-dark(oklch(0.85 0 0), oklch(0.30 0 0));
+  /* Neutrals carry a cast toward the brand hue; chroma 0 is a palette that stops at the accent */
+  --text:        light-dark(oklch(0.20 0.012 var(--brand-hue)), oklch(0.92 0.008 var(--brand-hue)));
+  --surface:     light-dark(oklch(0.98 0.004 var(--brand-hue)), oklch(0.16 0.008 var(--brand-hue)));
+  --surface-2:   light-dark(oklch(0.95 0.006 var(--brand-hue)), oklch(0.21 0.010 var(--brand-hue)));
+  /* The border clears 1.3:1 against BOTH surfaces it separates, measured in pixels:
+     light 1.41:1 / 1.30:1, dark 1.58:1 / 1.36:1. A white hairline at 10% alpha on the
+     dark ground measures about 1.1:1 and is not a boundary at all. */
+  --border:      light-dark(oklch(0.85 0.008 var(--brand-hue)), oklch(0.30 0.010 var(--brand-hue)));
   --accent:      light-dark(oklch(0.50 0.20 var(--brand-hue)), oklch(0.72 0.18 var(--brand-hue)));
 }
 
@@ -191,10 +197,12 @@ Four adjustments that separate an authored dark theme from a mirrored one:
 
 | Adjustment | Why |
 |---|---|
-| Dim the borders | A light-mode border weight glares on dark; drop border contrast (e.g. `oklch(0.30 0 0)` not `oklch(0.85 0 0)`) so the hairline separates without shouting |
-| Elevation = lightness delta, not shadow | Shadows barely register on dark backgrounds. A raised surface is a *lighter* surface: background `L 0.16`, card `L 0.21`, popover `L 0.26`. Each layer up gains lightness |
-| Desaturate bright chips, flip their text | A light-mode-bright accent chip glares on dark. Dim its saturation and brightness, and flip the text relationship (dark-text-on-bright-chip becomes bright-text-on-dim-chip) to preserve hierarchy |
+| Borders on dark get their own contrast floor, not just a lower number | A light-mode border weight glares on dark, so it comes down -- but a border separates two surfaces and has to clear `1.3:1` against both of them. `oklch(0.30 0.010 <brand-hue>)` between a `0.16` page and a `0.21` card measures `1.58:1` and `1.36:1` and passes; a white hairline at `10%` alpha or less on the same ground measures about `1.1:1`, which is the flat-terminal signature rather than a hairline (`references/aesthetic/06-substance-floor.md` S4) |
+| Elevation is measured in pixels, never asserted from delta-L | Shadows barely register on dark backgrounds, so a raised surface is a lighter surface -- background `L 0.16`, card `L 0.21`, popover `L 0.26` -- but the token step is not the evidence. Adjacent levels have to clear `1.15:1` on the rendered page, and delta-L does not tell you whether they do: the same `0.04` delta is `1.04:1` at `L 0.13` and `1.11:1` at `L 0.23`. An elevation system reasoned entirely in tokens shipped at `1.0015:1`, which is invisible. The other half of the rule: a raised surface in dark is found by the light it catches on its **top edge** -- `inset 0 1px 0 <warm light / alpha>` plus a drop for ambient contact, measured `1.446:1` where a `1.40:1` border had been -- not by the shadow it casts onto near-black |
+| Dim bright chips and flip their text, keeping the hue | A light-mode-bright accent chip glares on dark. Bring its lightness down and flip the text relationship (dark-text-on-bright-chip becomes bright-text-on-dim-chip) to preserve hierarchy. Chroma comes down by at most `0.03` and never to grey: a dimmed accent still clears the `0.10` chroma floor, and a greyed one has deleted the brand from the dark scheme |
 | Dark surfaces are not only navy/gray | Deep purples, reds, and greens all work as dark-mode surface hues — pick the dark ramp from the brand hue instead of defaulting to slate |
+
+The rim rule above is stated in full, with the shipped measurements behind it, in `references/aesthetic/06-substance-floor.md` § 5; the elevation scale it applies to is `references/design/07-depth-and-overlays.md` § 1.
 
 ([web.dev light-dark()](https://web.dev/articles/light-dark)).
 
@@ -264,7 +272,7 @@ P3 ships on every modern Apple display (iPhone 7+, iPad Pro 2017+, every M-serie
 
 | Anti-pattern | Why it fails | Replace with |
 |---|---|---|
-| `color: #000` / `#FFF` for text/surfaces | Pure black/white crush detail and burn retinas in dark mode | `oklch(0.18 0 0)` for "black", `oklch(0.98 0 0)` for "white" |
+| `color: #000` / `#FFF` for text/surfaces | Pure black/white crush detail and burn retinas in dark mode | `oklch(0.18 0.012 <brand-hue>)` for "black", `oklch(0.98 0.004 <brand-hue>)` for "white" -- off the extremes and cast toward the brand, never chroma 0 |
 | One gray ramp for every surface | Shadow/elevation reads incorrectly on different bg colors | Tint each neutral toward its accent — e.g. cool gray for blue UI, warm gray for amber UI |
 | Saturated red/green for system feedback | Often fails APCA at small sizes; red-green colorblind users miss the polarity | Pair color with shape (icon) and pre-test with apca-w3 / `prefers-contrast` |
 | Hex literals in components | Breaks theming, multi-brand, dark mode, tokens spec compliance | Tokens at every layer. No `#` outside `:root` or `@theme` |

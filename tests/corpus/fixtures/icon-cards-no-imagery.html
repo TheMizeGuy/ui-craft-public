@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verge M2 rangefinder</title>
+<style>
+  :root { --paper: oklch(0.96 0.006 90); --ink: oklch(0.22 0.012 90); --dim: oklch(0.48 0.01 90);
+          --line: oklch(0.85 0.01 90); --brass: oklch(0.62 0.13 72); }
+  body { margin: 0; background: var(--paper); color: var(--ink); line-height: 1.6;
+         font-family: system-ui, sans-serif; padding: clamp(1rem, 0.5rem + 2vw, 2.5rem); }
+  main { width: min(100%, 62rem); margin: 0 auto; }
+  h1 { font-family: Poppins, system-ui, sans-serif; font-weight: 600; letter-spacing: -0.02em;
+       font-size: clamp(2rem, 1.5rem + 2.2vw, 3rem); margin: 0 0 0.5rem; }
+  h2 { font-family: Poppins, system-ui, sans-serif; font-weight: 600; font-size: 1.375rem; letter-spacing: -0.01em; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.25rem; } .lede { max-inline-size: 48ch; color: var(--dim); margin: 0 0 1.5rem; }
+  .cta { font: inherit; font-weight: 600; padding: 0.6rem 1.25rem; border: 1px solid var(--brass);
+         border-radius: 6px; background: var(--brass); color: oklch(0.99 0.002 90); }
+  .cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  section.a { padding: 2.5rem 0 0.5rem; } section.b { padding: 3.5rem 0 0.5rem; }
+  ul { display: grid; gap: 1.25rem; padding: 0; margin: 1rem 0 0; list-style: none;
+       grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  li { border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem; } li p { margin: 0; color: var(--dim); font-size: 0.9375rem; }
+  svg { width: 22px; height: 22px; stroke: var(--brass); stroke-width: 1.6; fill: none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Verge M2</h1>
+    <p class="lede">A mechanical rangefinder built around a brass top plate, a 1:1 finder and a shutter you can service.</p>
+    <button class="cta" type="button">Find a stockist</button>
+  </header>
+  <section class="a"><h2>Inside the body</h2><ul>
+      <li><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3z"/><circle cx="12" cy="13" r="4"/></svg><h3>Cloth shutter</h3><p>Rubberised silk curtains, 1 second to 1/1000, timed by hand at assembly.</p></li>
+      <li><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 12h8"/></svg><h3>Brass top plate</h3><p>Milled from a single billet, 1.2 mm, lacquered so it wears through where you hold it.</p></li>
+      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/></svg><h3>1:1 finder</h3><p>Both eyes open, 0.72 magnification, parallax corrected from 0.7 m to infinity.</p></li>
+    </ul></section>
+  <section class="b"><h2>Glass and mount</h2><ul>
+      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg><h3>M mount</h3><p>Takes every M-series lens made since 1954, and the adapters for screw mount.</p></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M9 8l-4 4 4 4"/></svg><h3>Six-bit coding</h3><p>Reads the lens code where the lens carries one, and lets you set it by hand where it does not.</p></li>
+      <li><svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/><path d="M10 10h4v4h-4z"/></svg><h3>Framelines</h3><p>28, 35, 50, 75 and 90 mm, switched by the lens or by the lever on the front.</p></li>
+    </ul></section>
+  <section class="a"><h2>In the field</h2><ul>
+      <li><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 10l7-7 7 7"/></svg><h3>No battery for the shutter</h3><p>The meter runs on two cells; every shutter speed fires without them.</p></li>
+      <li><svg viewBox="0 0 24 24"><path d="M4 18h16"/><path d="M7 14l4-6 3 4 3-3"/></svg><h3>Weather seals</h3><p>Gasketed back door and dial collars, tested to IPX3, not a rating for rain on a tripod all day.</p></li>
+      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h3>Self timer</h3><p>Mechanical, eight seconds, with a mirror-free release you can hear across a room.</p></li>
+    </ul></section>
+  <section class="b"><h2>Service</h2><ul>
+      <li><svg viewBox="0 0 24 24"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg><h3>Parts held for 30 years</h3><p>Curtains, cams and finder prisms stay in stock for three decades after the last unit ships.</p></li>
+      <li><svg viewBox="0 0 24 24"><path d="M4 12h16"/><circle cx="9" cy="12" r="2"/></svg><h3>Rangefinder calibration</h3><p>Two adjustment screws under the top plate, documented in the manual so a local technician can do it.</p></li>
+      <li><svg viewBox="0 0 24 24"><path d="M12 4l8 4v8l-8 4-8-4V8z"/></svg><h3>Three-year warranty</h3><p>Covers the shutter, the finder and the meter, and transfers with the camera when you sell it.</p></li>
+    </ul></section>
+</main>
+</body>
+</html>

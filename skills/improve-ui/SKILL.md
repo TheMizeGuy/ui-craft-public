@@ -92,7 +92,48 @@ FLOWS IN SCOPE:
 (or "single component, no multi-step flow in scope")
 ```
 
+### Step 2c: Doctrine audit and owner vetoes
+
+Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` first and carry its findings verbatim; the manual read below adds what the script cannot see.
+
+Two blocks the team lead forwards verbatim to every specialist. Both exist because the full pass has been beaten by the reviewed repo itself: one product stayed flat through six campaigns because its own doctrine files, CSS pin tests and word-count floor tests enforced the flatness and the padding (owner directive 2026-09-22), and a technically correct remediation violated a recorded owner veto because no dispatch carried the veto.
+
+**The doctrine audit.** On the full pass this is a repo-wide read, not a spot check. Read:
+
+- the UI sections of `CLAUDE.md` and `AGENTS.md`;
+- `design/*.md`, in particular a `POV.md` and a `known-debt.md`;
+- the theme or token README;
+- stylelint / eslint / biome rules that constrain visual properties: a banned `box-shadow`, a forbidden `border`, a capped radius scale, an accent allow-list, a "no decorative colour" rule;
+- tests that pin visual values or text volume. Grep the whole test tree for `toHaveStyle`, `toMatchInlineSnapshot` over CSS, `box-shadow`, `border-radius`, `.css.snap`, `wordCount`, and `toBeGreaterThan(` applied to a word, heading or paragraph count.
+
+Each rule that enforces **flatness** (bans edges, badges, elevation, or accent use) or **text volume** (a word-count or heading-count FLOOR, a padding generator by construction: `${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md` § 3 keeps the ceiling and bans the floor) becomes a finding: `id` `visual-doctrine-<slug>`, `dimension: visual`, title beginning `Doctrine: `, severity MEDIUM, `file:line` at the rule, and a Recommended change stating the keep-or-retire choice for the owner rather than making it. No schema change is needed: `${CLAUDE_PLUGIN_ROOT}/ARCHITECTURE.md` § Data contracts already routes a rubric row with no enum value of its own to `visual`.
+
+Emit both blocks for Step 3:
+
+```
+DOCTRINE CONSTRAINTS:
+- <rule, one line> (<file:line>) -- enforces <flatness | text volume>; a fix that <does X> gets reverted by it
+(or "none found")
+```
+
+**Owner vetoes.** Standing decisions about this product that no remediation may land on. Source them in this order, taking the first that exists and merging in anything a later source adds: the reviewed repo's `design/POV.md` (`## Banned (concrete)` and `## Must be present`), the UI section of its `CLAUDE.md` or `AGENTS.md`, then `.claude/ui-craft/vetoes.md` if present.
+
+```
+OWNER VETOES (standing decisions, not taste; a finding does not re-litigate them):
+- banned: <device, in the owner's words>
+- required: <device, in the owner's words>
+Check every Recommended change against this list. A remediation that lands on a veto is replaced
+with another device from the same tell's replacement column in
+references/aesthetic/06-substance-floor.md section 6, or filed as an open question naming the
+conflict. Never propose a vetoed device with a justification attached.
+(or "none recorded")
+```
+
 ## Step 3: Construct the team lead prompt
+
+**Deterministic pre-pass.** The team lead runs `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none` (files only; pipe a list for a large scope) in Phase 1 and passes its `findings` array to `ui-craft:ui-anti-slop-auditor` as a `SCANNER FINDINGS` block. The auditor confirms, dedupes and extends them with the structural tells no regex can see; it never re-derives what the scanner already found, and a suppressed hit (an `anti-slop-allow` reason on the line) is a stated decision listed under Scope, never a finding. The scanner's `heuristic: true` candidates (T15 single-word accents, W11, I8, V13) are pointers for the auditor to verify, not findings in their own right.
+
+**Scope and sampling on large inputs.** A 200-file scope does not get 200 equally shallow reviews. Above about 40 UI files, prioritise in this order: the routes and screens named in FLOWS IN SCOPE, then the shell and token files, then files with the most changed lines, then the rest; say which files were read and why, and mark everything unread NOT ASSESSED in the summary block. An undisclosed sample reported as a verdict is itself a finding against the review. The team lead carries the rule into every specialist prompt.
 
 The team lead needs FULL context because it dispatches every applicable specialist, each of which needs a complete briefing.
 
@@ -106,6 +147,15 @@ RUN DIRECTORY: <absolute path to .claude/ui-craft/runs/<ISO timestamp>/>
 
 FLOWS IN SCOPE:
 <the block from Step 2b, verbatim>
+
+DOCTRINE CONSTRAINTS:
+<the block from Step 2c, verbatim. Forward it to EVERY specialist, unchanged, so a specialist
+reports a repo rule that would revert its fix instead of proposing a fix CI will undo.>
+
+OWNER VETOES:
+<the block from Step 2c, verbatim. Forward it to EVERY specialist, unchanged. These are standing
+decisions, not taste; a Recommended change that lands on one is replaced or filed as an open
+question naming the conflict.>
 
 PROJECT CONTEXT:
 - Root: <absolute path>
@@ -139,18 +189,30 @@ TASK:
    - ui-motion-reviewer: motion quality (when animation is in scope)
    - ui-perf-engineer: CWV + bundle + runtime/rendering stability
    - ui-typescript-engineer: TS6/7 strictness, the TS7 type gate, component typing (TS projects only)
-3. Each specialist gets the full PROJECT CONTEXT and FLOWS IN SCOPE above.
-4. Wait for all specialists.
-5. Run ui-verifier LAST on the merged findings. It returns the verified findings, the four
+3. If a browser and a URL are both available, capture the default viewport set ONCE yourself
+   (1920 is pinned in it: the density thresholds are calibrated there), then evaluate
+   ${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js and
+   ${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js and call measureDensity() and
+   measureSubstance() at 1920 AND at the widest width you opened. Write both outputs under
+   <RUN DIRECTORY>/evidence/ and pass the numbers into every specialist prompt. Without them,
+   every substance and density finding sits at TASTE.
+4. Each specialist gets the full PROJECT CONTEXT, FLOWS IN SCOPE, DOCTRINE CONSTRAINTS and
+   OWNER VETOES above, plus the measured numbers from step 3.
+5. Wait for all specialists.
+6. Run ui-verifier LAST on the merged findings. It returns the verified findings, the four
    blocker flags, and one canonical verdict token per dimension.
-6. Merge: deduplicate, re-rank by impact, number sequentially.
-7. Present the unified report with per-dimension verdicts, copying the verifier's verdict
-   tokens rather than deriving your own. If PRIOR LEDGER is not "none", open with the delta
-   section (see DELTA SEMANTICS below) before the verdict table.
-8. Write the merged report to <RUN DIRECTORY>/merged-report.md before returning, and return
+7. Merge: deduplicate, re-rank by impact, number sequentially.
+8. Present the unified report with per-dimension verdicts, copying the verifier's verdict
+   tokens rather than deriving your own. Its header carries `Widths viewed` (the renders a
+   reviewer actually opened, not the ones captured) and `Substance` (accent chroma, surface
+   levels, focal visual, image count, or NOT ASSESSED). When DOCTRINE CONSTRAINTS is not
+   "none found", add a `### Doctrine constraints` section above the improvement plan, each
+   rule with its file:line and the keep-or-retire choice for the owner. If PRIOR LEDGER is
+   not "none", open with the delta section (see DELTA SEMANTICS below) before the verdict table.
+9. Write the merged report to <RUN DIRECTORY>/merged-report.md before returning, and return
    its absolute path as the first line of your final message. Subagent final messages
    truncate; the file is the deliverable, the message is the pointer.
-9. End with the structured improvement plan (quick wins / design pass / flow pass /
+10. End with the structured improvement plan (quick wins / design pass / flow pass /
    motion + responsive pass / perf pass / type-safety pass), including only passes with findings.
 
 DELTA SEMANTICS (match on `id` + `file`):
@@ -159,6 +221,10 @@ DELTA SEMANTICS (match on `id` + `file`):
 - STILL OPEN: in both at the SAME severity
 - REGRESSED: in both at a HIGHER severity now
 - IMPROVED: in both at a LOWER severity now
+- SUBSTANCE REGRESSED: the prior ledger's `measurements` for a width this run also measured show
+  a lower accentChroma, accentRoles, surfaceLevels or imagesPerSection, a higher wordsBeforePrimary,
+  orphanParagraphs or textOnlySections, or utilisation under 60%; report both numbers and file a
+  `visual` finding titled `Substance: regressed since <prior timestamp>` at HIGH
 - Carried forward: prior entry whose dimension was not reviewed this run (never RESOLVED)
 
 HARD RULES:
@@ -183,10 +249,21 @@ ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 5. Improvement plan present with each applicable pass.
 6. If PRIOR LEDGER was not "none", a delta section opens the report, above the verdict table.
 7. `<RUN DIRECTORY>/merged-report.md` exists and its path is the first line of the reply.
-8. Every removal in the improvement plan names the device that replaces it (a frame becomes a
-   heading plus spacing, a badge becomes an inline status word, an accent edge becomes a
-   selected-state fill). A design pass that is only removals is rejected (owner directive
-   2026-09-16; taste smell test 9.10).
+8. Every removal names the device that replaces it (a frame becomes a heading plus spacing, a
+   badge becomes an inline status word, an accent edge becomes a selected-state fill) -- in
+   EVERY finding in the merged list and EVERY pass of the plan, quick wins included, not only
+   the design pass. The canonical rule is
+   ${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md section Finding format; the
+   working list of replacement devices is
+   ${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md section 6. A removal whose
+   replacement cannot be named is an open question for the owner, and a pass that is only
+   removals is rejected (owner directive 2026-09-16; taste smell test 9.10).
+9. On a browser run (EVIDENCE LEVEL `code + browser`): `Widths viewed` is non-empty, and the
+   substance and density numbers at 1920 are present in the report. Captures nobody opened do
+   not count as viewed, and a run with no numbers at 1920 has not measured waste or flatness.
+10. No Recommended change in the merged report lands on a device the OWNER VETOES block bans.
+   One that does is replaced from the same tell's replacement column, or carried as an open
+   question naming the conflict.
 ```
 
 ## Step 4: Dispatch the team lead
@@ -215,7 +292,7 @@ Foreground. The dispatch carries no `model:` or effort field; the session choose
 
 1. Read `<RUN DIRECTORY>/merged-report.md` from disk. Do not rely on the returned message, which truncates around 60KB and will silently cut the tail of a large pass. If the file is missing or under 100 bytes, treat the run as failed and re-dispatch once.
 2. Gate the merged report against the ACCEPTANCE CRITERIA from Step 3. Any failure means ONE re-dispatch naming the failed criterion; a second failure means you apply the verifier's rules (`${CLAUDE_PLUGIN_ROOT}/agents/ui-verifier.md`, or `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`) to the raw specialist findings directly and present the result flagged. Never present an unverified report.
-3. Show the merged report verbatim.
+3. Show the merged report verbatim. Then, when the doctrine audit (Step 2c) or a specialist found any, list the **Doctrine constraints** below it: each repo rule that would revert an accepted fix, with its `file:line`, the finding it would revert, and the keep-or-retire choice, stated as a choice for the owner rather than a decision you made. Applying a fix against a live rule that reverts it is how a product stayed flat through six campaigns.
 4. If the user only wanted an audit, stop here (offer to apply on request). Otherwise prompt:
    ```
    This is the full pass from the specialist team. Apply changes? Options:
@@ -226,19 +303,21 @@ Foreground. The dispatch carries no `model:` or effort field; the session choose
    - "everything in <filename>"
    - "skip"
    ```
-5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement; never turn the report into a "remove the slop" sweep, and never apply a removal whose replacement the user has not seen.
+5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement; never turn the report into a "remove the slop" sweep, never apply a removal whose replacement the user has not seen, and never apply a device the OWNER VETOES block bans, even when the report proposed it -- substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave the finding open. **The doctrine gate:** before applying a finding, check its rework against the Step 2c doctrine constraints (re-run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` if the tree changed). If an open constraint would revert the rework (a pin test on the literal the fix changes, a word-count floor the cut copy would trip, a doctrine line that bans the device the fix adds), apply the fix and the constraint's retirement in the same change with the user's say-so on the retirement, or hold the fix and say which constraint blocks it. Never apply a fix that CI or the repo's own rules will undo: that is how six campaigns produced the same flat page.
 6. If the harness provides an Artifact tool, offer to render the merged report (verdict table + numbered findings) as a shareable HTML artifact. If no Artifact tool is available, skip this offer silently and don't mention its absence.
 7. Refresh the ledger: write (or overwrite) `.claude/ui-craft/last-review.json` in the reviewed repo.
 
    ```json
-   {"schemaVersion": 2, "timestamp": "<ISO 8601>", "scope": "<resolved scope, URL verbatim if supplied>",
+   {"schemaVersion": 3, "timestamp": "<ISO 8601>", "scope": "<resolved scope, URL verbatim if supplied>",
     "commit": "<git sha>",
     "dimensions": ["<each dimension actually reviewed this run>"],
     "findings": [{"id": "<dimension>-<kebab-slug>", "dimension": "...", "severity": "...",
-                  "confidence": "...", "file": "...", "line": 1, "title": "...", "status": "open"}]}
+                  "confidence": "...", "file": "...", "line": 1, "title": "...", "status": "open"}],
+    "measurements": {"1920": {"utilisation": "78%", "accentChroma": 0.14, "accentRoles": 3, "surfaceLevels": 3,
+                            "imagesPerSection": 0.6, "wordsBeforePrimary": 22, "orphanParagraphs": 0, "textOnlySections": 0}}}
    ```
 
-   Carry forward, unchanged and whether or not Step 1 loaded the ledger as a baseline, any prior entry whose dimension is absent from `dimensions` this run, so a narrow pass never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
+   `measurements` is optional and keyed by width: on a browser run, the numbers the team lead's measurement scripts printed at 1920 (and the widest width when it differs), verbatim; a code-only run omits the key. The next run compares against it to report SUBSTANCE REGRESSED. Carry forward, unchanged and whether or not Step 1 loaded the ledger as a baseline, any prior entry whose dimension is absent from `dimensions` this run, so a narrow pass never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
 
 8. **The CI verdict artifact: this skill is its only producer.** `review-ui` and `optimize-ui` never write one, because the gate schema requires six verdicts and neither of those runs a full pass with a verifier. `${CLAUDE_PLUGIN_ROOT}/ci/verdict-artifact-schema.json` is canonical for the shape; `ARCHITECTURE.md` § Data contracts explains it. Read the schema rather than trusting the sketch below if the two ever disagree. Offer, don't force:
 
@@ -269,8 +348,9 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 1. If TypeScript: run the TypeScript 7 gate by path, resolving the compiler by version rather than by alias name: try `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, then `node_modules/typescript/bin/tsc`, and use the first whose `--version` prints `Version 7.` (Microsoft's side-by-side layout keeps TypeScript 6 at `node_modules/typescript/bin/tsc6`). Never bare `tsc`, because with two compilers installed the `.bin/tsc` link is arbitrary; redirect the output to a log and read the exit code, never infer the result from the output. Do this to verify compilation.
 2. Run the project's lint command.
 3. If Tailwind: check that `@theme` tokens are valid.
-4. Report any breakage with the fix, and offer to iterate.
-5. Offer to re-run the full pass to verify the fixes, or an individual skill (`review-ui`, `optimize-ui`) on a specific area. Write a learning to the goodmem Learnings space, if goodmem is configured in this session, when a non-obvious pattern came up.
+4. If a browser is available: re-run `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` at 1920 and report the before/after numbers side by side -- accent chroma, surface levels and their boundary ratios, focal visual, image count, viewport utilisation, `wordsBeforePrimary`. A fix that was supposed to add substance and moved no number did not land, and a fix that removed a device without its replacement shows up here as a number going the wrong way.
+5. Report any breakage with the fix, and offer to iterate.
+6. Offer to re-run the full pass to verify the fixes, or an individual skill (`review-ui`, `optimize-ui`) on a specific area. Write a learning to the goodmem Learnings space, if goodmem is configured in this session, when a non-obvious pattern came up.
 
 ## Anti-patterns
 

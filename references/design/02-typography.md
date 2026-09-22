@@ -78,7 +78,7 @@ For long-form reading (articles, documentation, editorial body) the house serif 
 
 "Was the system stack deliberate?" is not auditable. This is:
 
-> A project passes the type gate when it declares (a) a `--font-display` distinct from `--font-sans`, **and** (b) an explicit heading weight and tracking (`font-variation-settings` or `font-weight` + `letter-spacing`) rather than browser defaults.
+> A project passes the type gate when it declares (a) a `--font-display` distinct from `--font-sans`, **and** (b) an explicit heading weight and tracking (`font-variation-settings` or `font-weight` + `letter-spacing`) rather than browser defaults, **and** (c) at least three weights or optical sizes actually in use on the surface, not merely declared in the token file.
 
 A globals.css whose entire type system is `--font-sans: <system stack>` with default weights and default tracking has made no type decision, regardless of intent. That is the tell.
 
@@ -95,7 +95,7 @@ A globals.css whose entire type system is `--font-sans: <system stack>` with def
 
 | Family | Use | Why |
 |---|---|---|
-| System stack | Body, UI, information-dense surfaces; the house default | Native-feeling, zero payload, no self-hosting risk. Only counts as a decision under the checkable rule above |
+| System stack | Body, UI, information-dense surfaces; the house default | Native-feeling, zero payload, no self-hosting risk. Only counts as a decision under the checkable rule above: applied on every surface at default weights it has made no decision (catalogue T2, substance check S7 in `references/aesthetic/06-substance-floor.md`) and is the type half of the flat-terminal default |
 | Poppins | Display, modern-elegant areas | House display face for elegant marketing and hero moments; geometric warmth, strong at 500-700 display weights |
 | Geist / Geist Mono | Only when deliberately chosen and paired against a distinctive display face | Never the fallback default. Geist plus Vercel-blue plus a dotted grid is a catalogued AI tell (`references/aesthetic/02-distinctive-systems.md`); the face is fine, the unexamined Vercel-stack combination is not |
 | Söhne | Body, display | Modern grotesque with character; broad family |
@@ -148,6 +148,8 @@ Tooling: [Type Scale](https://typescale.com), [Utopia](https://utopia.fyi).
 ### Size-count caps by surface
 
 The ratio gives you the steps; the surface caps how many you use. Landing pages and marketing sites: at most ~6 sizes, wide range (a 64/42/32/20/16/14 ladder is typical). Dashboards and dense product UI: the range shrinks hard -- nothing above ~24px (headings and labels; data displays such as a dashboard's hero figure or stat-tile values are exempt and sized by `references/dataviz/03-marks-interaction-figures.md`) on a 24/20/18/16/14/12 ladder, because information density rises and oversized headings steal space from data. A dashboard H1 at landing-page scale is a defect, not a style choice.
+
+**The focal-figure floor.** The 24px cap governs chrome, not the thing the operator came to read. The screen's primary figure or heading -- the number the dashboard exists for, the entity name on a detail page, the total on a statement -- sits at **2.5x the body step or more** (40px against a 16px body, 35px against a 14px one), with its label small beside or beneath it. This is a rule, not the parenthetical exemption it used to be: a dense screen whose largest element is a 24px section heading has no focal point, which fails the substance floor even though it passes the cap (`references/aesthetic/06-substance-floor.md` S5, S7). The cap and the floor are both bars, and a screen clears both.
 
 ### Display tightening
 

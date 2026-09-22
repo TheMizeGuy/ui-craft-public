@@ -43,17 +43,6 @@
     "tellRef": "Strongest-10 #1"
   },
   {
-    "id": "anti-ai-icon-tinted-circle",
-    "dimension": "anti-ai",
-    "severity": "HIGH",
-    "confidence": "Pattern smell",
-    "file": "tests/corpus/fixtures/frosted-nav-neon.html",
-    "line": 11,
-    "title": "Icon wrapped in a tinted circle",
-    "tellRef": "V1",
-    "evidence": "rounded-full bg-indigo-100 p-3 around the svg"
-  },
-  {
     "id": "anti-ai-frosted-nav",
     "dimension": "anti-ai",
     "severity": "HIGH",
@@ -313,5 +302,214 @@
     "title": "Icon-only button has no accessible name",
     "tellRef": "U13",
     "evidence": "<button class=\"remove\" type=\"button\"><svg ...></svg></button> with no aria-label, no hidden text, no <title>"
+  },
+  {
+    "id": "anti-ai-flat-terminal-subtraction-only-system",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/flat-terminal.html",
+    "line": 8,
+    "title": "Flat-terminal subtraction-only system",
+    "tellRef": "V13",
+    "evidence": "near-black ground, panels bounded only by a 1px border at 0.08 alpha, no shadow or rim, accent chroma 0.02, colour only on status, system-ui at 400/600, no images"
+  },
+  {
+    "id": "anti-ai-prose-blob-above-primary-content",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/prose-blob-top.html",
+    "line": 14,
+    "title": "Prose blob above the primary content",
+    "tellRef": "W11",
+    "evidence": "a paragraph inside the hero plus four consecutive paragraphs (about 280 words) before the first data table"
+  },
+  {
+    "id": "anti-ai-orphan-paragraphs-between-components",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/orphan-paragraphs.html",
+    "line": 20,
+    "title": "Orphan paragraphs dropped between components",
+    "tellRef": "W12",
+    "evidence": "three p elements directly inside main between a card grid and a table, no heading over them, one over 60 words"
+  },
+  {
+    "id": "anti-ai-text-only-section-run",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/orphan-paragraphs.html",
+    "line": 34,
+    "title": "Text-only section run",
+    "tellRef": "L14",
+    "evidence": "three consecutive sections whose only children are an h2 and paragraphs"
+  },
+  {
+    "id": "anti-ai-no-real-imagery-on-a-visual-product",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/icon-cards-no-imagery.html",
+    "line": 10,
+    "title": "No real imagery on a visual product",
+    "tellRef": "I8",
+    "evidence": "a camera marketing page with four icon-card sections and zero img, picture or figure elements"
+  },
+  {
+    "id": "anti-ai-middle-dot-meta-strings",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/fixed-desktop-shell.html",
+    "line": 32,
+    "title": "Spaced middle-dot meta strings on every lane row",
+    "tellRef": "T15",
+    "evidence": "three lane rows join their meta fields with &middot;"
+  },
+  {
+    "id": "anti-ai-verbatim-tailwind-hero-triplet",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/hero-triplet-verbatim.html",
+    "line": 31,
+    "title": "Verbatim Tailwind hero class run on the h1",
+    "tellRef": "Strongest-10 #9",
+    "evidence": "class=\"text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight\" unchanged and in order"
+  },
+  {
+    "id": "anti-ai-uniform-control-radius",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/uniform-control-radius.html",
+    "line": 40,
+    "title": "Same maximal radius on every interactive control",
+    "tellRef": "D1",
+    "evidence": "rounded-full on the input, select, textarea, chip and submit button; five controls, no stated radius identity"
+  },
+  {
+    "id": "anti-ai-framework-default-primary",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/bootstrap-unthemed.css",
+    "line": 6,
+    "title": "Unthemed framework blue shipped as the primary colour",
+    "tellRef": "C3",
+    "evidence": "#0d6efd at OKLCH C 0.228 / H 260.0, #0b5ed7 at C 0.200 / H 259.8, #0a58ca at C 0.190 / H 259.8"
+  },
+  {
+    "id": "anti-ai-default-purple-gradient-cta",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/marketing-defaults.html",
+    "line": 15,
+    "title": "Default indigo-to-violet gradient on the primary action",
+    "tellRef": "C5",
+    "evidence": "bg-gradient-to-r from-indigo-500 to-violet-600 on the signup anchor"
+  },
+  {
+    "id": "anti-ai-decorative-blur-blob",
+    "dimension": "anti-ai",
+    "severity": "LOW",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/marketing-defaults.html",
+    "line": 9,
+    "title": "Decorative tinted blur blob behind the hero",
+    "tellRef": "C11",
+    "evidence": "absolute -z-10 h-72 w-72 rounded-full bg-fuchsia-300 blur-3xl opacity-20"
+  },
+  {
+    "id": "anti-ai-shadcn-demo-stat-value",
+    "dimension": "anti-ai",
+    "severity": "LOW",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/marketing-defaults.html",
+    "line": 23,
+    "title": "shadcn dashboard demo revenue figure shipped verbatim",
+    "tellRef": "S12",
+    "evidence": "$45,231.89 with \"+20.1% from last month\" beneath it"
+  },
+  {
+    "id": "anti-ai-focus-outline-removed",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/gallery-unlabelled.html",
+    "line": 9,
+    "title": "Focus outline removed with no focus-visible replacement",
+    "tellRef": "U3",
+    "evidence": "a:focus, button:focus { outline: none } and no :focus-visible rule anywhere in the file"
+  },
+  {
+    "id": "responsive-fixed-shell-width",
+    "dimension": "responsive",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/legacy-theme.css",
+    "line": 4,
+    "title": "App shell asserts a fixed 1180px width",
+    "tellRef": "L13",
+    "evidence": ".app-shell { width: 1180px } rather than width: min(100% - 2rem, 72rem)"
+  },
+  {
+    "id": "responsive-fixed-column-tracks",
+    "dimension": "responsive",
+    "severity": "HIGH",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/legacy-theme.css",
+    "line": 8,
+    "title": "Grid asserts four fixed 260px column tracks",
+    "tellRef": "L13",
+    "evidence": "grid-template-columns: repeat(4, 260px) rather than repeat(auto-fit, minmax(16rem, 1fr))"
+  },
+  {
+    "id": "responsive-vh-full-height-shell",
+    "dimension": "responsive",
+    "severity": "MEDIUM",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/legacy-theme.css",
+    "line": 6,
+    "title": "Shell height measured in vh rather than dvh",
+    "tellRef": "P3",
+    "evidence": ".app-shell { height: 100vh }, which resolves against the largest viewport on mobile"
+  },
+  {
+    "id": "anti-ai-no-reduced-motion-handling",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/motion-rhythm.html",
+    "line": 20,
+    "title": "Hover transitions with no reduced-motion handling anywhere",
+    "tellRef": "M6",
+    "evidence": "transition-all duration-300 on the button and the export link, and no prefers-reduced-motion query in either direction"
+  },
+  {
+    "id": "anti-ai-welcome-back-greeting",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/marketing-defaults.html",
+    "line": 14,
+    "title": "Generic welcome-back greeting instead of the user data",
+    "tellRef": "W10",
+    "evidence": "\"Welcome back! Pick up where the last sync left off.\" where the user's own data belongs"
+  },
+  {
+    "id": "anti-ai-untouched-component-library-defaults",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/bootstrap-unthemed.css",
+    "line": 10,
+    "title": "Framework theme layer shipped entirely unmodified",
+    "tellRef": "section 14",
+    "evidence": "the compiled primary, both hover darkens and the framework #dee2e6 borders, with no tuned border, radius, shadow or transition"
   }
 ]
