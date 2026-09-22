@@ -126,11 +126,33 @@ function measureDensity(options = {}) {
 
   // Chrome is never the primary content and never the first control: nav links,
   // breadcrumbs, skip links and theme toggles sit above the task on every page,
-  // and counting them reports a clean 0 on exactly the worst offenders.
+  // and counting them reports a clean 0 on exactly the worst offenders. A
+  // third-party slot is chrome too: on a real site the first `a[href]` inside
+  // main was the ad unit's "Report Ad" link, so the primary resolved to it and
+  // the 53 words of prose above the class grid were reported as 0 on the loads
+  // where the unit filled. Advert wrappers are matched by class, id or
+  // aria-label (AD_RE) and by the iframe they contain.
   const CHROME_SEL =
     'nav, [role="navigation"], [role="search"], [aria-label*="breadcrumb" i], [data-nav]';
+  // Two vocabularies on purpose. AD_RE is the strict one (an advert unit and
+  // nothing else) and decides what is chrome and what counts as a slot above
+  // the primary; SLOT_RE is the broad one (any embed or widget wrapper) and
+  // only feeds the reflow-risk row, where a false match costs a MEDIUM note
+  // rather than hiding the page's real primary behind a "widget" class.
+  const AD_RE = /(^|[^a-z])(ads?|advert(isement)?s?|adsbygoogle|sponsor(ed)?|promo)([^a-z]|$)/i;
+  const SLOT_RE = /(^|[^a-z])(ads?|advert|promo|embed|widget|sponsor|slot)([^a-z]|$)/i;
+  const matchesRe = (el, re) => {
+    const cls = typeof el.className === 'string' ? el.className : '';
+    return re.test(cls) || re.test(el.id || '') || re.test(el.getAttribute('aria-label') || '');
+  };
+  const isAdEl = (el) => el.tagName.toLowerCase() === 'iframe' || matchesRe(el, AD_RE);
+  const isSlotEl = (el) => el.tagName.toLowerCase() === 'iframe' || matchesRe(el, SLOT_RE);
+  const inSlot = (el) => {
+    for (let n = el; n && n !== content; n = n.parentElement) if (isAdEl(n)) return true;
+    return false;
+  };
   const isChrome = (el) => {
-    if (el.closest(CHROME_SEL)) return true;
+    if (el.closest(CHROME_SEL) || inSlot(el)) return true;
     const label = `${el.getAttribute('aria-label') || ''} ${el.textContent || ''}`.trim();
     if (label.length > 40) return false;
     return (
@@ -140,7 +162,7 @@ function measureDensity(options = {}) {
   };
   const inContent = (sel) =>
     [...content.querySelectorAll(sel)].filter(
-      (el) => visible(el) && !el.closest(CHROME_SEL),
+      (el) => visible(el) && !el.closest(CHROME_SEL) && !inSlot(el),
     );
 
   // --- sections, by share of the document -----------------------------------
@@ -314,15 +336,9 @@ function measureDensity(options = {}) {
   const sectionlessMain = sectionEls.length === 0 && runningProse.length >= 2;
 
   // --- third-party slot reflow risk (design/12 section 5) --------------------
-  const SLOT_RE = /(^|[^a-z])(ads?|advert|promo|embed|widget|sponsor|slot)([^a-z]|$)/i;
-  const slotEls = [...content.querySelectorAll('iframe, div, aside, section')].filter(
-    (el) => {
-      if (el.tagName.toLowerCase() === 'iframe') return true;
-      const cls = typeof el.className === 'string' ? el.className : '';
-      return SLOT_RE.test(cls) || SLOT_RE.test(el.id || '');
-    },
-  );
-  const slotReflowRisk = slotEls
+  const slotEls = [...content.querySelectorAll('iframe, div, aside, section')].filter(isSlotEl);
+  const identityHeading = content.querySelector('h1') || document.querySelector('h1');
+  const slotRows = slotEls
     // One finding per slot: the wrapper is what reserves space, so an iframe
     // inside a matched wrapper is the same defect, not a second one.
     .filter((el) => !slotEls.some((other) => other !== el && other.contains(el)))
@@ -347,10 +363,31 @@ function measureDensity(options = {}) {
                 [...c.querySelectorAll('p')].some((p) => words(p) >= proseWordFloor)),
           )
         : false;
-      return { selector: describe(el), reserved, position, textSibling };
-    })
-    // A slot out of flow cannot move its siblings; an unreserved one in flow can.
-    .filter((s) => !s.reserved && (s.position === 'static' || s.position === 'relative'));
+      const inFlow = position === 'static' || position === 'relative';
+      // Between the identity block and the primary content: after the H1 in
+      // document order and before the primary element, and tall enough to push
+      // the primary down a screen band whether or not the slot fills.
+      const betweenIdentityAndPrimary =
+        inFlow &&
+        !!identityHeading &&
+        !!primary &&
+        precedes(identityHeading, el) &&
+        precedes(el, primary) &&
+        !el.contains(primary);
+      const reservedPx = px(Math.max(Number.isFinite(minH) ? minH : 0, box(el).height));
+      return { selector: describe(el), reserved, reservedPx, position, inFlow, textSibling, betweenIdentityAndPrimary, ad: isAdEl(el) };
+    });
+  // A slot out of flow cannot move its siblings; an unreserved one in flow can.
+  const slotReflowRisk = slotRows
+    .filter((s) => !s.reserved && s.inFlow)
+    .map(({ selector, reserved, position, textSibling }) => ({ selector, reserved, position, textSibling }));
+  // A reserved slot is CLS-safe and still wrong when it sits between the H1 and
+  // the thing the page is for: the reader's first screen is a title and a band
+  // that is an advert on one load and a void on the next. The static check sees
+  // one render; the placement is what it reports.
+  const slotsAbovePrimary = slotRows
+    .filter((s) => s.ad && s.betweenIdentityAndPrimary && s.reservedPx >= 120)
+    .map(({ selector, reservedPx, reserved }) => ({ selector, reservedPx, reserved }));
 
   // --- action distance ------------------------------------------------------
   const actionGaps = [...document.querySelectorAll('tr, [role="row"]')]
@@ -503,6 +540,13 @@ function measureDensity(options = {}) {
         : 'No prose sibling found, so this is the CLS half of the same defect (performance/01-core-web-vitals.md). Reserve the slot, or collapse it with display:none when empty.',
     });
   }
+  for (const s of slotsAbovePrimary.slice(0, 2)) {
+    findings.push({
+      severity: 'MEDIUM',
+      what: `Slot between the identity block and the primary content: ${s.selector} reserves ${s.reservedPx}px between the H1 and ${primarySelector}`,
+      note: 'A slot never sits between the identity block and the primary content (design/12 section 5). Move it below the first instrument, and collapse the reservation when the slot reports empty; keep the CLS reservation where a creative is known to be coming.',
+    });
+  }
   for (const a of actionGaps.slice(0, 3)) {
     findings.push({
       severity: 'HIGH',
@@ -575,6 +619,7 @@ function measureDensity(options = {}) {
       sectionlessMain,
     },
     slotReflowRisk,
+    slotsAbovePrimary,
     shell: {
       proseBetweenControls: proseBetweenControls.slice(0, 6),
       tabStrips,

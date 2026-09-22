@@ -169,8 +169,12 @@ and slack-hoarding numbers for a live page. Pass `surface` -- `control` (the def
 budget. The placement numbers it prints are `wordsBeforePrimary` alongside the
 `primarySelector` it took as the primary content, `orphanParagraphs` with a 64-character
 prefix of each, `textOnlySections` and `longestTextOnlyRun`, `longestParagraph`,
-`totalVisibleWords` and `wordsPerSection`, and `slotReflowRisk`; paste them onto the
-finding's `Measurement:` line. The duplicate-list, 400px control-separation,
+`totalVisibleWords` and `wordsPerSection`, `slotReflowRisk`, and `slotsAbovePrimary` (a
+reserved third-party slot of 120px or more sitting between the H1 and the primary content,
+with the pixels it reserves); paste them onto the finding's `Measurement:` line. The
+`primarySelector` never resolves to a slot's own link or copy (a "Report ad" anchor is
+chrome), so a run that reports 0 words with a bare `a` as the primary is worth a second look
+at what that anchor is. The duplicate-list, 400px control-separation,
 admin-above-task and action-rank rows are checked by hand. Or inline:
 
 ```js

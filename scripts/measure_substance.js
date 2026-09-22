@@ -65,9 +65,16 @@ function measureSubstance(options = {}) {
   };
 
   // --- colour maths: sRGB string -> { r, g, b, a, L (OKLCH), C, h, Y } -------
-  // Chrome keeps oklch(), oklab() and color() in their own notation in computed
-  // values (only sRGB-specified colours serialise to rgb()), so all four forms
-  // are parsed. `none` reads as 0; percentages are scaled.
+  // Chrome keeps oklch(), oklab(), lab(), lch() and color() in their own
+  // notation in computed values (only sRGB-specified colours serialise to
+  // rgb()), so every form is parsed. Relative colour syntax and color-mix()
+  // over an oklch token come back as lab(): on a real site the brand fill on
+  // the primary CTA computed to `lab(71.18 10.51 64.19)` and an earlier version
+  // of this parser returned null for it, which made the S1 row report a tiny
+  // quality-colour dot as the page's accent. A colour the parser cannot read is
+  // counted in `unparsedColors` so the caller can see the gap instead of a
+  // silent pass. `none` reads as 0; percentages are scaled.
+  const unparsed = new Map();
   function num(tok, scale) {
     if (tok === 'none') return 0;
     if (tok.endsWith('%')) return (parseFloat(tok) / 100) * scale;
@@ -102,13 +109,93 @@ function measureSubstance(options = {}) {
       const t = main.trim().split(/\s+/);
       return fromOklab(num(t[0], 1), num(t[1] || '0', 0.4), num(t[2] || '0', 0.4), alpha ? num(alpha.trim(), 1) : 1);
     }
-    m = str.match(/^color\(srgb\s+([^)]+)\)/);
+    m = str.match(/^lab\(([^)]+)\)/);
     if (m) {
       const [main, alpha] = m[1].split('/');
       const t = main.trim().split(/\s+/);
-      return make(num(t[0], 1) * 255, num(t[1], 1) * 255, num(t[2], 1) * 255, alpha ? num(alpha.trim(), 1) : 1);
+      return fromLab(num(t[0], 100), num(t[1] || '0', 125), num(t[2] || '0', 125), alpha ? num(alpha.trim(), 1) : 1);
     }
+    m = str.match(/^lch\(([^)]+)\)/);
+    if (m) {
+      const [main, alpha] = m[1].split('/');
+      const t = main.trim().split(/\s+/);
+      const L = num(t[0], 100), C = num(t[1] || '0', 150), h = num(t[2] || '0', 360);
+      const rad = (h * Math.PI) / 180;
+      return fromLab(L, C * Math.cos(rad), C * Math.sin(rad), alpha ? num(alpha.trim(), 1) : 1);
+    }
+    m = str.match(/^color\((srgb|srgb-linear|display-p3)\s+([^)]+)\)/);
+    if (m) {
+      const [main, alpha] = m[2].split('/');
+      const t = main.trim().split(/\s+/);
+      const a = alpha ? num(alpha.trim(), 1) : 1;
+      const v = [num(t[0], 1), num(t[1], 1), num(t[2], 1)];
+      if (m[1] === 'srgb') return make(v[0] * 255, v[1] * 255, v[2] * 255, a);
+      if (m[1] === 'srgb-linear') return fromLinear(v[0], v[1], v[2], a);
+      // display-p3: decode the P3 transfer curve (same curve as sRGB), map
+      // linear P3 to XYZ D65 and on to linear sRGB.
+      const dec = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+      const [pr, pg, pb] = v.map(dec);
+      const X = 0.4865709486482162 * pr + 0.26566769316909306 * pg + 0.1982172852343625 * pb;
+      const Y = 0.2289745640697488 * pr + 0.6917385218365064 * pg + 0.079286914093745 * pb;
+      const Z = 0.0 * pr + 0.04511338185890264 * pg + 1.043944368900976 * pb;
+      return fromXyz65(X, Y, Z, a);
+    }
+    // Anything else (hsl(), hwb(), a named colour, a colour space not listed
+    // above): paint it on a 1x1 canvas and read the pixel back, which is the
+    // format-proof path review/06-measurement-traps.md section 1 prescribes.
+    // Exact parsing stays first because the read-back loses precision at low
+    // alpha, which is where the hairline trap lives.
+    const viaCanvas = paintAndRead(str);
+    if (viaCanvas) return viaCanvas;
+    unparsed.set(str, (unparsed.get(str) || 0) + 1);
     return null;
+  }
+  let canvasCtx = null;
+  function paintAndRead(str) {
+    try {
+      if (typeof document === 'undefined') return null;
+      if (!canvasCtx) {
+        const c = document.createElement('canvas');
+        c.width = 1; c.height = 1;
+        canvasCtx = c.getContext('2d', { willReadFrequently: true });
+      }
+      if (!canvasCtx) return null;
+      canvasCtx.fillStyle = '#010203';
+      canvasCtx.fillStyle = str;
+      if (canvasCtx.fillStyle === '#010203') return null; // rejected string, sentinel survived
+      canvasCtx.clearRect(0, 0, 1, 1);
+      canvasCtx.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = canvasCtx.getImageData(0, 0, 1, 1).data;
+      return make(r, g, b, a / 255);
+    } catch {
+      return null;
+    }
+  }
+  // CIELAB (CSS lab() is D50-relative) -> XYZ D50 -> Bradford to D65 -> sRGB.
+  function fromLab(L, A, B, a) {
+    const k = 24389 / 27, e = 216 / 24389;
+    const fy = (L + 16) / 116, fx = fy + A / 500, fz = fy - B / 200;
+    const xr = fx ** 3 > e ? fx ** 3 : (116 * fx - 16) / k;
+    const yr = L > k * e ? fy ** 3 : L / k;
+    const zr = fz ** 3 > e ? fz ** 3 : (116 * fz - 16) / k;
+    const X = xr * 0.9642956764295677, Y = yr, Z = zr * 0.8251046025104602;
+    const X65 = 0.9554734527042182 * X - 0.023098536874261423 * Y + 0.0632593086610217 * Z;
+    const Y65 = -0.028369706963208136 * X + 1.0099954580058226 * Y + 0.021041398966943008 * Z;
+    const Z65 = 0.012314001688319899 * X - 0.020507696433477912 * Y + 1.3303659366080753 * Z;
+    return fromXyz65(X65, Y65, Z65, a);
+  }
+  function fromXyz65(X, Y, Z, a) {
+    const R = 3.2409699419045226 * X - 1.537383177570094 * Y - 0.4986107602930034 * Z;
+    const G = -0.9692436362808796 * X + 1.8759675015077202 * Y + 0.04155505740717559 * Z;
+    const B = 0.05563007969699366 * X - 0.20397695888897652 * Y + 1.0569715142428786 * Z;
+    return fromLinear(R, G, B, a);
+  }
+  function fromLinear(R, G, B, a) {
+    const enc = (v) => {
+      v = Math.max(0, Math.min(1, v));
+      return (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055) * 255;
+    };
+    return make(enc(R), enc(G), enc(B), a);
   }
   function fromOklab(L, A, B, a) {
     const l_ = L + 0.3963377774 * A + 0.2158037573 * B;
@@ -118,11 +205,7 @@ function measureSubstance(options = {}) {
     const R = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * sv;
     const G = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * sv;
     const Bl = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * sv;
-    const enc = (v) => {
-      v = Math.max(0, Math.min(1, v));
-      return (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055) * 255;
-    };
-    return make(enc(R), enc(G), enc(Bl), a);
+    return fromLinear(R, G, Bl, a);
   }
   function lin(c) {
     const v = c / 255;
@@ -384,6 +467,10 @@ function measureSubstance(options = {}) {
     hierarchyChannels: channels,
     weightCount: weights.size,
     sizeCount: sizes.size,
+    // Computed colours the parser could not read, with counts. Non-empty means
+    // the accent and surface rows above may have missed a device; read the
+    // render before trusting an S1 or S3 FAIL on this page.
+    unparsedColors: [...unparsed.entries()].map(([color, count]) => ({ color, count })).slice(0, 10),
     findings,
     verdict: findings.some((f) => f.severity === 'HIGH')
       ? 'HIGH substance findings present'

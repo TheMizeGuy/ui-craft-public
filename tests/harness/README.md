@@ -10,6 +10,10 @@ good" into two numbers: recall and precision against ground truth, both gated at
 - Worked example of a findings file: `examples/sample-findings.json`.
 - Degenerate input the gate must reject: `examples/tellref-stubs.json`.
 - The scorer's own tests: `selftest.mjs` (`node tests/harness/selftest.mjs`).
+- The substance script's colour parser: `measure-colour.selftest.mjs`
+  (`node tests/harness/measure-colour.selftest.mjs`), one case per computed-colour
+  notation Chrome can emit, because a notation the parser cannot read makes the
+  accent row report the wrong colour and the surface row miss a level.
 
 Fixture and label counts are deliberately not quoted here: the corpus grows, and
 a number written into prose goes stale the first time it does. Read the current

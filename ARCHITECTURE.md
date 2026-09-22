@@ -46,7 +46,7 @@ ui-craft/
 ├── scripts/                    zero-dependency measurement tools (node CLI + browser module)
 │   ├── validate_palette.js     chart-palette validator (four computable checks plus the normal-vision floor; checks 1 and 6 are structural and reported as not evaluated) (0.2.0)
 │   ├── measure_density.js      viewport utilisation / width distribution / page length / copy volume and placement (0.2.3, extended 0.6.0)
-│   ├── measure_substance.js    the substance floor: accent, surface levels, boundaries, focal visual, imagery, hierarchy (0.6.0)
+│   ├── measure_substance.js    the substance floor: accent, surface levels, boundaries, focal visual, imagery, hierarchy (0.6.0; reads every computed-colour notation Chrome emits, with a canvas read-back fallback and an unparsedColors row, 0.6.1)
 │   ├── audit_doctrine.mjs      the reviewed repo's own docs, lints and tests that enforce flatness or text volume, as canonical findings (0.6.0)
 │   ├── scan_tells.mjs          deterministic scanner for the catalogue's exact-signature tells, ported from anti-slop's design rules and mapped to ui-craft codes; honours anti-slop-allow (0.6.0)
 │   └── check_references.mjs    every plugin citation and section reference resolves; an unresolved pointer is a silent capability loss (0.6.0)
@@ -54,6 +54,7 @@ ui-craft/
 │   ├── corpus/                 40 labeled fixtures (19 anti-slop MIT-corpus, 21 authored, thirteen clean controls incl. seven near-miss) + ground-truth findings
 │   ├── harness/score-review.mjs    scores an auditor findings file against the corpus labels, gates recall and precision >= 0.8
 │   ├── harness/scan-tells.selftest.mjs  the scanner against the corpus: clean controls at zero, covered labels found, the escape hatch honoured
+│   ├── harness/measure-colour.selftest.mjs  the substance script's colour parser against every notation Chrome computes (rgb, oklch, oklab, lab, lch, color()), pinned to the values it must produce
 │   ├── harness/dogfood.mjs         the plugin's own shipped markdown scanned with scan_tells and audit_doctrine, one committed count per file
 │   └── harness/label-contract.mjs  every corpus label's severity agrees with catalogue section 18
 └── ci/                          CI gate (0.1.2): artifact schema + ui-craft-gate.sh + selftest.sh + adoption guide

@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.6.1 — 2026-09-22
+
+The first real-site run of 0.6.0 (a four-page data product reviewed read-only,
+four specialists plus the verifier over pre-captured 390/1440/1920/2560 renders)
+found the doctrine doing its job and two of the measurement scripts not doing
+theirs. The reviewers corrected both by eye against the renders, which is the
+fallback the references prescribe, but a number that has to be corrected by eye
+is not the number the substance floor was built on. Both defects are fixed at
+the root and pinned.
+
+**`scripts/measure_substance.js` reads every computed-colour notation.** Chrome
+serialises a colour in the notation it was declared in, and relative colour
+syntax or `color-mix()` over an oklch token comes back as `lab()`. The parser
+handled `rgb()`, `oklch()`, `oklab()` and `color(srgb)` and returned null for
+everything else, so on the reviewed landing page the brand fill on the primary
+call to action (`lab(71.18 10.51 64.19)`, the gold token exactly) was invisible
+to the S1 row, which then reported a 4px quality-colour dot as the page's
+accent. The parser now converts `lab()`, `lch()`, `color(srgb-linear)` and
+`color(display-p3)` exactly, falls back to a 1x1 canvas read-back for any other
+form (the format-proof path `review/06-measurement-traps.md` section 1 already
+prescribed), and lists whatever it still could not read in a new
+`unparsedColors` row so a null is visible instead of a silent pass. Re-run on
+the same page the accent reads as gold in three roles with a fill, matching the
+render. `tests/harness/measure-colour.selftest.mjs` (18 cases) pins every
+notation and the values it must produce; the release gate runs it.
+
+**`scripts/measure_density.js` never takes a third-party slot's own link as the
+primary.** The first `a[href]` inside `main` on three of eight runs was the ad
+unit's "Report Ad" anchor, so `primarySelector` resolved to it and
+`wordsBeforePrimary` reported 0 on exactly the loads where the unit filled,
+while the other width on the same page reported 53. Slot wrappers (matched by
+class, id or `aria-label` against a strict advert vocabulary, and by the iframe
+they contain) are now chrome: never the first control, never running prose.
+The broad embed-and-widget vocabulary still feeds only the reflow-risk row, so
+a content component with "widget" in its class name cannot hide the page's
+real primary.
+
+**A reserved slot between the H1 and the primary content is now a measured
+row.** `design/12` section 5 says a slot never sits between the identity block
+and the primary content; the static check previously saw only the reflow half
+(an unreserved slot) and reported nothing on a 280px reservation that put the
+reviewed pages' first screen as a heading, a void and two paragraphs. The
+script now reports `slotsAbovePrimary` (selector and reserved pixels, 120px or
+more, in flow, after the H1 and before the primary) and files it as a MEDIUM
+finding with the move-below-the-first-instrument fix. Documented in
+`review/05` and `design/12`.
+
+Nothing in the doctrine, the catalogue, the corpus or the agents changed; the
+blind baseline, the dogfood counts and the freedom ceilings are untouched.
+
 ## 0.6.0 — 2026-09-22
 
 The substance-and-placement overhaul (owner directive 2026-09-22, after six

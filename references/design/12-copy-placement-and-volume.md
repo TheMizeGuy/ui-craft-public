@@ -145,6 +145,11 @@ renders or does not, and the page must read the same either way.
 
 The reflow half of this rule is a Cumulative Layout Shift defect as well
 (`performance/01-core-web-vitals.md`); the placement half is this file's.
+`scripts/measure_density.js` reports both: `slotReflowRisk` for an unreserved in-flow
+slot, and `slotsAbovePrimary` for a reserved slot of 120px or more that sits between
+the H1 and the primary content, with the selector and the pixels it holds. The second
+row is the one a single render can see: the slot is an advert on one load and a void on
+the next, and the reader's first screen is a title and a band either way.
 
 ## 6. The copy map
 
