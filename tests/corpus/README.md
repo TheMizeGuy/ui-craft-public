@@ -3,7 +3,7 @@
 Labeled UI fixtures for scoring ui-craft's tell detection. Ground truth is
 `labels.json`; the scorer and runbook are in `../harness/`.
 
-- `fixtures/` -- 40 small (mostly `< 60` line) fixtures, each with deliberately
+- `fixtures/` -- 41 small (mostly `< 60` line) fixtures, each with deliberately
   planted AI-tells or responsive defects or, for the thirteen clean controls, none. Tell IDs live only in
   `labels.json`, never in the fixture markup, so a reviewer never sees the answer.
   **Not every fixture is HTML.** Since the 2026-09-22 port the corpus also holds four
@@ -89,6 +89,7 @@ on a review that clears every tell by removing things:
 | `orphan-paragraphs.html` | three paragraphs dropped between a tile grid and a table with no heading over them, one of 63 words, plus three consecutive text-only sections (W12, L14) |
 | `icon-cards-no-imagery.html` | a physical-product marketing page whose four sections are all icon cards and type, with zero real images (I8) |
 | `framed-panels-clean.html` | the rescope control: ONE framed panel with its own elevation, ONE tuned uppercase label, ONE rarity-encoding icon frame, all below the repeated-signature thresholds (0 expected, tolerance 0) |
+| `mono-readouts.ts` | a CSS-in-TS talent sheet with the mono family on six human-readable readouts that already carry tabular-nums, plus two exempt raw-payload fields (T13); added 0.6.2 after a real-site re-run lost the tell to file sampling |
 
 Fourteen more were **ported from anti-slop's design corpus on 2026-09-22**, byte-for-byte
 with no edit of any kind: the labelled design fixtures ui-craft had never taken. Seven

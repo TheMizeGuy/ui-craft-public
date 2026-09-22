@@ -701,6 +701,20 @@
       "note": "Near-miss clean control on two rows at once, and the corpus's first TSX fixture. A React transport control whose play, pause and next-track buttons render the bare Unicode media-control signs U+25B6, U+23F8 and U+23ED as their content. It sits one step from V12: those code points carry Emoji_Presentation=No and are typography rather than the emoji-as-UI chrome V12 names (status dots, list bullets, section icons, sparkles and rockets), and it is their U+FE0F presentation forms that would be. It sits one step from U13 in the other direction: every icon-bearing button carries an aria-label, the group carries its own, and the label tracks the playing state, so the accessible name is present on exactly the control shape U13 fires on. Tolerance is 0: either incidental is the precision regression this control exists to catch.",
       "expected": [],
       "maxIncidentalFindings": 0
+    },
+    {
+      "file": "mono-readouts.ts",
+      "source": "authored:0.6.2",
+      "note": "A talent-calculator stylesheet as a CSS-in-TS string, modelled on the real-site re-verification of 2026-09-22 where an eleven-declaration T13 was filed by the first auditor pass at CRITICAL and dropped by the second because that pass never opened the talents subtree. Six `font-family:var(--font-mono)` declarations sit on human-readable readouts (level value, preset buttons, tree points, points spent, node rank, numeric table cells), every one beside the `font-variant-numeric:tabular-nums` that actually aligns the digits; two more sit on the build-code textarea and the readonly share link, which are raw payloads and exempt, and the `--font-mono` token definition itself is not a use. One label: T13 at CRITICAL per catalogue section 18, presence-flaggable. The scanner's `mono-on-ui-text` heuristic (added with this fixture) files the candidate at HIGH from three unexempted declarations so the semantic pass cannot lose it to file sampling; the auditor confirms and grades. Added after the 2026-09-22 blind baseline, which therefore does not cover it.",
+      "expected": [
+        {
+          "id": "anti-ai-monospace-on-human-readable-readouts",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Monospace on human-readable readouts that already carry tabular-nums",
+          "tellRef": "T13"
+        }
+      ]
     }
   ]
 }

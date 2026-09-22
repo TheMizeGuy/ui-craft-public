@@ -643,6 +643,20 @@ export const RULES = [
     why: 'I8: show the real product -- screenshots, photography, the domain\'s own icons on every entity row, commissioned illustration. Floor: one real image or figure per two sections (aesthetic/06 S6).',
   },
   {
+    name: 'mono-on-ui-text', tellRef: 'T13', dimension: 'anti-ai',
+    severity: 'HIGH', confidence: CONFIDENCE.SMELL, mode: CONCENTRATION, minCount: 3, heuristic: true,
+    // Heuristic: three or more monospace family declarations in one file that
+    // are not on code, logs, raw payloads or a readonly field. The catalogue
+    // grades the confirmed tell CRITICAL; the scanner files the candidate so a
+    // review cannot lose it to which files the auditor happened to read (a
+    // real-site re-run dropped an eleven-declaration T13 for exactly that
+    // reason). The auditor confirms which rules sit on human-readable text.
+    pattern: /font-family\s*:\s*[^;{}]*?(?:var\(--font-mono\)|\b(?:ui-monospace|monospace|JetBrains Mono|Fira Code|IBM Plex Mono|SF Mono|Source Code Pro|Roboto Mono|Space Mono|Geist Mono|Menlo|Consolas)\b)|class(?:Name)?\s*=\s*["'{`][^"'`}]*\bfont-mono\b/i,
+    suppress: /--font-mono\s*:|\b(?:pre|code|kbd|samp|textarea|readonly|logs?|payload|hash|terminal|hljs|prism|shiki)\b/i,
+    title: 'Monospace on human-readable UI text (candidate)',
+    why: 'T13: mono only for genuine code, logs, raw payloads, hex/IDs and terminal UIs. On readouts, labels, buttons and table cells the sans with `font-variant-numeric: tabular-nums` keeps the digits aligned, and weight and colour carry the hierarchy; delete the family declaration, change nothing else in the rule.',
+  },
+  {
     name: 'flat-terminal-candidate', tellRef: 'V13', dimension: 'anti-ai',
     severity: 'MEDIUM', confidence: CONFIDENCE.SMELL, mode: PRESENCE, heuristic: true,
     fileHits: flatTerminalHits,

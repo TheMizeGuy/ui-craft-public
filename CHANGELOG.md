@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.6.2 — 2026-09-22
+
+The re-verification run of 0.6.1 against the same four-page data product (fresh
+captures, four specialists, the verifier, a comparison against the 0.6.0 run)
+confirmed the three 0.6.1 script fixes from the numbers and left two things
+the pipeline still got wrong. Both are fixed here; neither touches the
+doctrine.
+
+**The one CRITICAL that specialist variance can drop is now a deterministic
+scanner row.** The 0.6.0 run filed T13 (monospace on nine human-readable talent
+readouts) at CRITICAL; the 0.6.1 run, over unchanged code with eleven
+`font-family:var(--font-mono)` declarations still in place, filed nothing,
+because that auditor pass cleared the mono question from the token file and
+never opened the talents subtree. `scripts/scan_tells.mjs` gains
+`mono-on-ui-text` (tellRef T13, HIGH, heuristic, concentration at three):
+three or more monospace family declarations in one file that are not on code,
+logs, raw payloads or a readonly field, matched by the `--font-mono` token, the
+generic `monospace` and `ui-monospace` families, the common mono faces by
+name, and the Tailwind `font-mono` class inside a class attribute; the token
+definition itself and any rule naming `pre`, `code`, `kbd`, `samp`,
+`textarea`, `readonly`, a log, a payload, a hash or a terminal are exempt. The
+auditor's step 1b confirms which rules sit on human-readable text and takes
+the tell to its section-18 CRITICAL; the scanner only makes sure the candidate
+reaches the auditor whichever files it samples. The corpus gains
+`mono-readouts.ts` (41 fixtures, 48 labels): a CSS-in-TS talent sheet with the
+mono family on six readouts that already carry `tabular-nums`, plus two exempt
+raw-payload fields. The scanner selftest covers it (120 cases); the fixture
+postdates the 2026-09-22 blind baseline and was scored by a separate blind
+dispatch of the auditor the same day, appended to that baseline file.
+
+**`scripts/measure_substance.js` says where it looked.** The S1 row read "No
+chromatic colour anywhere in the first viewport" on pages whose rail and top
+bar carried gold on first paint, because the script measures inside the
+content root (`main` by default) and the string said otherwise; both runs had
+to re-anchor the finding by hand. The script now reports the root it measured
+(`root`), the accent roles painted in the shell outside that root
+(`shellAccent`, never counted toward S1), and a coloured text underline as a
+`decoration` role (a real accent role that is never a fill), and the S1 rows
+name the root and the shell's roles in their text. On the same pages the row
+now reads "Accent present in 1 role(s) inside main#main-content (link), fill
+roles: none; shell chrome outside it: icon-or-image, surface", which is what
+the renders show. `aesthetic/06` S1 documents the split.
+
+Nothing in the agents, skills, catalogue thresholds or freedom ceilings
+changed; dogfood counts are unchanged.
+
 ## 0.6.1 — 2026-09-22
 
 The first real-site run of 0.6.0 (a four-page data product reviewed read-only,

@@ -160,6 +160,13 @@ file that is kept at precision 1.
 
 #### Blind baseline, 2026-09-22 (0.6.0 corpus, 40 fixtures)
 
+> 0.6.2 added a 41st fixture, `mono-readouts.ts` (T13), after this run. It was scored
+> by a separate blind dispatch of the auditor the same day (one finding, T13 at
+> CRITICAL, line 13, no false positives) and appended to `baseline-2026-09-22.json`,
+> which now scores 46 of 48 labels (recall 0.958, precision 0.92). The next full
+> blind run replaces the file; until then the numbers below describe the 40-fixture
+> pass and the appended row describes the 41st.
+
 `../corpus/baseline-2026-09-22.json` is a blind run of the shipped
 `ui-anti-slop-auditor` body (with the deterministic pre-pass it now runs itself,
 `scripts/scan_tells.mjs`) over all 40 fixtures of the 0.6.0 corpus, captured

@@ -51,7 +51,7 @@ ui-craft/
 │   ├── scan_tells.mjs          deterministic scanner for the catalogue's exact-signature tells, ported from anti-slop's design rules and mapped to ui-craft codes; honours anti-slop-allow (0.6.0)
 │   └── check_references.mjs    every plugin citation and section reference resolves; an unresolved pointer is a silent capability loss (0.6.0)
 ├── tests/                      regression corpus + scoring harness (0.1.2)
-│   ├── corpus/                 40 labeled fixtures (19 anti-slop MIT-corpus, 21 authored, thirteen clean controls incl. seven near-miss) + ground-truth findings
+│   ├── corpus/                 41 labeled fixtures (19 anti-slop MIT-corpus, 22 authored, thirteen clean controls incl. seven near-miss) + ground-truth findings
 │   ├── harness/score-review.mjs    scores an auditor findings file against the corpus labels, gates recall and precision >= 0.8
 │   ├── harness/scan-tells.selftest.mjs  the scanner against the corpus: clean controls at zero, covered labels found, the escape hatch honoured
 │   ├── harness/measure-colour.selftest.mjs  the substance script's colour parser against every notation Chrome computes (rgb, oklch, oklab, lab, lch, color()), pinned to the values it must produce

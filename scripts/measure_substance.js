@@ -291,7 +291,28 @@ function measureSubstance(options = {}) {
     push('background', bg, true);
     push('text', fg, false);
     if (parseFloat(cs.borderTopWidth) > 0) push('border', bc, false);
+    // A coloured underline is a real accent role (a link colour that lives in
+    // the decoration, not the text) and never a fill.
+    if (cs.textDecorationLine && cs.textDecorationLine !== 'none') push('decoration', parseColor(cs.textDecorationColor), false);
   }
+  // The shell outside the measured root (a rail, a top bar) is where a product
+  // often carries its accent on first paint. It is reported on its own so the
+  // S1 rows below can say "inside the content root" and mean it, instead of
+  // "anywhere in the first viewport", which the render then contradicts.
+  const shellChromatic = [];
+  for (const el of [...document.body.querySelectorAll('*')]) {
+    if (content.contains(el) || el.contains(content) || !visible(el) || !inFirstViewport(el)) continue;
+    const cs = getComputedStyle(el);
+    const c = parseColor(cs.backgroundColor);
+    const f = parseColor(cs.color);
+    if (c && c.a >= 0.2 && c.C >= chromaticAt) shellChromatic.push({ role: roleOf(el), source: 'background' });
+    if (f && f.a >= 0.2 && f.C >= chromaticAt) shellChromatic.push({ role: roleOf(el), source: 'text' });
+  }
+  const shellAccent = {
+    roles: [...new Set(shellChromatic.map((c) => c.role))],
+    fillRoles: [...new Set(shellChromatic.filter((c) => c.source === 'background').map((c) => c.role))],
+  };
+  const rootName = content === document.body ? 'body' : (content.tagName.toLowerCase() + (content.id ? '#' + content.id : ''));
   const accentRoles = [...new Set(chromatic.map((c) => c.role))];
   const accentFillRoles = [...new Set(chromatic.filter((c) => c.source === 'background').map((c) => c.role))];
   const accentArea = +((chromatic.reduce((sum, c) => sum + c.area, 0) / viewportArea) * 100).toFixed(2);
@@ -409,10 +430,10 @@ function measureSubstance(options = {}) {
   // --- grading --------------------------------------------------------------
   const findings = [];
   if (!primaryAccent) {
-    findings.push({ severity: 'HIGH', check: 'S1', what: 'No chromatic colour (chroma >= ' + chromaticAt + ') anywhere in the first viewport', note: 'The brand accent must be visible on first paint in at least two roles, one of them a fill.' });
+    findings.push({ severity: 'HIGH', check: 'S1', what: `No chromatic colour (chroma >= ${chromaticAt}) in the first viewport of the content root (${rootName}); shell chrome outside it carries ${shellAccent.roles.length ? shellAccent.roles.join(', ') + (shellAccent.fillRoles.length ? ' with a fill on ' + shellAccent.fillRoles.join(', ') : ', no fill') : 'none'}`, note: 'The brand accent must be visible on first paint in at least two roles, one of them a fill. A rail or top-bar accent is real but does not put the accent on the content; read the render before deciding whether the content region needs its own.' });
   } else {
     if (accentRoles.length < 2 || accentFillRoles.length === 0) {
-      findings.push({ severity: 'HIGH', check: 'S1', what: `Accent present in ${accentRoles.length} role(s) (${accentRoles.join(', ') || 'none'}), fill roles: ${accentFillRoles.join(', ') || 'none'}`, note: 'At least two roles, at least one a fill.' });
+      findings.push({ severity: 'HIGH', check: 'S1', what: `Accent present in ${accentRoles.length} role(s) inside ${rootName} (${accentRoles.join(', ') || 'none'}), fill roles: ${accentFillRoles.join(', ') || 'none'}; shell chrome outside it: ${shellAccent.roles.join(', ') || 'none'}`, note: 'At least two roles, at least one a fill.' });
     }
     if (primaryAccent.C < accentFloor) {
       findings.push({ severity: 'HIGH', check: 'S2', what: `Primary accent chroma ${primaryAccent.C} at hue ${primaryAccent.h}, under the ${accentFloor} floor`, note: 'A muted brand is a stated decision carrying anti-slop-allow, or it is a finding.' });
@@ -448,8 +469,12 @@ function measureSubstance(options = {}) {
   const report = {
     viewport: `${window.innerWidth}x${window.innerHeight}`,
     accent: primaryAccent ? { hue: primaryAccent.h, chroma: primaryAccent.C, lightness: primaryAccent.L } : null,
+    root: rootName,
     accentRoles,
     accentFillRoles,
+    // Accent roles painted in the shell outside the root (rail, top bar) in the
+    // first viewport; never counted toward the S1 rows above.
+    shellAccent,
     accentArea: `${accentArea}% of first viewport`,
     hueCount,
     surfaceLevels,

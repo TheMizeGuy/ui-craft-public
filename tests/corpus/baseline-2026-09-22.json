@@ -537,5 +537,16 @@
     "title": "Firing card laid out by a viewport query in two different columns",
     "evidence": "`@media (min-width: 60rem) { .firing { display: grid; grid-template-columns: 9rem 1fr; ... } }` (lines 30-33) restyles a component, not the page shell, and `.firing` appears in both the `aside.rail` (line 40, sized `flex: 0 0 clamp(14rem, 20vw, 18rem)`) and the `section.main` (lines 46, 50). Above 60rem both instances get the 9rem label column, but the rail is at most 18rem wide -- so the rail card gets a layout chosen for the main column at every window size above the breakpoint. Give the host the container and query it: `.rail, .main { container-type: inline-size; }` then `@container (min-width: 28rem) { .firing { grid-template-columns: 9rem 1fr; } }`, so each card responds to the space it was actually given.",
     "tellRef": "P1"
+  },
+  {
+    "id": "anti-ai-mono-face-on-human-readable-readouts",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "title": "Monospace family on the human-readable readouts (level value, preset buttons, point totals, rank badge, numeric table cells) where tabular-nums already aligns the digits",
+    "tellRef": "T13",
+    "file": "mono-readouts.ts",
+    "line": 13,
+    "evidence": "Blind single-fixture dispatch 2026-09-22 (0.6.2, after the 40-fixture run): scanner pre-pass mono-on-ui-text at line 13, six font-family:var(--font-mono) declarations on readouts each beside font-variant-numeric:tabular-nums; the textarea (line 25) and input[readonly] (line 27) are raw payloads and exempt."
   }
 ]
