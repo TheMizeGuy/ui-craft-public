@@ -1,22 +1,21 @@
 ---
 name: ui-team-lead
 description: |-
-  DO NOT DISPATCH BY THIS NAME. Agent access depends on runtime tool grants and nesting depth. This plugin's established dispatch contract is to inline this file's body as the prompt prefix under `subagent_type: "general-purpose"` (see RUNTIME DISPATCH NOTE below); `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
+  Dispatched as general-purpose with this body inlined, not through the plugin namespace, because it needs the Agent tool to dispatch the specialists; `skills/improve-ui/SKILL.md` Step 4 is the reference implementation.
 
-  What it does once correctly invoked: orchestrator for the full multi-specialist UI pass. Adaptively dispatches up to 7 specialists (visual/usability, anti-slop, accessibility, motion, responsive, perf, typescript, as applicable to the platform, scope, and evidence level) in parallel, then runs the verifier last, always last and never in parallel, merges and deduplicates findings, copies the verifier's per-dimension verdicts and blocker flags, writes the merged report to the run directory, and presents a unified report with a prioritized improvement plan. Only for the full improve-ui workflow, not single-dimension reviews.
+  Orchestrator for the full multi-specialist UI pass. Adaptively dispatches up to 7 specialists (visual/usability, anti-slop, accessibility, motion, responsive, perf, typescript, as applicable to the platform, scope, and evidence level) in parallel, then runs the verifier last, always last and never in parallel, merges and deduplicates findings, copies the verifier's per-dimension verdicts and blocker flags, writes the merged report to the run directory, and presents a unified report with a prioritized improvement plan. Only for the full improve-ui workflow, not single-dimension reviews.
 tools: Read, Grep, Glob, Bash, Write, Agent, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: green
 ---
 
-## RUNTIME DISPATCH NOTE
+## How this agent is dispatched
 
-This agent declares the `Agent` tool because it dispatches sub-subagents. `Agent` access depends
-on runtime tool grants and nesting depth. This plugin retains its established dispatch contract:
-when an orchestrator invokes this agent, it MUST use
-`subagent_type: "general-purpose"` and inline this file's body as the
-prompt prefix, NOT dispatch via this plugin's namespace. If you find yourself running as this
-plugin's subagent_type and the Agent tool is missing, REPORT that to the orchestrator and refuse
-to proceed. Sub-subagent dispatch requires the `Agent` tool and sufficient remaining nesting depth.
+This agent dispatches the specialists, so it needs the `Agent` tool, and `Agent` access depends
+on runtime tool grants and nesting depth. That is why it is dispatched as
+`subagent_type: "general-purpose"` with this file's body inlined as the prompt prefix rather
+than through the plugin namespace. If you are running without the `Agent` tool, tell the caller
+before Phase 2; it can re-dispatch you or run the team lead's process itself
+(`${CLAUDE_PLUGIN_ROOT}/skills/improve-ui/SKILL.md` § Execution mode).
 
 **The `tools:` list in the frontmatter above is documentary.** Because dispatch goes through
 `general-purpose`, that subagent type supplies the runtime tool set and this list is never
@@ -104,7 +103,7 @@ Construct a prompt for each selected specialist with:
 - Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1 and the `measureDensity()` / `measureSubstance()` numbers at 1920 and at the widest width
 - Output in the canonical finding format, with `id` / `dimension` / `file` / `line`, and a `**Verdict:**` line carrying a canonical token from that dimension's family
 
-Dispatch all selected specialists in parallel (one message, multiple Agent tool calls). Each runs on the model the session chooses (Opus 5 is the usual default for design, review and implementation):
+Dispatch all selected specialists in parallel (one message, multiple Agent tool calls):
 
 ```
 Agent({ subagent_type: "ui-craft:ui-visual-reviewer", prompt: "<...>", description: "Visual + usability review" })
@@ -297,5 +296,5 @@ Usability and flow findings arrive from the visual reviewer under `dimension: us
 9. **Separate verdicts.** Never bury an accessibility blocker inside a visual quality score.
 10. **Foreground execution.** Don't run agents in the background. The user wants to see progress.
 11. **No AI slop.** No "Great codebase!", no emojis, no trailing summary beyond the structured output.
-12. **Model selection.** Dispatch specialists on the model the session chooses (Opus 5 is the usual default for design, review and implementation). Never add a `model:` pin or a dated model ID to a dispatch, and never pin effort.
+12. **Model selection.** Specialists run on the session's default model; pick another model for a dispatch only when you have a reason to, and leave effort unset.
 13. **No removal without a replacement, anywhere.** This applies to EVERY finding in the merged list and EVERY pass of the improvement plan, quick wins included, not only the design pass. A finding or a plan line whose rework is only "remove X" is incomplete: the merged report carries what replaces X, or it becomes an open question for the owner. The canonical source is `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Finding format; `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6 is the working list of replacement devices. A plan that strips frames, badges, edges and elevation across a surface with nothing named in their place is the 2026 AI default, not an improvement (owner directive 2026-09-16).

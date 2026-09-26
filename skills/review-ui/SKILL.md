@@ -14,7 +14,7 @@ Coordinate a UI quality review: determine scope, map the flows in scope, gather 
 
 ## Execution mode
 
-Reviews are dispatched, never run inline in the orchestrating session. Every specialist runs as a subagent on the model the session chooses (Opus 5 is the usual default for design, review and implementation); never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrator owns scope, context, prompts, the merge, and the ledger. Run a specialist's process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
+Specialists are dispatched as subagents by default, in parallel, each with a fresh context for its own dimension. For a small scope (one component, one or two dimensions), or where no Agent tool exists, the session may run a specialist's process itself; it says so in the report header and stays read-only. The orchestrator owns scope, context, prompts, the merge, and the ledger. The dispatch templates in this skill set no model or effort; the session may choose a model per dispatch, and effort is never set.
 
 ## Finding vocabulary (single source, do not restate)
 

@@ -18,8 +18,7 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    ```
    With no argument, this reviews your uncommitted + staged changes filtered to UI-relevant
    files. Pass a path, a screenshot, `staged`, `pr`, or `all` to target something else.
-4. **What to expect**: every dispatched agent runs on the model the session chooses (Opus 5 is
-   the usual default for design, review and implementation; thinking always on) and never
+4. **What to expect**: every dispatched agent runs on the model the session chooses and never
    modifies files itself; the invoking session applies findings or
    generated code only after you explicitly approve. The exception to read-only is the plugin's own state, all of it under
    `.claude/ui-craft/` in the reviewed repo and all of it announced in one line: the three review
@@ -305,8 +304,8 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
    tooling, plus the doctrine audit (repo rules, lints and tests that enforce flatness or text
    volume, each reported for you to keep or retire) and the owner's recorded vetoes, which the
    team lead forwards to every specialist.
-3. Instead of dispatching specialists directly, the skill dispatches `ui-craft:ui-team-lead`.
-   Per this plugin's orchestration contract (the RUNTIME DISPATCH NOTE at the top of
+3. Instead of dispatching specialists directly, the skill dispatches the team lead (`ui-team-lead`).
+   Because the team lead needs the Agent tool (§ How this agent is dispatched, at the top of
    `agents/ui-team-lead.md`), this happens via
    `subagent_type: "general-purpose"` with the team lead's full agent body inlined as the
    prompt prefix, where every `${CLAUDE_PLUGIN_ROOT}` occurrence in that body is substituted with
@@ -547,7 +546,7 @@ colorblind-safety.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `improve-ui` seems to hang or never dispatches its specialists | The team lead lacks Agent access or remaining nesting depth, or the skill's dispatch contract was bypassed | Dispatch via `subagent_type: "general-purpose"` with the team lead's full agent body inlined, substituting `${CLAUDE_PLUGIN_ROOT}` for the resolved plugin root (see the RUNTIME DISPATCH NOTE at the top of `agents/ui-team-lead.md`) |
+| `improve-ui` seems to hang or never dispatches its specialists | The team lead lacks Agent access or remaining nesting depth, or it was dispatched through the plugin namespace instead of as general-purpose | Dispatch via `subagent_type: "general-purpose"` with the team lead's full agent body inlined, substituting `${CLAUDE_PLUGIN_ROOT}` for the resolved plugin root (see § How this agent is dispatched at the top of `agents/ui-team-lead.md`), or have the session run the team lead's process itself and dispatch the specialists directly (`skills/improve-ui/SKILL.md` § Execution mode) |
 | A finding carries `[unverified: geometry measurement needed]` and sits at MEDIUM when it looks worse than that | No DOM bounding-box or layout-bounds data was available for that spatial claim, so the geometry evidence rule in `references/review/02-evidence-pipeline.md` capped it | Provide Playwright MCP (web) or a running app with an accessibility-tree snapshot so the specialist measures instead of estimating. Taking the measurement removes the modifier and restores the finding's natural severity |
 | "Screenshot-only review covers visual quality and estimated accessibility..." message, fewer specialists than expected | Only screenshot files matched scope -- no code, no running app | Expected behavior. Point the skill at source files or a running app to unlock responsive, motion, and runtime review |
 | Report is missing a dimension you expected (for example no motion findings on a static page) | `review-ui` dispatches 3-5 specialists by rank (visual, accessibility and responsive always; anti-slop on aesthetic-bearing scope; motion, perf and TypeScript by condition); anything else is conditional on scope. This is never silent: the report header carries a **Dimensions not reviewed** line naming each one and why | Ask for that dimension explicitly, or use `improve-ui`, which runs every applicable specialist plus the verifier |

@@ -14,7 +14,7 @@ You are coordinating new UI design on the user's behalf. Your job is to gather p
 
 ## Execution mode
 
-Design work is dispatched, never done inline in the orchestrating session. The `ui-craft-architect` and the Step 5 audit reviewers run as subagents on the model the session chooses (Opus 5 is the usual default for design, review and implementation); never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrator builds the prompt, gates the output, and applies approved files. Run the architect's process inline only when no Agent tool exists in the current context (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and follow its Knowledge sources table and process steps verbatim), and say so in the output header; the Step 5 audit runs either way.
+The `ui-craft-architect` and the Step 5 audit reviewers are dispatched as subagents by default: the architect gets a fresh context for the full design process, and the orchestrator keeps its own for building the prompt, gating the output, and applying approved files. For a small brief, or where no Agent tool exists, the session may run the architect's process itself (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and work from its Knowledge sources table and process) and says so in the output header; the Step 5 audit runs either way. The dispatch templates in this skill set no model or effort; the session may choose a model per dispatch, and effort is never set.
 
 ## Core principle: do no harm
 
@@ -375,13 +375,12 @@ This skill never writes a CI verdict artifact. `improve-ui` is the only producer
 
 - **No repo**: Skip pre-flight. Greenfield is fine.
 - **User gave strong constraints**: Don't re-ask what they already said. Pass through to the prompt.
-- **Simple component request** (for example "design a button"): Still dispatch the architect. Even a single button should carry the project's POV, and it still gets the Step 5 audit. The artifacts scale to the brief: the POV, the design plan (palette, type, opening, twin test), the tokens or the inherited token reference, the component code, its responsive contract row, its substance row, `preview.html` and the taste audit always ship; the flow map collapses to one line on where the component sits, what it hands off, and what happens when its action fails; the per-screen artifacts (wireframe, copy map, focal visual, imagery ratio) are marked `n/a (no screen in this brief)` with that reason. At Step 6 an `n/a` criterion is a decision, not a failure, and does not spend the re-dispatch.
+- **Simple component request** (for example "design a button"): the architect's process still applies, dispatched or run by the session itself (see Execution mode). Even a single button should carry the project's POV, and it still gets the Step 5 audit. The artifacts scale to the brief: the POV, the design plan (palette, type, opening, twin test), the tokens or the inherited token reference, the component code, its responsive contract row, its substance row, `preview.html` and the taste audit always ship; the flow map collapses to one line on where the component sits, what it hands off, and what happens when its action fails; the per-screen artifacts (wireframe, copy map, focal visual, imagery ratio) are marked `n/a (no screen in this brief)` with that reason. At Step 6 an `n/a` criterion is a decision, not a failure, and does not spend the re-dispatch.
 
 ## Anti-patterns to avoid
 
 - Don't dispatch without a brief; ask first.
 - Don't dispatch without project context if there IS a repo; the architect needs it.
-- Don't add a `model:` pin or an effort setting to the dispatch; the session chooses.
 - Don't ship a design whose only tested width is the one you imagined.
 - Don't present a design nobody rendered when a browser tool exists; open the preview and look.
 - Don't accept a design that clears every ban and has no substance: grey, one hairline, no elevation, no imagery is the 2026 default, not restraint.

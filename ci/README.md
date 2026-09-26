@@ -177,11 +177,9 @@ on:
 
 jobs:
   ui-craft-gate:
-    # TheMizeGuy repos never use GitHub-hosted labels: Linux jobs run on the
-    # self-hosted mizeovh fleet -- e.g.
-    # `runs-on: [self-hosted, ovh, <repo-slug>, Linux]`.
-    # The placeholder below is for adopters outside that fleet; swap in
-    # whatever hosted or self-hosted runner your org actually uses.
+    # The GitHub-hosted label below is a placeholder; swap in whatever hosted
+    # or self-hosted runner your org actually uses, e.g.
+    # `runs-on: [self-hosted, Linux]`.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

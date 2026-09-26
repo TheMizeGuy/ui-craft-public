@@ -22,7 +22,7 @@ Both halves report under one dimension, `Runtime smoothness`, whose verdict fami
 
 ## Execution mode
 
-The review is dispatched, never run inline in the orchestrating session. The `ui-perf-engineer` runs as a subagent on the model the session chooses (Opus 5 is the usual default for design, review and implementation); never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrator owns scope, context, the prompt, gating, and the ledger. Run the perf engineer's measurement-first process inline only when no Agent tool exists in the current context, say so in the report header, and keep it read-only.
+The `ui-perf-engineer` is dispatched as a subagent by default. For a small scope, or where no Agent tool exists, the session may run its measurement-first process itself; it says so in the report header and stays read-only. The orchestrator owns scope, context, the prompt, gating, and the ledger. The dispatch template in this skill sets no model or effort; the session may choose a model for the dispatch, and effort is never set.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -112,13 +112,7 @@ TASK:
    `[unverified: runtime measurement needed]` on its Evidence line and is capped at MEDIUM.
 9. End with perf budget check table + raw tooling output.
 
-HARD RULES:
-- Measure first. Run tooling if available.
-- Quantify impact. "This is slow" becomes "This adds ~Xms to Y."
-- Show the fix. Current code, then reworked code.
-- Cite references.
-- Confidence is one of the four canonical classes. There is no "Possible issue" class.
-- No AI slop.
+HARD RULES: your system prompt's step 8 finding format and step 11 hard rules bind in full; they are not restated here.
 
 ACCEPTANCE CRITERIA (report is rejected if any fails):
 1. Summary block present: scope, evidence level, likely LCP element / hottest view, tooling
@@ -175,7 +169,6 @@ This skill never writes the machine-readable CI gate artifact. The gate schema r
 
 - Don't skip tooling. If build/Lighthouse is available, run it.
 - Don't guess metric impact; measure or cite the reference's documented impact.
-- Don't add a `model:` pin or an effort setting to the dispatch; the session chooses.
 - Don't overwrite the ledger's other dimensions.
 - Don't summarize agent output.
 - Don't auto-apply.

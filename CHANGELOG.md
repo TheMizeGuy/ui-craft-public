@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.6.3 — 2026-09-25
+
+Removes the dispatch residue the 2026-09-19 simplification left behind.
+Dispatch instructions and docs only; no reference, corpus, scanner or CI
+change.
+
+- **No model version in any shipped file.** The "(Opus 5 is the usual default
+  for design, review and implementation)" parentheticals are gone from the
+  skills, the team lead, README, USAGE, ARCHITECTURE and CLAUDE.md, and the
+  "thinking always on" asides with them. The session chooses the model per
+  dispatch; nothing in the plugin names or pins one, and no dispatch sets
+  effort.
+- **Inline execution is the session's call again.** The four skills dispatch
+  their specialists (or the team lead) by default and no longer forbid running
+  a process in the orchestrating session: for a small scope, or where nested
+  dispatch is unavailable, the session may run it itself and says so in the
+  report header. `improve-ui` keeps the verifier pass and the run-directory
+  report on either path. The `ui-craft-architect` and `ui-typescript-engineer`
+  descriptions drop the "orchestrator-only" sentence.
+- **Rules stated once.** The HARD RULES blocks in the `improve-ui` and
+  `optimize-ui` dispatch prompts restated the receiving agent's own hard rules
+  line for line; each now points at them. The duplicated "no model pin"
+  anti-pattern bullets are removed. The freedom gate's ceilings follow the
+  counts down (design-ui 29, improve-ui 28).
+- **CLAUDE.md GoodMem note** points at the global query helper, which reranks,
+  instead of an "always pass the rerank post-processor" rule.
+- **The team lead's dispatch note is in plain words.** The "established
+  orchestration contract" wording and the all-caps "MUST ... NOT ... REPORT ...
+  refuse to proceed" block are gone from `ui-team-lead`, `improve-ui`, README,
+  ARCHITECTURE and USAGE, matching apple-ui-craft: the lead is dispatched as
+  `general-purpose` because it needs the Agent tool, and without that tool it
+  tells the caller before Phase 2 instead of refusing. The section is now
+  "How this agent is dispatched".
+- **`improve-ui` covers a context with no Agent tool again.** The session runs
+  each applicable specialist's process and then the verifier's itself, and the
+  report header says so.
+- **The model sentence no longer contradicts itself.** The four skills say
+  their dispatch templates set no model or effort and the session may choose a
+  model per dispatch. `.coderabbit.yaml` scopes its model rule to dispatch calls
+  documented in this repo, not to the session's runtime choice.
+
 ## 0.6.2 — 2026-09-22
 
 The re-verification run of 0.6.1 against the same four-page data product (fresh

@@ -1,7 +1,7 @@
 ---
 name: ui-typescript-engineer
 description: |-
-  Read-only TypeScript 6/7 strictness + component-typing reviewer for UI code. Reviews prop types, state management, branded primitives, discriminated unions, exhaustiveness, strict-mode, and component API design: the TS quality layer, not the visual layer. Runs the TypeScript 7 type gate + eslint/biome (falling back to the TS6 compiler where TS7 is not installed). Runs as a dispatched subagent on the model the session chooses (Opus 5 is the usual default for design, review and implementation); the invoking session stays orchestrator-only. Use when the user says "check the type safety of these components".
+  Read-only TypeScript 6/7 strictness + component-typing reviewer for UI code. Reviews prop types, state management, branded primitives, discriminated unions, exhaustiveness, strict-mode, and component API design: the TS quality layer, not the visual layer. Runs the TypeScript 7 type gate + eslint/biome (falling back to the TS6 compiler where TS7 is not installed). Use when the user says "check the type safety of these components".
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, TodoWrite, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_memories, mcp__plugin_serena_serena__read_memory
 color: magenta
 ---

@@ -14,7 +14,7 @@ You are coordinating a comprehensive multi-specialist UI pass. This is the plugi
 
 ## Execution mode
 
-One path, dispatched. The team lead runs as a `general-purpose` subagent in Step 4, on the model the session chooses (Opus 5 is the usual default for design, review and implementation); its specialists are dispatched the same way. Never add a `model:` pin, a dated model ID, or an effort setting to a dispatch. The orchestrating session never runs the team lead's process inline (a deep session's context degrades the merge); the one exception is a context with no Agent tool at all, and then the report header says so.
+By default the team lead runs as a `general-purpose` subagent in Step 4 and dispatches the specialists and the verifier itself. The session may instead run the team lead's process in its own context, dispatching the specialists and the verifier directly, when the scope is small or nested dispatch is unavailable; the report header says which path ran, and the merged report still lands in the run directory. Where no Agent tool exists at all, the session runs each applicable specialist's process and then the verifier's (`${CLAUDE_PLUGIN_ROOT}/agents/ui-verifier.md`, last) itself, and the header says so. The dispatch templates in this skill set no model or effort; the session may choose a model per dispatch, and effort is never set.
 
 The specialist reviewers stay read-only; the verifier pass is never skipped.
 
@@ -227,13 +227,7 @@ DELTA SEMANTICS (match on `id` + `file`):
   `visual` finding titled `Substance: regressed since <prior timestamp>` at HIGH
 - Carried forward: prior entry whose dimension was not reviewed this run (never RESOLVED)
 
-HARD RULES:
-- Dispatch real agents. Don't simulate their output.
-- Dispatched specialists run on the model the session chooses; no `model:` or effort pin on a dispatch.
-- Foreground execution.
-- Deduplicate cross-agent findings; the verifier pass is mandatory.
-- Confidence is one of the four canonical classes; there is no "Possible issue" class.
-- No AI slop.
+HARD RULES: the Hard rules section of the team-lead body above binds in full; it is not restated here.
 
 ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 1. Verdict table present: one row per dispatched dimension, each cell a canonical token from
@@ -268,7 +262,7 @@ ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 
 ## Step 4: Dispatch the team lead
 
-RUNTIME DISPATCH NOTE: `ui-team-lead` must NOT be dispatched by its plugin-namespaced agent type under this plugin's established orchestration contract. `Agent` access depends on runtime tool grants and nesting depth. Dispatch it as `general-purpose` with its body inlined.
+`ui-team-lead` is dispatched as `general-purpose` with its body inlined, not by its plugin-namespaced agent type, because it needs the `Agent` tool, and `Agent` access depends on runtime tool grants and nesting depth (`${CLAUDE_PLUGIN_ROOT}/agents/ui-team-lead.md` § How this agent is dispatched).
 
 Do the placeholder substitution mechanically, in this order:
 
@@ -286,7 +280,7 @@ Agent({
 })
 ```
 
-Foreground. The dispatch carries no `model:` or effort field; the session chooses the model (Opus 5 is the usual default for design, review and implementation).
+Foreground.
 
 ## Step 5: Present results
 
@@ -356,7 +350,6 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 
 - Don't dispatch the team lead for a single-dimension review. Use `review-ui` (quality), `optimize-ui` (perf), or `design-ui` (new UI).
 - Don't dispatch without comprehensive project context; the team lead needs it for every sub-agent.
-- Don't add a `model:` pin or an effort setting to the dispatch; the session chooses.
 - Don't dispatch by the plugin-namespaced `ui-craft:ui-team-lead` type.
 - Don't trust the returned message over the run directory's merged report.
 - Don't summarize the report; show it verbatim.
