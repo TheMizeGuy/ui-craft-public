@@ -149,7 +149,7 @@ Widening the enum is a schema change, not an edit. `ci/ui-craft-gate.sh` hardcod
 
 ```json
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "timestamp": "<ISO-8601 timestamp>",
   "scope": "<the resolved scope that produced this run>",
   "commit": "<git sha if available>",

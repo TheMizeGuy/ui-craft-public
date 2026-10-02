@@ -3,7 +3,7 @@ name: optimize-ui
 description: |-
   Use this skill when the user asks to optimize UI performance: Core Web Vitals (LCP, INP, CLS), bundle size, rendering performance, runtime smoothness, font loading, image optimization, or framework-specific patterns (React compiler, RSC, Suspense, hydration; SwiftUI/Compose re-render stability). Triggers: "optimize my UI", "make the page faster", "fix LCP", "reduce bundle size", "optimize for Core Web Vitals", "UI performance audit", "speed up the page", "reduce CLS", "fix INP", "the UI feels janky", "dropped frames". Dispatches the ui-craft:ui-perf-engineer agent, which measures first (Lighthouse / tsc / bundle analysis if available), then produces severity-tagged findings with estimated metric impact and concrete code fixes.
 argument-hint: '[path | file | directory | url | "staged" | "diff" | "pr" | "all"]'
-allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
+allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent
 ---
 
 # Optimize UI
@@ -32,34 +32,19 @@ Every finding carries `id` (`performance-<kebab-slug>`), `dimension` (`performan
 
 ## Step 1: Determine scope
 
-Same resolution rules as `review-ui`:
-
-| Argument | Meaning |
-|---|---|
-| (empty) or `diff` | Uncommitted + staged, filtered to UI files |
-| `staged` | Only staged files |
-| `pr` | Diff vs `main`/`master` |
-| `<file>` / `<directory>` | Specific target |
-| `<url>` | A running app or preview deployment. The only scope on which LCP, INP, and CLS can be measured rather than estimated; can be combined with a path |
-| `all` | Entire project |
-
-Include: components, pages, layouts, styles, configs (next.config, vite.config, tailwind.config, package.json). Exclude: node_modules, dist, build, .build, .next, Pods, DerivedData.
+Resolve the argument with the scope table and file rules in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Run setup, minus the screenshot row, and also include the build and framework configs (next.config, vite.config, tailwind.config, package.json). A URL is the only scope on which LCP, INP, and CLS can be measured rather than estimated.
 
 ### Check for a prior ledger
 
-Check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps, load it: any prior `performance`-dimension finding is this run's baseline, and Step 5 reports the delta.
+Check for the prior ledger as § Run setup describes. When one loads, its `performance`-dimension findings are this run's baseline, and Step 5 reports the delta.
 
-## Step 2: Pre-flight context (parallel)
+## Step 2: Pre-flight context
 
-1. **package.json**: framework, React version, bundler (webpack / Vite / Turbopack).
-2. **next.config.ts / vite.config.ts**: any perf-relevant config (images, fonts, experimental flags).
-3. **tsconfig.json**: strict flags, target, module.
-4. **Existing perf tooling**: Glob for `lighthouserc.*`, `.lighthouseci/`, `web-vitals`, `@vercel/analytics`.
-5. **Bundle analysis**: check if `@next/bundle-analyzer` or `rollup-plugin-visualizer` is installed.
-
-For native targets, note SwiftUI vs UIKit / Compose vs XML split and whether Instruments or a profiler trace is available.
+Gather what the Step 3 `PROJECT CONTEXT` block asks for: framework, React version and bundler (webpack / Vite / Turbopack); the perf-relevant config (images, fonts, experimental flags); tsconfig strict flags, target and module; existing perf tooling (Lighthouse CI, `web-vitals`, `@vercel/analytics`); and whether a bundle analyzer is installed. For native targets, note the SwiftUI vs UIKit or Compose vs XML split and whether Instruments or a profiler trace is available.
 
 ### Step 2a: Establish the evidence level
+
+Run the three checks in § Run setup. For a performance pass the levels permit:
 
 | Result | Evidence level | What it permits |
 |---|---|---|
@@ -98,10 +83,9 @@ ${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md for the finding f
 TASK:
 1. Read all files in scope.
 2. Read all seven performance reference files.
-3. If available: run the TypeScript 7 gate by path, resolving the compiler by version (the first of
-   `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, `node_modules/typescript/bin/tsc`
-   whose `--version` prints `Version 7.`; never bare `tsc`; read the exit code from a log, never the
-   output), the build command, and Lighthouse.
+3. If available: run the TypeScript 7 gate (resolved as
+   ${CLAUDE_PLUGIN_ROOT}/references/typescript/01-ts6-essentials.md § The TypeScript 7 typecheck
+   gate describes), the build command, and Lighthouse.
 4. Identify the likely LCP element per page (web) or the most re-render-prone view (native).
 5. Review all perf angles per your system prompt: load/delivery AND runtime/rendering stability.
 6. Quantify estimated impact for each finding ("+800ms LCP", "+0.15 CLS", "+120KB JS",
@@ -130,7 +114,6 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 - `subagent_type`: `"ui-craft:ui-perf-engineer"`
 - `prompt`: the prompt from Step 3
 - `description`: `"Perf review of N files"`
-- Foreground
 
 ## Step 5: Present results
 
@@ -146,7 +129,7 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
    - "skip"
    ```
 5. If the user picks, apply with Edit/Write. After applying:
-   - Run the TypeScript 7 gate by path (resolve the compiler by version as in Step 3; never bare `tsc`; read the exit code) to verify fixes compile.
+   - Run the TypeScript 7 gate (resolved as in Step 3) to verify fixes compile.
    - Run build if possible to check bundle size delta.
    - Re-measure if a URL is available. A perf fix with no after-number is an assertion.
    - Offer to run `review-ui` if design quality wasn't checked yet, or `improve-ui` for the full team treatment.

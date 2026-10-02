@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.6.4 — 2026-10-02
+
+Releases the 2026-10-02 instruction sweep that sat under Unreleased: the agents
+and skills drop the tool grants, personas and restated rules written for older
+models, and the run setup the skills repeated now lives in two references they
+cite. Two fixes made after 0.6.3 ship with it: the ledger example in
+`ARCHITECTURE.md` § Data contracts reads `"schemaVersion": 3`, and the retired
+`.coderabbit.yaml` is gone from the tree.
+
+Removes the older-model residue the 2026-10-02 instruction sweep found in the
+agents and skills. Steering text, two references and the freedom gate; no
+scanner, corpus, schema or CI change, and the reference count stays 60.
+
+- **No `TodoWrite` grant.** The ten agents' `tools:` lines and the four skills'
+  `allowed-tools:` lines drop `TodoWrite`, a tool current models are not
+  offered.
+- **Scope sentences instead of personas.** Each agent opens with what it
+  reviews or designs; the all-caps role titles, the invented years of
+  experience and the architect's closing "Ship it." line are gone.
+- **No foreground rule.** The team lead's "Foreground execution" hard rule and
+  its copies in the four skills are removed. `improve-ui` Step 4 keeps one
+  default: run the team lead in the foreground when the user is waiting on the
+  report.
+- **Team lead hard rules cut to four**: dispatch real agents, read-only on the
+  reviewed project, no findings of its own, no slop. The other nine restated
+  the body (dedup, copied verdicts, verifier last, separate verdicts, removal
+  with a replacement) or the shared vocabulary. The copied-verdict reason and
+  the replacement rule's owner directive (2026-09-16) moved into Phase 4 and
+  Phase 5. `agents/ui-team-lead.md` joins the freedom gate at 20 prohibitions,
+  and the other ceilings follow their counts down (architect 37, design-ui 26,
+  improve-ui 25, review-ui 32).
+- **Run setup stated once.** The scope-argument table, the UI-file rules, the
+  prior-ledger check and the three-check evidence level live in
+  `references/review/02-evidence-pipeline.md` § Run setup; `review-ui`,
+  `improve-ui` and `optimize-ui` cite it and keep only their own file-count
+  warning, extra includes and ledger use. The TypeScript 7 compiler
+  resolution lives in `references/typescript/01-ts6-essentials.md` § The
+  TypeScript 7 typecheck gate, which `design-ui`, `improve-ui` and
+  `optimize-ui` cite; `ui-typescript-engineer` keeps its runnable copy. The
+  enumerated pre-flight lists (down to `git rev-parse`) and the "send multiple
+  Agent calls in a single message" line become one sentence on what the
+  dispatch needs.
+- **`design-ui`** drops the "Don't dispatch without a brief; ask first"
+  anti-pattern; Step 1 already covers the empty brief.
+- **CLAUDE.md** (private) names the global sections it extends, and says which
+  gates hold the conventions now that the CodeRabbit review rules are gone.
+
 ## 0.6.3 — 2026-09-25
 
 Removes the dispatch residue the 2026-09-19 simplification left behind.

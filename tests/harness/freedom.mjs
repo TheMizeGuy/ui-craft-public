@@ -31,13 +31,16 @@ const HATCH = /anti-slop-allow|stated reason|stated decision|brief's own words|t
 
 // Ceilings committed 2026-09-22 after the freedom pass. Lower them when a file
 // sheds prohibitions; raise one only with a reason in the commit that does it.
+// The team lead joined the table on 2026-10-02, when its Hard rules list was cut
+// to the four rules its body does not already state.
 const CEILINGS = {
-  'agents/ui-craft-architect.md': { prohibitions: 38 },
-  'skills/design-ui/SKILL.md': { prohibitions: 30, criteria: 12 },
+  'agents/ui-craft-architect.md': { prohibitions: 37 },
+  'skills/design-ui/SKILL.md': { prohibitions: 26, criteria: 12 },
   'agents/ui-anti-slop-auditor.md': { prohibitions: 32 },
   'agents/ui-visual-reviewer.md': { prohibitions: 24 },
-  'skills/improve-ui/SKILL.md': { prohibitions: 31 },
-  'skills/review-ui/SKILL.md': { prohibitions: 35 },
+  'skills/improve-ui/SKILL.md': { prohibitions: 25 },
+  'skills/review-ui/SKILL.md': { prohibitions: 32 },
+  'agents/ui-team-lead.md': { prohibitions: 20 },
 };
 
 const list = process.argv.includes('--list');

@@ -3,7 +3,7 @@ name: review-ui
 description: |-
   Use this skill when the user asks to review any UI for quality: visual defects, alignment, spacing, typography, color, responsiveness, motion, accessibility, task flow, and AI-generated aesthetic tells. Works across web, iOS, Android, desktop, live URLs, and screenshots. Triggers: "review this UI", "check the UI quality", "review my screen", "is this UI good quality", "check alignment", "review the design", "audit this interface", "does this screen look right", "does this look AI-generated?", "is this accessible?", "can a user actually finish this flow?", "find UI problems", "comprehensive UI review", "thorough UI audit", "review-ui". Standard mode dispatches 3-5 specialists chosen by scope and platform, then merges findings with inline verifier rules. For maximum coverage (all 7 dimensions + verifier + CI artifact), use improve-ui.
 argument-hint: '[path | file | directory | url | screenshot | "diff" | "staged" | "pr" | "all"]'
-allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent, Artifact
+allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent, Artifact
 ---
 
 # Review UI
@@ -29,33 +29,11 @@ Every finding also carries the machine fields the ledger and the CI artifact key
 
 ## Step 1: Determine scope
 
-Resolve the argument to a concrete file, URL, or evidence list:
-
-| Argument | Meaning |
-|---|---|
-| (empty) or `diff` | Uncommitted + staged changes, filtered to UI-relevant files |
-| `staged` | Only staged files |
-| `pr` | Diff vs `main`/`master` |
-| `<file>` | Single file |
-| `<directory>` | All UI files in dir |
-| `<url>` | A running app or preview deployment (`http://`, `https://`, or a bare `localhost:PORT`). Highest-evidence mode: geometry, contrast, focus order, and viewport behavior can all be measured rather than inferred |
-| `<screenshot>` | Screenshot file(s) for screenshot-only review |
-| `all` | Entire project (excluding node_modules, dist, build, .build, Pods, DerivedData) |
-
-A URL and a path can both be supplied. When they are, review the code AND the running app, and record the URL verbatim in the ledger `scope` field alongside the path.
-
-### UI-relevant file extensions
-
-**Web:** `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`, `*.css`, `*.scss`, `*.html`
-**iOS:** `*.swift` (containing SwiftUI views), `*.storyboard`, `*.xib`
-**Android:** `*.kt` (containing Compose), `*.xml` (layouts)
-**Screenshots:** `*.png`, `*.jpg`, `*.jpeg`, `*.webp`
-
-Filter to UI-relevant files: components, pages, layouts, styles. Skip pure utility/API/model files unless they have JSX. If empty scope, tell the user and suggest alternatives. If >50 files, warn and ask.
+Resolve the argument to a concrete file, URL, or evidence list with the scope table and file rules in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Run setup. If the scope holds more than 50 files, warn and ask.
 
 ### Check for a prior ledger
 
-Before gathering context, check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps the resolved scope, load it as the diff baseline for Step 7's delta section; otherwise do not use it as a baseline, but Step 8 still carries its entries forward.
+Check for the prior ledger as § Run setup describes. When one loads, it is the baseline for Step 7's delta section; Step 8 carries its entries forward either way.
 
 ## Step 2: Detect platform
 
@@ -108,21 +86,7 @@ FLOWS IN SCOPE:
 
 ### Step 3a: Establish the evidence level (do not guess it)
 
-Evidence level decides which dimensions are reviewable and how confident any spatial claim is allowed to be. Determine it mechanically, from three checks:
-
-| Check | How |
-|---|---|
-| Browser available? | Is a Playwright browser tool present in this session's tool list? |
-| Running app available? | Was a URL supplied, or does a dev-server/preview URL resolve? |
-| Source available? | Did the scope resolve to source files, or only to images? |
-
-| Result | Evidence level |
-|---|---|
-| Browser tool + URL + source | `code + browser` |
-| Source only (no browser, or no URL to point it at) | `code-only` |
-| Images only | `screenshot-only` |
-
-Pass the resulting level verbatim into every specialist prompt and print it in the report header. Never write `code + browser` on a run where no browser was opened.
+Determine the level with the three checks in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Run setup (browser tool, running app, source). It decides which dimensions are reviewable and how confident any spatial claim is allowed to be. Pass it verbatim into every specialist prompt and print it in the report header.
 
 ### Step 3b: Doctrine audit (the reviewed repo's own rules are evidence)
 
@@ -235,7 +199,7 @@ A report failing any criterion gets ONE re-dispatch naming the failed item; a se
 
 1. If a browser tool and a URL are both available, capture the matrix yourself BEFORE dispatching: for the default capture set in `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md` (320, 390, 900, 1440, 1920, 2560, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), one screenshot plus one geometry dump (bounding boxes and computed styles for the primary content), written under `.claude/ui-craft/runs/<ISO timestamp>/evidence/`. **1920 is pinned in the set**: the density thresholds are calibrated at that width, so it stays in even when 2560 is open. Pass those absolute paths into every specialist prompt as read-only evidence, and instruct specialists not to drive the browser themselves.
 2. Having captured, measure at 1920 and again at the widest width you opened: evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` in the browser and call `measureDensity()` and `measureSubstance()` (usage in each header; `measureDensity()` takes a `surface` option so its copy budgets match the surface type). Write both outputs beside the captures and pass the numbers into every specialist prompt as evidence. They are what a substance or density finding quotes, and without them those findings sit at TASTE.
-3. Dispatch all chosen specialists in parallel using the Agent tool. Send multiple Agent calls in a single message:
+3. Dispatch all chosen specialists in parallel:
 
 ```
 Agent({ subagent_type: "ui-craft:ui-visual-reviewer",
@@ -252,8 +216,6 @@ Agent({ subagent_type: "ui-craft:ui-responsive-reviewer",
 ```
 
 4. If a specialist genuinely needs live interaction the pre-captured matrix cannot supply (motion timing, focus-order traversal, a multi-step flow walk), dispatch it in a SECOND, serial wave with sole browser access after the parallel wave returns. Truly concurrent browsers need one isolated browser per agent, which is outside this plugin's scope.
-
-Foreground execution. Dispatching stays the default for multi-specialist parallel reviews.
 
 ## Step 7: Merge and present report
 
@@ -399,5 +361,4 @@ After applying:
 - Don't dispatch without the `FLOWS IN SCOPE` block when the scope has more than one screen.
 - Don't summarize findings; show them verbatim.
 - Don't auto-apply; wait for the user pick.
-- Don't run in background.
 - Don't let specialists share a browser concurrently.

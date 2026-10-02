@@ -3,7 +3,7 @@ name: improve-ui
 description: |-
   Use this skill when the user wants the full UI treatment: a comprehensive multi-specialist pass covering visual + usability/flow + accessibility + responsive + motion + performance + type safety + anti-AI aesthetics in one review, plus (for improvement asks) a prioritized fix plan. Triggers: "improve this UI", "make this UI better", "make this god tier", "polish these components", "refactor the UI", "level up the design", "make this look like a human team built it", "full UI pass", "comprehensive UI review", "thorough UI audit", "improve the whole interface". Dispatches the ui-craft:ui-team-lead orchestrator, which coordinates every applicable specialist in parallel plus a dedicated verifier, deduplicates findings, and produces a unified per-dimension-verdict report ordered by impact. This is the heavy-hitter, and the only skill that writes the CI verdict artifact.
 argument-hint: '[path | file | directory | url | screenshot | "staged" | "diff" | "pr" | "all"]'
-allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent, Artifact
+allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent, Artifact
 ---
 
 # Improve UI
@@ -28,56 +28,19 @@ The finding template, the severity scale, and the confidence classes live in `${
 
 ## Step 1: Determine scope
 
-Same resolution rules as `review-ui` / `optimize-ui`:
-
-| Argument | Meaning |
-|---|---|
-| (empty) or `diff` | Uncommitted + staged |
-| `staged` | Only staged files |
-| `pr` | Diff vs `main`/`master` |
-| `<file>` / `<directory>` | Specific target |
-| `<url>` | A running app or preview deployment. Highest-evidence mode; can be combined with a path |
-| `<screenshot>` | Screenshot file(s) for screenshot-only review |
-| `all` | Entire project |
-
-Include all UI-relevant files: components, pages, layouts, styles, theme config, tsconfig. Exclude standard patterns (node_modules, dist, build, .build, Pods, DerivedData).
-
-Warning thresholds:
-- >100 files: "This is a large scope. The team lead will dispatch several agents in parallel, which will take several minutes. Continue or narrow the scope?"
-- 0 files: tell the user and suggest alternatives.
+Resolve the argument with the scope table and file rules in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Run setup. Above 100 files, say: "This is a large scope. The team lead will dispatch several agents in parallel, which will take several minutes. Continue or narrow the scope?"
 
 ### Check for a prior ledger
 
-Before pre-flight context gathering, check for `.claude/ui-craft/last-review.json` in the target repo. If present and its `scope` overlaps the resolved scope, load it and pass its findings into the team lead prompt (Step 3) as the delta baseline; otherwise do not use it as a baseline, but Step 5 still carries its entries forward.
+Check for the prior ledger as § Run setup describes, before gathering context. When one loads, pass its findings into the team lead prompt (Step 3) as the PRIOR LEDGER delta baseline; Step 5 carries its entries forward either way.
 
-## Step 2: Pre-flight context (parallel, comprehensive)
+## Step 2: Pre-flight context
 
-This is the full treatment, so gather everything. Detect platform (web/iOS/Android/screenshot-only), then:
-
-1. **package.json**: framework, React version, Tailwind version, ALL relevant deps.
-2. **tsconfig.json**: ALL strictness flags.
-3. **Token system**: full read of `globals.css`, `tailwind.config.*`, `:root` blocks.
-4. **Linter config**: eslint / biome config.
-5. **Component structure**: Glob `**/components/**/*.tsx` (or the platform equivalent) and count + list.
-6. **Page structure**: Glob `**/app/**/page.tsx` or `**/pages/**/*.tsx`.
-7. **Font usage**: Grep for font-family, @font-face, next/font, Google Fonts.
-8. **Icon usage**: Grep for lucide-react, @heroicons, @tabler/icons, @phosphor-icons.
-9. **Image usage**: Grep for `<img`, `<Image`, `next/image`.
-10. **Perf tooling**: Glob for lighthouse, web-vitals, analytics configs.
-11. **Workspace root**: `git rev-parse --show-toplevel`.
-12. **Commit sha**: `git rev-parse --short HEAD`. The CI artifact in Step 5 requires it.
+This is the full treatment. Detect the platform (web, iOS, Android, or screenshot-only), then gather everything the Step 3 `PROJECT CONTEXT` block asks for: framework and versions with all relevant deps, every tsconfig strictness flag, the full token system, the linter, font, icon and image usage, perf tooling, the component and route inventory, the workspace root, and the short commit sha, which the Step 5 CI artifact requires.
 
 ### Step 2a: Establish the evidence level (do not guess it)
 
-Run the same three checks `review-ui` Step 3a defines, here rather than by reference:
-
-| Check | How |
-|---|---|
-| Browser available? | Is a Playwright browser tool present in this session's tool list? |
-| Running app available? | Was a URL supplied, or does a dev-server/preview URL resolve? |
-| Source available? | Did the scope resolve to source files, or only to images? |
-
-Browser + URL + source is `code + browser`; source without a reachable app is `code-only`; images only is `screenshot-only`. Pass the level into the team lead prompt verbatim. It is what decides which specialists the team lead may dispatch at all.
+Determine the level with the three checks in `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Run setup and pass it into the team lead prompt verbatim. It is what decides which specialists the team lead may dispatch at all.
 
 ### Step 2b: Map the flows in scope
 
@@ -280,7 +243,7 @@ Agent({
 })
 ```
 
-Foreground.
+Run the team lead in the foreground when the user is waiting on the report.
 
 ## Step 5: Present results
 
@@ -339,7 +302,7 @@ Foreground.
 ## Step 6: Post-application verification
 
 After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 6 first -- functionality before visuals, and any functional failure blocks the visual assessment -- then:
-1. If TypeScript: run the TypeScript 7 gate by path, resolving the compiler by version rather than by alias name: try `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, then `node_modules/typescript/bin/tsc`, and use the first whose `--version` prints `Version 7.` (Microsoft's side-by-side layout keeps TypeScript 6 at `node_modules/typescript/bin/tsc6`). Never bare `tsc`, because with two compilers installed the `.bin/tsc` link is arbitrary; redirect the output to a log and read the exit code, never infer the result from the output. Do this to verify compilation.
+1. If TypeScript: run the TypeScript 7 gate to verify compilation, resolved as `${CLAUDE_PLUGIN_ROOT}/references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck gate describes (compiler chosen by version and invoked by path, exit code read from a log).
 2. Run the project's lint command.
 3. If Tailwind: check that `@theme` tokens are valid.
 4. If a browser is available: re-run `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` at 1920 and report the before/after numbers side by side -- accent chroma, surface levels and their boundary ratios, focal visual, image count, viewport utilisation, `wordsBeforePrimary`. A fix that was supposed to add substance and moved no number did not land, and a fix that removed a device without its replacement shows up here as a number going the wrong way.
@@ -354,4 +317,3 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 - Don't trust the returned message over the run directory's merged report.
 - Don't summarize the report; show it verbatim.
 - Don't auto-apply.
-- Don't run in background, because the user wants real-time progress.

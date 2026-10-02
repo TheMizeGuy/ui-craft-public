@@ -3,7 +3,7 @@ name: design-ui
 description: |-
   Use this skill when the user asks to design new UI: a screen, flow, page, component, or full product. Triggers: "design a [thing]", "build me a [screen/page/flow]", "create the UI for", "design the [dashboard/settings/onboarding/landing]", "make this screen look [distinctive/professional/not AI]". Dispatches the ui-craft:ui-craft-architect agent, which grounds the design in the subject's own world, drafts a plan and runs the twin test on it, commits to a distinctive aesthetic POV, generates a token system (OKLCH + variable fonts + modular spacing + spring motion) that clears the substance floor (a visible saturated accent, three measured surface levels, real edges, a focal visual, imagery), places every paragraph on a copy map, and produces production-grade UI code that does not look AI-generated and does not look like the flat grey opposite; the orchestrator then renders the architect's preview when a browser tool exists and audits the fresh design with the visual, anti-slop, responsive and accessibility reviewers before it is presented. TypeScript + React + Tailwind v4 is the primary output path; the design principles (POV, tokens, catalogue floor, taste gate) apply to any stack. Uses the internal anti-AI-tells catalogue as a hard floor and the taste checklist as a pre-ship gate.
 argument-hint: '<brief description of what to design>'
-allowed-tools: Bash, Read, Grep, Glob, Edit, Write, TodoWrite, Agent
+allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent
 ---
 
 # Design UI
@@ -48,15 +48,12 @@ If the brief is empty or too vague to act on, ask one focused question: "What sc
 
 If working in an existing repo:
 
-1. **package.json**: Read it. Note framework, React version, Tailwind version, existing design libraries.
-2. **Token system**: Read `app/globals.css`, `tailwind.config.*`, or any `theme.ts`/`:root` blocks. Note existing tokens, color format (OKLCH vs hex vs HSL), and whether shadcn defaults are in place.
-3. **Existing components**: Glob `**/components/ui/*.tsx` or similar. List what primitives exist.
-4. **Existing sizing strategy**: Grep for `clamp(`, `@container`, `dvh`, `svh`, and for fixed widths (`w-[`, `max-w-[`, `width:` with a px literal). This tells the architect whether it is joining a fluid system or introducing one.
-5. **Workspace root**: `git rev-parse --show-toplevel` for absolute paths.
-6. **Owner vetoes and must-haves**: read `design/POV.md` (its `## Banned (concrete)` and `## Must be present` lists), the UI section of the repo's `CLAUDE.md` or `AGENTS.md`, and `.claude/ui-craft/vetoes.md` if present. Distil them into an `OWNER VETOES` block (standing decisions, not taste) and a `MUST BE PRESENT` block. With no repo none of these lists has a source: emit `OWNER VETOES` as "none recorded" and put this operator's standing preferences in a second block, `HOUSE DEFAULTS (rebuttable)`: no emoji as a UI indicator, no pill or bubble chips as ornament, no rainbow or segmented bars, mono for code, logs, raw payloads and terminal UIs only (catalogue T13), no pulse dot on "Live", no decorative per-row keylines. These are defaults, not decisions about this brief: a brief clause, the VISUAL REFERENCE or the subject's world that names one of these devices converts it to a stated decision, emitted with an `anti-slop-allow: <the brief clause>` line. Vetoes read from a repo file are the owner's recorded decisions and carry no hatch.
-7. **Assets on hand**: Glob for icon sets, product imagery, logos and illustrations (`**/icons/**`, `**/public/**/*.{png,jpg,webp,svg}`, `**/assets/**`) so the architect plans real imagery from what exists and names what must be produced.
+1. **Project context**: what the Step 3 `PROJECT CONTEXT` block asks for: framework and versions, existing design libraries, the workspace root for absolute paths, the existing primitives, and the token system (its color format, OKLCH vs hex vs HSL, and whether shadcn defaults are in place).
+2. **Existing sizing strategy**: Grep for `clamp(`, `@container`, `dvh`, `svh`, and for fixed widths (`w-[`, `max-w-[`, `width:` with a px literal). This tells the architect whether it is joining a fluid system or introducing one.
+3. **Owner vetoes and must-haves**: read `design/POV.md` (its `## Banned (concrete)` and `## Must be present` lists), the UI section of the repo's `CLAUDE.md` or `AGENTS.md`, and `.claude/ui-craft/vetoes.md` if present. Distil them into an `OWNER VETOES` block (standing decisions, not taste) and a `MUST BE PRESENT` block. With no repo none of these lists has a source: emit `OWNER VETOES` as "none recorded" and put this operator's standing preferences in a second block, `HOUSE DEFAULTS (rebuttable)`: no emoji as a UI indicator, no pill or bubble chips as ornament, no rainbow or segmented bars, mono for code, logs, raw payloads and terminal UIs only (catalogue T13), no pulse dot on "Live", no decorative per-row keylines. These are defaults, not decisions about this brief: a brief clause, the VISUAL REFERENCE or the subject's world that names one of these devices converts it to a stated decision, emitted with an `anti-slop-allow: <the brief clause>` line. Vetoes read from a repo file are the owner's recorded decisions and carry no hatch.
+4. **Assets on hand**: Glob for icon sets, product imagery, logos and illustrations (`**/icons/**`, `**/public/**/*.{png,jpg,webp,svg}`, `**/assets/**`) so the architect plans real imagery from what exists and names what must be produced.
 
-If no repo, greenfield is assumed; items 6 and 7 still produce the HOUSE DEFAULTS block and an "assets to produce" note.
+If no repo, greenfield is assumed; items 3 and 4 still produce the HOUSE DEFAULTS block and an "assets to produce" note.
 
 ## Step 2.5: Seed candidates (optional, advisory)
 
@@ -300,7 +297,6 @@ Use the Agent tool:
 - `subagent_type`: `"ui-craft:ui-craft-architect"`
 - `description`: `"Design <brief summary>"`
 - `prompt`: the prompt from Step 3
-- Foreground (NOT `run_in_background: true`)
 
 ## Step 5: Render it, look at it, then audit it
 
@@ -362,7 +358,7 @@ Any CRITICAL or HIGH finding from any reviewer, and any Recommended change that 
 
 1. If the user asks to apply, YOU (the orchestrator) create the files using Write/Edit. Do not re-dispatch the agent.
 2. Then verify what you wrote, on the paths you touched:
-   - TypeScript: run the TypeScript 7 gate by path, resolving the compiler by version rather than by alias name: try `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, then `node_modules/typescript/bin/tsc`, and use the first whose `--version` prints `Version 7.` (Microsoft's side-by-side layout keeps TypeScript 6 at `node_modules/typescript/bin/tsc6`). Never bare `tsc`, because with two compilers installed the `.bin/tsc` link is arbitrary; redirect the output to a log and read the exit code, never infer the result from the output.
+   - TypeScript: run the TypeScript 7 gate, resolved as `${CLAUDE_PLUGIN_ROOT}/references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck gate describes (compiler chosen by version and invoked by path, exit code read from a log).
    - Run the project's lint command.
    - Tailwind v4: check that the new `@theme` tokens resolve.
 3. Write `design/POV.md` from the architect's worksheet (three adjectives, the visual reference, anchors, banned list, must-be-present list, density, tone, motion, decoration, the copy map's placement rules) and `design/notes.md` recording the twin test's "Changed X to Y because Z" and every direction tried and rejected, so the next pass starts from a decision instead of re-deriving one. Never write a test that pins a design literal.
@@ -379,7 +375,6 @@ This skill never writes a CI verdict artifact. `improve-ui` is the only producer
 
 ## Anti-patterns to avoid
 
-- Don't dispatch without a brief; ask first.
 - Don't dispatch without project context if there IS a repo; the architect needs it.
 - Don't ship a design whose only tested width is the one you imagined.
 - Don't present a design nobody rendered when a browser tool exists; open the preview and look.
@@ -389,4 +384,3 @@ This skill never writes a CI verdict artifact. `improve-ui` is the only producer
 - Don't summarize the agent output; show it raw.
 - Don't auto-apply; wait for explicit user approval.
 - Don't apply without running the typecheck and lint gates afterwards.
-- Don't run in background; the user wants to watch progress.

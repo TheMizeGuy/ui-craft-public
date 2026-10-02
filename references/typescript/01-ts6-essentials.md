@@ -169,6 +169,15 @@ The fleet contract installs both under distinct names:
 | Whole-monorepo type-check where TS6 cold-start dominates | Editor tsserver (still TS6-backed) |
 | Strictness-ladder verification per step | JS/JSDoc-heavy checking (closure-style annotations are intentionally narrowed in the new JS checker) |
 
+**Resolving the gate in a reviewed project.** Projects name the TS7 package differently (the fleet's `ts7` alias, Microsoft's `@typescript/native`, or `typescript@7` itself), so resolve the compiler by version: try `node_modules/ts7/bin/tsc`, `node_modules/@typescript/native/bin/tsc`, then `node_modules/typescript/bin/tsc`, and use the first whose `--version` prints `Version 7.` (Microsoft's side-by-side layout keeps TypeScript 6 at `node_modules/typescript/bin/tsc6`). Redirect the output to a log and read the exit code: any non-zero exit is a failure, and TS7 exits 1 where TS6 exits 2, so test for non-zero rather than for one number.
+
+```bash
+cd <root>; for c in node_modules/ts7/bin/tsc node_modules/@typescript/native/bin/tsc node_modules/typescript/bin/tsc; do [ -f "$c" ] && node "$c" --version 2>/dev/null | grep -q "Version 7\." && TS7="$c" && break; done
+node "$TS7" --noEmit > /tmp/tsc.log 2>&1; echo "tsc exit=$?"; head -200 /tmp/tsc.log
+```
+
+When no candidate prints `Version 7.`, the project has no TS7 gate: run the TypeScript 6 compiler by path for the check, and report the missing gate.
+
 Two hazards when running the TS7 compiler:
 
 - **It emits even while reporting a fatal config error.** A full `dist/` has been observed written alongside a `TS5108: moduleResolution=node10 has been removed` failure. Never infer success from the existence of build output. Check the exit code and read stderr.

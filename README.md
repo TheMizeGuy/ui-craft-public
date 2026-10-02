@@ -156,7 +156,7 @@ Neither the agent frontmatter nor the skills' dispatches pin a model or effort; 
 | File | Covers |
 |---|---|
 | `01-universal-rubric.md` | 14 review dimensions (incl. conditional data-visualization), platform overlays, severity scale, confidence classes, finding format |
-| `02-evidence-pipeline.md` | Artifact bundle schema, capture strategies, the canonical geometry evidence rule |
+| `02-evidence-pipeline.md` | Run setup shared by the review skills (scope arguments, prior ledger, evidence level), artifact bundle schema, capture strategies, the canonical geometry evidence rule |
 | `03-viewport-matrix.md` | Web/iOS/Android viewport families, failure classes, deduplication rules |
 | `04-verdicts-and-verification.md` | Per-dimension verdict vocabularies plus the verifier's evidence-sufficiency, dedup, and severity re-validation rules |
 | `05-density-and-economy.md` | The waste dimension: viewport utilisation, width distribution, page length, copy length in front of controls, action-to-target distance, with measurement recipes. Paired with `scripts/measure_density.js`, a browser-side measurement that returns percentages and pixel counts, because "this feels empty" gets dismissed as taste and a number does not |

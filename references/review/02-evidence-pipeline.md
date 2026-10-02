@@ -9,6 +9,69 @@
 | Browser-assisted | Web app with Playwright available | Screenshots + DOM + traces + a11y scans | High -- full evidence pipeline |
 | Full evidence | Running app with all tooling | Everything above + video + metrics + computed styles | Highest -- verifier has maximum signal |
 
+## Run setup (shared by the review skills)
+
+`review-ui`, `improve-ui` and `optimize-ui` resolve the scope, the prior ledger and the evidence
+level the same way, from this section. Each skill states only what differs for it: its file-count
+warning, any extra files it includes, and what it does with a loaded ledger.
+
+### Scope arguments
+
+| Argument | Meaning |
+|---|---|
+| (empty) or `diff` | Uncommitted + staged changes, filtered to UI-relevant files |
+| `staged` | Only staged files |
+| `pr` | Diff vs `main`/`master` |
+| `<file>` | Single file |
+| `<directory>` | All UI-relevant files in the directory |
+| `<url>` | A running app or preview deployment (`http://`, `https://`, or a bare `localhost:PORT`). Highest-evidence mode: geometry, contrast, focus order, viewport behavior and Core Web Vitals can be measured rather than inferred |
+| `<screenshot>` | Screenshot file(s) for screenshot-only review |
+| `all` | Entire project |
+
+A URL and a path can both be supplied. When they are, review the code AND the running app, and
+record the URL verbatim in the ledger `scope` field alongside the path.
+
+UI-relevant files are components, pages, layouts, styles, theme and token config, and
+`tsconfig.json`; pure utility, API and model files are skipped unless they render markup.
+`node_modules`, `dist`, `build`, `.build`, `.next`, `Pods` and `DerivedData` are always excluded.
+By platform:
+
+- **Web:** `*.tsx`, `*.jsx`, `*.vue`, `*.svelte`, `*.css`, `*.scss`, `*.html`
+- **iOS:** `*.swift` containing SwiftUI views, `*.storyboard`, `*.xib`
+- **Android:** `*.kt` containing Compose, `*.xml` layouts
+- **Screenshots:** `*.png`, `*.jpg`, `*.jpeg`, `*.webp`
+
+When the scope resolves to no files, tell the user and suggest alternatives.
+
+### Prior ledger
+
+Before gathering context, check for `.claude/ui-craft/last-review.json` in the target repo. If it
+is present and its `scope` overlaps the resolved scope, load it: its findings are this run's delta
+baseline, matched on `id` + `file`. If the scope does not overlap, it is not a baseline, but the
+skill's ledger refresh still carries its entries forward, so a narrow run leaves a wider run's
+history in place.
+
+### Evidence level
+
+The evidence level decides which dimensions are reviewable and how confident any spatial claim is
+allowed to be (the review modes above; the geometry evidence rule below). Determine it from three
+checks rather than by guess:
+
+| Check | How |
+|---|---|
+| Browser available? | Is a Playwright browser tool present in this session's tool list? |
+| Running app available? | Was a URL supplied, or does a dev-server/preview URL resolve? |
+| Source available? | Did the scope resolve to source files, or only to images? |
+
+| Result | Evidence level |
+|---|---|
+| Browser tool + URL + source | `code + browser` |
+| Source only (no browser, or no URL to point it at) | `code-only` |
+| Images only | `screenshot-only` |
+
+Pass the level verbatim into every specialist prompt and print it in the report header. A run that
+opened no browser is `code-only` or `screenshot-only`, whatever tools the session has.
+
 ## Geometry evidence rule (canonical)
 
 Single source of truth for every specialist and the verifier. Agent files cite this section;

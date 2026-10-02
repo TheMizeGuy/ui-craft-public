@@ -222,7 +222,7 @@ questions for the owner.
 |---|---|
 | `design-ui` and the architect | A **substance contract** per screen (accent roles, surface ladder with ratios, edges, focal visual, imagery plan, identity colours) recorded before the taste audit; the mechanical self-check carries S1 to S7 rows; the taste audit reports section 1b |
 | `review-ui` and the visual reviewer | Lens 18 (Substance) with `measureSubstance()` numbers pasted into the finding; the Visual quality verdict is capped at WEAK when S3 or S4 fails on a data surface with a measurement |
-| `improve-ui` and the team lead | Every removal in the improvement plan names its replacement from section 6; a plan whose design pass is only removals is rejected (hard rule 13); the doctrine audit reports repo rules that enforce flatness |
+| `improve-ui` and the team lead | Every removal in the improvement plan names its replacement from section 6; a plan whose design pass is only removals is rejected (the team lead's Phase 5 plan rule); the doctrine audit reports repo rules that enforce flatness |
 | The anti-slop auditor | A device that passes S1 to S7 is never filed as a tell on presence; the concentration rule applies. The full flat-terminal signature is V13 |
 | The verifier | A recommendation that reads "remove X" with no replacement is incomplete and is returned as an open question, not passed through; an elevation or boundary claim without a pixel measurement carries `[unverified: geometry measurement needed]` |
 
