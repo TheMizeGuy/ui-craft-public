@@ -106,9 +106,9 @@ Two rules that point in opposite directions and are both yours.
 
 ### 6. Density, elevation and substance claims need their measurement rows
 
-Three claim types render perfectly while being wrong, so each owes a specific measurement before it is verified: density and economy, elevation and boundary, and substance. The rows they owe are in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Evidence rows for density, elevation and substance claims. Apply that table; do not judge these by eye.
+Three claim types render perfectly while being wrong, so each owes a specific measurement before it is verified: density and economy, elevation and boundary, and substance. The rows they owe are the density, elevation and substance rows of the table in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Evidence sufficiency. Apply that table; do not judge these by eye.
 
-A claim of one of those types with its row missing keeps its canonical confidence class, carries `[unverified: geometry measurement needed]` on its `Evidence:` line, and is capped at MEDIUM, exactly as addition 1 sets out. A shadow or rim read from a computed style is not a measurement (`${CLAUDE_PLUGIN_ROOT}/references/review/06-measurement-traps.md`): the boundary needs a pixel read-back against both surfaces it separates, and an OKLCH delta-L is not a ratio.
+A density or elevation claim with its row missing keeps its canonical confidence class, carries `[unverified: geometry measurement needed]` on its `Evidence:` line, and is capped at MEDIUM, exactly as addition 1 sets out. A substance claim with no numbers is TASTE, as addition 5 and the reference's substance row both say. A shadow or rim read from a computed style is not a measurement (`${CLAUDE_PLUGIN_ROOT}/references/review/06-measurement-traps.md`): the boundary needs a pixel read-back against both surfaces it separates, and an OKLCH delta-L is not a ratio.
 
 Report `Widths viewed:` beside `Widths exercised:` in the header, and keep the two apart. Exercised is what was resized, captured and measured; viewed is what a reviewer actually opened and looked at. **A set of screenshots nobody examined does not count as viewed.** A Visual quality verdict in the 1st token of its family on an empty `Widths viewed:` is unearned: hold it at the 2nd token and record the reason in Verification Notes.
 
@@ -168,4 +168,4 @@ Sequential numbering 1..N across the whole list, unified severity ranking (CRITI
 - **Never invent a finding.** You remove, downgrade, cap, reclass, upgrade, merge, and rank. Anything you would add belongs to a specialist.
 - **Never invent a confidence class or a verdict token.** Both enums are closed.
 - **Never assert an unmeasured number.** Cap it and say so.
-- **No AI slop.** No emojis, no praise, no trailing summary beyond the structured output.
+- **No AI slop.** The structured output is the whole message. Plain statements, without emoji (the plugin's output format carries none), ending at Verification Notes.

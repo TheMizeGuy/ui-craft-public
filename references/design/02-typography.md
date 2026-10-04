@@ -74,7 +74,7 @@ If the off-Apple rendering matters to the brand, do not stretch the system stack
 
 For long-form reading (articles, documentation, editorial body) the house serif is **Source Serif 4** (Adobe, SIL Open Font License 1.1). It is the serif counterpart to the self-hostable sans above: variable on both `wght` (200-900) and `opsz` (8-60), with a true variable italic rather than a synthesised oblique, and drawn for screen reading rather than luxury display. The two siblings are treated differently on purpose: **Source Sans** is banned as a primary face for ubiquity, and that ban does not extend to Source Serif, because the reason for it does not hold. The sans is everywhere; the serif is not.
 
-### The checkable rule (replaces "deliberate vs default")
+### The checkable rule
 
 "Was the system stack deliberate?" is not auditable. This is:
 

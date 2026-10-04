@@ -102,8 +102,9 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 1. Summary block present: scope, evidence level, likely LCP element / hottest view, tooling
    status, budget check, finding counts, and a `**Verdict:**` line whose value is one of
    RESPONSIVE / ACCEPTABLE / SLUGGISH / UNSTABLE. A canonical token, not prose.
-2. Every finding has a quantified impact line ("+Xms LCP" / "+X KB JS" / "+0.0X CLS" /
-   "N dropped frames"), measured or cited from a reference.
+2. Every finding has an impact line: quantified ("+Xms LCP" / "+X KB JS" / "+0.0X CLS" /
+   "N dropped frames"), measured or cited from a reference, or, on a loading-choreography
+   finding with no metric delta, the user-visible consequence (your step 10).
 3. Every finding: current code + verbatim-applicable fix + reference citation + machine fields.
 4. Tooling section states what ran and what was unavailable. No silent skips.
 5. The `runtime_instability` blocker flag is set, or explicitly stated as not set.

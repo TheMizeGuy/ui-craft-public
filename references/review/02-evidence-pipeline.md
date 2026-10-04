@@ -88,9 +88,9 @@ ratios -- requires geometry evidence:
 | Android | Compose layout bounds / semantics-tree geometry |
 | Screenshot-only | OCR box geometry; otherwise the claim stays soft |
 
-A screenshot alone is never geometry evidence -- estimating distances from pixels is
-unreliable (documented limited model spatial reasoning). Contrast claims follow the same
-rule: computed color values plus a calculated ratio, never screenshot color sampling.
+A screenshot alone is never geometry evidence: a precision claim has to carry a number
+the owner can re-measure, and a distance estimated from pixels is not one. Contrast claims
+follow the same rule: computed color values plus a calculated ratio, never screenshot color sampling.
 
 Without geometry evidence the claim keeps its canonical confidence class
 (`references/review/01-universal-rubric.md` Layer 3; there is no "Possible issue" class),

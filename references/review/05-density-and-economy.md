@@ -129,11 +129,10 @@ Placement, on every surface type, including the ones with no volume bar.
 | A paragraph whose position depends on a third-party slot rendering: an unreserved ad, embed, widget or feed with prose as a flow sibling | HIGH |
 
 30 words is about three lines at a 35em measure, and each surface's bar is set
-where that surface stops being scannable. **No surface is exempt any more.** The
-marketing-and-documentation exemption that used to sit on this line is what let
-the blobs through: every review asked how the words read and none asked where
-they sat, so a reference page absorbed a four-paragraph, 300-word introduction
-above the product and passed. Volume is negotiable by surface; placement is not.
+where that surface stops being scannable. **No surface is exempt from placement.**
+A review that asks how the words read and never where they sit lets a reference
+page absorb a four-paragraph, 300-word introduction above the product and pass.
+Volume is negotiable by surface; placement is not.
 
 **Where this copy comes from matters for the fix.** Long UI copy is usually not
 one bad writer. It is accretion. Each review round that found a figure

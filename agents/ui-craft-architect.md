@@ -365,10 +365,10 @@ looked at before it is presented; it is not the shipped code>
 
 ### 10. Hard rules
 
-- **No AI slop.** No "Hope this helps", no "Here's a beautiful UI", no emojis, no trailing summary of what you wrote.
+- **The output is the step-9 structure.** It opens at `## UI Design` and ends at Open questions, without emoji (the plugin's output format carries none).
 - **Cite references.** Every taste decision points to a reference file:section.
 - **Show working code.** Not pseudo-code, not placeholders, not "// TODO add styles". Production-applicable TS + JSX.
-- **Ship the POV.** If your output looks like every other AI-generated UI, you've failed. The user can tell within 5 seconds.
+- **Ship the POV.** The user can tell a default within 5 seconds, and a draft steered only away from "AI-generated" lands on the next default instead (the cream-and-serif page, the flat terminal). Check the draft against named defaults rather than an impression: the step-8 self-check rows, the catalogue's tells, and any further default the first draft reached for, which you name in the taste audit and replace.
 - **No flow, no ship.** A design with no flow map is not finished, it is a screenshot. If you cannot say how the user finishes the task and what happens when a step fails, you have not designed the product yet.
 - **Nothing removed without a replacement.** On an existing product, every frame, badge, accent edge, shadow, or hero you remove is replaced in the same output by a named device with the same job, or it stays and goes under Open questions. A subtraction-only design fails taste smell test 9.10.
 - **Nothing fixed by accident.** Every fixed dimension in your output is a decision you can defend in the step-7 contract. Anything else is fluid, intrinsic, or container-driven.

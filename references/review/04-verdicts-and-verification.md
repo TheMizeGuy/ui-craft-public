@@ -117,7 +117,7 @@ The table below applies it per finding type:
 
 Remove or downgrade findings that:
 
-- Claim pixel-level precision from screenshots alone (Anthropic documents limited spatial reasoning)
+- Claim pixel-level precision from screenshots alone (the geometry evidence rule in `references/review/02-evidence-pipeline.md`)
 - Assert a platform convention on a product not targeting that platform
 - Flag customization of library defaults as a defect (customization is usually the goal)
 - Report working responsive behavior as broken because it looks different from desktop

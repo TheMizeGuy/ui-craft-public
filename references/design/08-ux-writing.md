@@ -91,23 +91,23 @@ What never varies by POV: active voice, user-side naming, outcome-stating confir
 | Placeholders | Demonstrate format ("name@company.com"), never instructions; instructions belong in labels or help text that persists |
 | Units and currency | Attached to the value, once per group in dense tables (column header carries the unit) |
 
-## 4b. Length: the rule this file was missing
+## 4b. Length
 
-Everything above governs how copy READS. None of it governs how much of it there
-is, and that omission has a shipping history: an admin dashboard accumulated
-fifteen visible paragraphs over three lines each (the worst a 121-word hint on
-a settings form, a 71-word banner, nine explanatory paragraphs around one form),
-and every UX-writing pass over it came back clean, because every individual
-sentence was clear, correctly toned and accurate.
+Everything above governs how copy READS; this section governs how much of it there
+is. A pass that checks each sentence for clarity, tone and accuracy approves a
+screen where every sentence is fine and the total is a wall: an admin dashboard
+with fifteen visible paragraphs of more than three lines each (the worst a 121-word
+hint on a settings form, a 71-word banner, nine explanatory paragraphs around one
+form) passes every sentence-level copy review.
 
 **The bar.** In a control surface (dashboard, settings, form, admin panel, any
 interface where words sit between a person and their task), a visible paragraph
-runs to **30 words**. That is roughly three lines at a 35em measure. Marketing
-pages, documentation and onboarding are no longer exempt: every other surface
-has its own bar, and every surface has placement rules
-(`references/design/12-copy-placement-and-volume.md` § 3). That exemption is
-what let a four-paragraph introduction sit above a data table through every copy
-review it ever had.
+runs to **30 words**. That is roughly three lines at a 35em measure. Every other
+surface, marketing pages, documentation and onboarding included, has its own bar
+(long-form reading gets a structure rule instead of a paragraph bar), and every
+surface has placement rules (`references/design/12-copy-placement-and-volume.md` § 3).
+Those bars and placement rules are what keep a four-paragraph introduction from
+sitting above a data table through every copy review.
 
 **Lead and detail, not deletion.** Over the bar, split it: the load-bearing
 fact stays visible, the qualifications move into a `<details>` with a summary

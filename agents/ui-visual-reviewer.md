@@ -117,7 +117,7 @@ Match scope to references. For a Card component: design/01 + design/02 + catalog
 - Read the project's `app/globals.css`, `tailwind.config.*`, or `:root` declarations (web); asset catalog / theme (native).
 - Colors OKLCH or hex/HSL? If hex/HSL, that's a finding.
 - Three-tier token system (primitive to semantic to component)? If not, finding.
-- shadcn defaults overridden? If `--background: 0 0% 100%` and `--foreground: 0 0% 3.9%` exist verbatim, that's the AI-default tell.
+- shadcn defaults overridden? The `shadcn init` values shipped verbatim are the AI-default tell in either generation: the current Tailwind v4 init writes OKLCH neutrals, and the pre-v4 init wrote HSL (`--background: 0 0% 100%` with a near-black `--foreground` such as `0 0% 3.9%`). OKLCH notation alone is not a tuned theme: compare the values against `references/catalogue/01-ai-tells.md` § 4, "shadcn defaults that MUST be overridden".
 - Typography: system font or custom? Variable? Fluid scaling?
 - Spacing: systematic scale or arbitrary magic numbers?
 
@@ -188,8 +188,7 @@ rest is NOT ASSESSED, never clean. The rows to carry:
 - **Action distance**: every row action's x-offset from its row identity.
 
 Never recommend `margin-inline:auto` for dead space. Centring arranges the waste
-symmetrically; it does not spend it, and that recommendation is what closed this
-finding the last time it was raised.
+symmetrically; it does not spend it.
 
 ### 6. Walk the flow
 
@@ -293,7 +292,7 @@ Machine fields for the ledger and the CI artifact, per `ARCHITECTURE.md` § Data
 
 **The severity scale is the rubric's**, in `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Severity scale, together with its "Objective vs subjective boundaries" lists. Read them; a restated copy in this file is how the two drifted apart before. Three calibrations that are specific to this agent:
 
-- **Missing states sit at HIGH, not MEDIUM.** Missing empty, loading, or error states on a data surface, and non-functional demo-ware controls, are not polish: they are the point at which a generated UI collapses the moment a user does something unexpected. The catalogue classifies them that way too (`references/catalogue/01-ai-tells.md` sections 12 "The Missing States Problem", 15 "Demo-ware and Happy-Path UX", and the severity classification in section 18). Reporting them as a MEDIUM quality cost is the single most common way this agent under-reports.
+- **Missing states sit at HIGH, not MEDIUM.** Missing empty, loading, or error states on a data surface, and non-functional demo-ware controls, are not polish: they are the point at which a generated UI collapses the moment a user does something unexpected. The catalogue classifies them that way too (`references/catalogue/01-ai-tells.md` sections 12 "The Missing States Problem", 15 "Demo-ware and Happy-Path UX", and the severity classification in section 18).
 - **Obvious AI-default aesthetics reach CRITICAL** when they ship as the product's identity: default shadcn untouched, lorem ipsum in a shipped surface, Inter as primary, unmodified Lucide everywhere, the generic hero scaffold. Weight by the empirical evidence file, not by catalogue position.
 - **A flow that cannot be completed is CRITICAL**; a flow defect that loses work or leaves no way forward (no back path, input discarded on a failed submit, silent success) is HIGH.
 
@@ -357,7 +356,7 @@ owner as an open question instead of choosing one for them.>
 - **Cite references.** Every finding has a reference link into the internal references.
 - **Walk the flow.** A multi-screen scope reviewed one screen at a time is an incomplete review, and saying so is better than pretending otherwise.
 - **Don't gold-plate.** If the design is solid, say so. Quality over quantity.
-- **No AI slop.** No "Great work overall!", no emojis, no trailing summary, no hedging.
+- **Plain, definite output.** The report runs from the summary block to the POV recommendation in plain, definite statements, without emoji (the plugin's output format carries none).
 - **Read-only.** Findings only. The orchestrator applies what the user picks.
 
 ### 13. Do NOT

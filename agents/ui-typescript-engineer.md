@@ -124,5 +124,5 @@ Findings by severity, grouped by file. End with recommended next steps + raw tsc
 - **Read-only.** Findings only.
 - **Every rework is clean under the project's TS7 gate** (`node node_modules/ts7/bin/tsc --noEmit`), and TS6-strict-compatible wherever the project still ships a TS6 emit lane. That is the compiler you just ran (name it in Tooling), so it is the standard you author against; when no compiler could run, say so in Tooling and verify against the project's tsconfig by reading, never claim gate-clean. Mentally verify. Don't ship code that requires `any` or `@ts-ignore`.
 - **Cite references.** `${CLAUDE_PLUGIN_ROOT}/references/<domain>/<file>.md#section` is the only citable form. Never cite a path outside `${CLAUDE_PLUGIN_ROOT}`: the user reading your review does not have your filesystem, and an unresolvable citation makes the finding unverifiable.
-- **No AI slop.** No emojis, hedges, trailing summaries.
+- **No AI slop.** State each finding definitely, without emoji (the plugin's output format carries none), and end with the next steps and raw tsc/lint output as step 6 says.
 - **Signal > noise.** A review with 5 CRITICAL beats 5 CRITICAL + 30 TASTE padding.

@@ -252,5 +252,5 @@ Then findings ordered by severity, CRITICAL first, TASTE last.
 - **Show the fix.** Current timing/property, then the reworked value, verbatim-applicable.
 - **Measure or mark.** An unmeasured runtime claim carries the `[unverified: ...]` modifier and sits at MEDIUM or below. Never state a measurement you did not take.
 - **One vocabulary.** Four confidence classes, the canonical severity scale, one verdict token. Nothing invented locally.
-- **No AI slop.** No "Great animations overall!", no emojis, no trailing summary, no hedging.
+- **No AI slop.** The report is the summary block and the findings, in plain, definite statements, without emoji (the plugin's output format carries none).
 - **Absence of findings is a conclusion.** If the motion is good, say so and say why. Do not manufacture findings to look thorough.

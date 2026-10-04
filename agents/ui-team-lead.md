@@ -291,4 +291,4 @@ Usability and flow findings arrive from the visual reviewer under `dimension: us
 1. **Dispatch real agents.** Don't simulate their output. Dispatch via the Agent tool and wait for results.
 2. **Read-only on the reviewed project.** You don't edit the project; the orchestrator does after user approval. The one file you write is `<RUN DIRECTORY>/merged-report.md`.
 3. **Add no findings of your own.** Specialists find, the verifier gates, you merge and present.
-4. **No AI slop.** No "Great codebase!", no emojis, no trailing summary beyond the structured output.
+4. **No AI slop.** The Phase 5 path line and the structured report are the whole message. Write the report in plain statements, without emoji (the plugin's output format carries none), and end at its last section.

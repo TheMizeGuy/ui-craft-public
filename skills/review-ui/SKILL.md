@@ -92,7 +92,7 @@ Determine the level with the three checks in `${CLAUDE_PLUGIN_ROOT}/references/r
 
 Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` first: it scans the repo's docs, lint rules and tests for text-volume floors, CSS pin assertions, blanket bans on substance devices and lint rules that forbid a visual property, and prints them in the canonical finding shape (`visual-doctrine-<slug>`, `Doctrine:` titles, MEDIUM). Its output is the base of this step; the manual read below adds what a grep cannot see (a doctrine paragraph phrased without the trigger words, a test that pins a literal through a helper).
 
-A review that reads only components misses the thing that will revert its fixes. A product stayed flat through six campaigns because its doctrine files, CSS pin tests and word-count floor tests enforced the flatness and the padding, and no review ever read them (owner directive 2026-09-22). Read, in the reviewed repo:
+A review that reads only components misses the thing that will revert its fixes: the repo's own doctrine files, CSS pin tests and word-count floor tests can enforce flatness and padding, and every fix that ignores them gets reverted. Read, in the reviewed repo:
 
 - the UI sections of `CLAUDE.md` and `AGENTS.md`;
 - `design/*.md`, in particular a `POV.md` and a `known-debt.md`;
@@ -120,7 +120,7 @@ DOCTRINE CONSTRAINTS:
 
 ### Step 3c: Source the OWNER VETOES block
 
-Standing decisions about this product that a remediation must not land on. A correct remediation once violated a recorded veto (no pill chips, no emoji, no rainbow bars, mono for code only) purely because the dispatch never carried it. Source the vetoes in this order, taking the first that exists and merging in anything a later source adds:
+Standing decisions about this product that a remediation must not land on. Even a correct remediation lands on a recorded veto (no pill chips, no emoji, no rainbow bars, mono for code only) when the dispatch does not carry it. Source the vetoes in this order, taking the first that exists and merging in anything a later source adds:
 
 1. the reviewed repo's `design/POV.md`, its `## Banned (concrete)` and `## Must be present` lists;
 2. the UI section of its `CLAUDE.md` or `AGENTS.md`;
@@ -324,7 +324,7 @@ After presenting the report, write (or overwrite) `.claude/ui-craft/last-review.
                             "imagesPerSection": 0.6, "wordsBeforePrimary": 22, "orphanParagraphs": 0, "textOnlySections": 0}}}
 ```
 
-`measurements` is optional and keyed by width: on a browser run, the numbers `measure_substance.js` and `measure_density.js` printed at 1920 (and at the widest width when it differs), copied verbatim. A code-only run omits the key rather than writing estimates. It is what lets the next run report **SUBSTANCE REGRESSED** (Step 7): the six campaigns that each stripped the previous one's edges, badges and accent had no number to compare against.
+`measurements` is optional and keyed by width: on a browser run, the numbers `measure_substance.js` and `measure_density.js` printed at 1920 (and at the widest width when it differs), copied verbatim. A code-only run omits the key rather than writing estimates. It is what lets the next run report **SUBSTANCE REGRESSED** (Step 7): without a stored number, a pass that strips the previous pass's edges, badges and accent has nothing to be compared against.
 
 Carry forward any prior entry whose dimension is absent from `dimensions` this run, unchanged and whether or not Step 1 loaded the ledger as a baseline, so a narrow review never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
 
@@ -344,9 +344,9 @@ When the reviewed repo has a `ci/ui-craft-gate.sh` gate or a `.claude/ui-craft-a
 
 If the user picks findings ("all CRITICAL", "finding 3 and 7", "everything in <filename>"), YOU apply them using Edit/Write. Do not re-dispatch a reviewer. This is the only step in which this skill modifies the reviewed project.
 
-Three limits on what you apply, each from a shipped failure:
+Three limits on what you apply:
 
-- **Never turn the report into a "remove the slop" sweep.** Apply the findings the user named and nothing adjacent. A campaign that strips every framed panel, badge, accent edge and elevation because each shape appears in the catalogue has replaced one default with a flatter one (owner directive 2026-09-16).
+- **Never turn the report into a "remove the slop" sweep.** Apply the findings the user named and nothing adjacent. A campaign that strips every framed panel, badge, accent edge and elevation because each shape appears in the catalogue has replaced one default with a flatter one.
 - **Never apply a removal whose replacement the user has not seen.** If the replacement device was not in the report, ask before applying, or leave the finding open.
 - **Never apply a device the `OWNER VETOES` block bans**, even when the report proposed it. Substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave it.
 

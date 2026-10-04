@@ -15,8 +15,7 @@ not about a platform's navigation widget (`references/platform/02-apple-overlay.
 focus and the correct component to use. This covers whether the structure those
 components express is the right one.
 
-Before this file existed, every navigation reference in the plugin was one of
-those two things, which meant a reviewer could confirm that a `NavigationStack`
+Those two kinds of reference alone let a reviewer confirm that a `NavigationStack`
 was used correctly while the app was six levels deep, gave no indication of the
 current section, and stranded anyone who arrived from a shared link. IA defects
 are the most expensive class to fix after launch, because fixing them moves URLs,

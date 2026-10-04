@@ -159,11 +159,11 @@ Named coverage without criteria is not coverage. Check these explicitly, on any 
 
 - **Viewport utilisation under 60% at 1920px or above**, with no second column,
   sidebar or reading-measure reason, measured, as a percentage plus the unused
-  pixel count. This is FIRST on the list on purpose: it used to live only in
-  step 9 below, where a severity ladder anchored on breakage could not lift it
-  above TASTE, and a dashboard wasting 1008px of a 2560px display passed every
-  wide-viewport review it was given. Centring is not the fix: two 504px gutters
-  waste what one 1008px gutter did
+  pixel count. This is first on the list on purpose: listed only among step 9's
+  quality defects, it would sit under a severity ladder anchored on breakage,
+  which cannot lift it above TASTE, and a dashboard wasting 1008px of a 2560px
+  display passed every wide-viewport review it was given. Centring is not the
+  fix: two 504px gutters waste what one 1008px gutter did
 - **A container child hoarding the slack**, an unsized column in a
   `table-layout:fixed`, an `auto` margin, a bare `1fr` beside fixed siblings.
   Invisible at the width it was authored against, unbounded above it, and a wide
@@ -183,7 +183,7 @@ Named coverage without criteria is not coverage. Check these explicitly, on any 
 - Page height in viewports, and how many sections are disclosed. Over 2x
   viewport with zero `<details>` is a finding; so is any non-primary section
   over 40% of page height
-- Excessive dead space on large displays (see step 8, it is an always-flag now)
+- Excessive dead space on large displays (always flagged: the threshold is in step 8, the severity in step 13)
 - Line lengths > 75ch on wide screens
 - Proportions comically stretched/cramped
 - Awkward breakpoint jumps: a layout that visibly snaps between two states with nothing in between is the stepped-sizing defect from step 3 showing up visually

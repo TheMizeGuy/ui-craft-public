@@ -69,7 +69,7 @@ Mood-keyed starting points; the full type system (scale caps, display tightening
 
 | Mood | Seed pairing (display + body) | Note |
 |---|---|---|
-| House default (any mood, 2026-07-17 directive) | SF Pro / system stack throughout; Poppins display for modern-elegant moments | The fleet's main go-to -- reach here first; weight + optical size differentiate. On web, "SF Pro" means the `-apple-system` system stack (never self-host SF Pro files) |
+| House default (any mood, 2026-07-17 directive) | SF Pro / system stack for body and UI text, plus a display face distinct from it (Poppins for modern-elegant moments, or the brand's own) | The fleet's main go-to -- reach here first; weight + optical size differentiate. It counts as a type decision only under the checkable rule in `references/design/02-typography.md` § 2: a `--font-display` distinct from `--font-sans`, explicit heading weight and tracking, and three or more weights or optical sizes in use. On web, "SF Pro" means the `-apple-system` system stack (never self-host SF Pro files) |
 | Tech/startup | Space Grotesk + DM Sans (weights and tracking tuned, never the unmodified shadcn dashboard defaults) | Solid; consider Söhne to sharpen it |
 | Minimal Swiss | Single sans throughout (Söhne, Untitled Sans; Geist only with tuned weights and tracking and never the stock Geist Sans + Geist Mono stack -- catalogue T4) | One family, weights and optical sizes do the work |
 | Editorial classic | Cormorant Garamond + Source Serif 4 | Serif + serif works when measure and leading are disciplined. Cormorant is on the catalogue's cream-serif-sage serif list: keep the page off cream and sage or mark `anti-slop-allow` |

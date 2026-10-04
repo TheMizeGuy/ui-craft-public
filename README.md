@@ -213,7 +213,7 @@ Neither the agent frontmatter nor the skills' dispatches pin a model or effort; 
 | `09-token-drift-and-retints.md` | Why a palette change ships half-applied: literals that shadow tokens, the drift audit, and keeping a retint coherent end to end |
 | `10-hero-and-section-architectures.md` | Six named hero architectures, hero typography/palette/atmosphere specs, the objection sequence, per-type section architectures, and the visual-rhythm rules that prevent the wall-of-same page |
 | `11-image-to-code-replication.md` | Seven-layer extraction for screenshot-to-code work: proportional grid measurement, font identification by letterform, color sampling from compressed sources, radius language, atmosphere fidelity, responsive inference, the artistic-asset rule, the replication diff |
-| `12-copy-placement-and-volume.md` | Where words go and how many: every paragraph has a headed home at a measure, the product comes first (one lede above it), per-surface budgets that replace the old marketing and documentation exemption, text-only runs, slot independence, the copy map, and the three placement tells |
+| `12-copy-placement-and-volume.md` | Where words go and how many: every paragraph has a headed home at a measure, the product comes first (one lede above it), per-surface budgets for every surface type, text-only runs, slot independence, the copy map, and the three placement tells |
 
 ### aesthetic/ (6 files)
 

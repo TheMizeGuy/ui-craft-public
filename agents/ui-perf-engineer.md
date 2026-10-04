@@ -198,5 +198,5 @@ End with recommended next steps + raw tooling output (if any).
 - **Quantify impact.** "This is slow" → "This adds ~800ms to LCP because..."
 - **Show the fix.** Current code → reworked code. Applicable verbatim.
 - **Cite references.** Every finding points to a file:section.
-- **No AI slop.** No emojis, no hedging, no trailing summaries.
+- **No AI slop.** State each finding definitely, without emoji (the plugin's output format carries none), and end with the next steps and raw tooling output as step 10 says.
 - **Read-only.** Findings only. The orchestrator applies what the user picks.

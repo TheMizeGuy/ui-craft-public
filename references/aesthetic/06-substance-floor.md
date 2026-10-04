@@ -7,16 +7,14 @@ audience: ui-designer, ui-reviewer
 
 # The Substance Floor: What a Surface Must HAVE
 
-Every other file in this library tells you what to take away. The catalogue lists
-tells to avoid, the taste checklist fails you for excess, the mirror pass removes
-one accessory, the density dimension catches waste. All of that is one-directional:
-a rule against too much. Nothing in the library, before this file, failed a design
-for having too little. So a model following the library converged on the cheapest
-way to clear every rule at once: remove everything. Grey neutrals at chroma zero,
+Most of this library tells you what to take away. The catalogue lists tells to
+avoid, the taste checklist fails you for excess, the mirror pass removes one
+accessory, the density dimension catches waste. A model following only rules against
+too much clears them all most cheaply by removing everything: grey neutrals at chroma zero,
 one hairline at 8% alpha, no elevation, badges and edges stripped, colour only for
-status, the system stack at default weights on every surface. It passes every
-audit and it is the 2026 AI default (owner directive 2026-09-16, after six site-wide
-campaigns on one data product each rendered it flatter than the last).
+status, the system stack at default weights on every surface. That passes every
+rule against excess, and it is the 2026 AI default (catalogue V13; owner directive
+2026-09-16).
 
 This file is the other direction. It is a floor, expressed as measurements a
 reviewer can quote and a designer can design to, and it binds every path in the
@@ -74,8 +72,8 @@ render, and on a code-only pass they are NOT ASSESSED, never PASS.
 | S6 | **Imagery and iconography.** Marketing and content pages carry at least one real image or figure per two sections; entity rows (items, classes, products, people, teams) carry their icon, thumbnail, logo or avatar wherever the domain has one. "No real images at all, every section is icon-cards and abstract shapes" is one of the most-cited AI complaints (`catalogue/01-ai-tells.md` § 7 detection cues) and this row gives it a number | [code] count `img` / `picture` / `figure` per `section`; [browser] `measureSubstance()` reports `imagesPerSection` and `textOnlySections` | HIGH when zero images on a marketing or content page; MEDIUM below the ratio |
 | S7 | **Hierarchy in more than one channel, and identity colour at full strength.** Hierarchy uses at least three of: weight, size, colour, containment, space, iconography. A system where every element sits under chroma `0.03` with no containment is monochrome by accident. Where the domain owns a colour vocabulary (item quality, class or faction, tiers, brand lines), those colours render at their canonical saturation; a desaturated identity colour is a defect, not restraint | [code] read the type scale (at least three distinct weights or optical sizes in use), the neutral ramp, and any identity palette; [browser] `measureSubstance()` reports `hueCount` and `weightCount` | HIGH when only one channel carries hierarchy; MEDIUM when identity colours are muted |
 
-Section 5 of `references/aesthetic/03-taste-checklist.md` mirrors these rows as
-its section 1b; the numbers here are the source of truth and that file copies them.
+`references/aesthetic/03-taste-checklist.md` § 1b mirrors these rows; the numbers
+here are the source of truth and that file copies them.
 
 **What this floor is not.** It is not a quota for decoration. A page can pass all
 seven with one accent, one photograph, three surface levels and a type scale, and

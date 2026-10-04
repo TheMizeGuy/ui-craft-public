@@ -37,8 +37,7 @@ The single dense checklist for pre-ship taste audit. Run it before any UI ships.
 ## 1b. Substance Audit (7)
 
 Every other section here fails a design for excess. This one fails a design for
-having too little, which is the failure six consecutive review campaigns on one
-data product had no row to catch. `references/aesthetic/06-substance-floor.md`
+having too little, which no excess row can catch. `references/aesthetic/06-substance-floor.md`
 § 1 is the source of truth for these seven checks and this section copies it,
 thresholds and severities included; where the two ever disagree, that file wins.
 A failure without a stated reason is a finding at the severity in the last column.

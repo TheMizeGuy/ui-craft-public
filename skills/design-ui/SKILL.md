@@ -28,7 +28,7 @@ The substance floor and the accessibility floors keep their protective intent ev
 
 ## Stack awareness
 
-TypeScript + React + Tailwind v4 is the primary, default output path, and the acceptance criteria below assume it. The design invariants are stack-agnostic: a committed POV, an OKLCH-based token system, the anti-AI-tells catalogue floor, the responsive floor, and the taste gate apply whether the target is React, Svelte, Vue, or plain HTML/CSS. For a non-TS/React web stack, the architect keeps those invariants and adapts the code target (design tokens, component structure, responsive strategy, and taste audit still ship); the OKLCH-only and TS-strict rules relax only where the platform cannot express them. For native iOS or Android UI design, use `apple-ui-craft` instead: this skill's scope stops at web and cross-platform-web stacks.
+TypeScript + React + Tailwind v4 is the primary, default output path, and the acceptance criteria below assume it. The design invariants are stack-agnostic: a committed POV, an OKLCH-based token system, the anti-AI-tells catalogue floor, the responsive floor, and the taste gate apply whether the target is React, Svelte, Vue, or plain HTML/CSS. For a non-TS/React web stack, the architect keeps those invariants and adapts the code target (design tokens, component structure, responsive strategy, and taste audit still ship); the OKLCH-only and TS-strict rules relax only where the platform cannot express them. For native iOS UI design, use `apple-ui-craft` instead; native Android design is out of scope too. This skill's scope stops at web and cross-platform-web stacks.
 
 ## Step 1: Parse the brief
 
@@ -37,7 +37,7 @@ The user passed a description (may be empty). Extract:
 - Any stated constraints ("dark theme", "minimal", "dense dashboard")
 - Any stated POV ("like Linear", "editorial", "tactical")
 - Any stated framework/platform (React, Next.js, Svelte, SwiftUI, static HTML, etc.)
-- The **visual reference**: a screenshot, a named product, or the repo's existing identity that the owner approved as the target. With none, and no `design/POV.md` in the repo, the POV is grounded in the subject instead: the architect's step 3b five-things list plus a named non-UI anchor (a material, a place, a print tradition, an artefact), two or three concrete candidate directions it chooses between, and the one it took marked `reference proposed` for you to confirm at Step 6. What Step 6 rejects is a POV routed from the product category — dense data, an expert audience or a dark existing theme selecting a look — never a POV with no screenshot behind it (owner directive 2026-09-16).
+- The **visual reference**: a screenshot, a named product, or the repo's existing identity that the owner approved as the target. With none, and no `design/POV.md` in the repo, the POV is grounded in the subject instead: the architect's step 3b five-things list plus a named non-UI anchor (a material, a place, a print tradition, an artefact), two or three concrete candidate directions it chooses between, and the one it took marked `reference proposed` for you to confirm at Step 6. What Step 6 rejects is a POV routed from the product category — dense data, an expert audience or a dark existing theme selecting a look — never a POV with no screenshot behind it.
 - The **surface type** for the copy budgets (`${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md` § 3): control (dashboard, settings, form, admin), content or reference (entity page, database page, guide index), marketing, or article. A page can hold two; name both.
 - The **subject, audience and job**, when the brief states them. When it does not, the architect proposes them (marked `proposed`) and you confirm at Step 6; nothing here blocks the dispatch.
 - The **display range** the design must survive. If the user did not say, take the default from `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: the narrowest width (320, the WCAG 1.4.10 reflow target), a modern mobile width (390), **900** (the width nobody designs at, where fluid failures live and nowhere else), a laptop width (1440), the most common desktop width (1920, where the density thresholds are calibrated), and the widest the product will realistically see (2560, where dead space becomes measurable). Plus any width where the product's existing breakpoints already fire.
@@ -300,7 +300,7 @@ Use the Agent tool:
 
 ## Step 5: Render it, look at it, then audit it
 
-Generated code is code. It gets reviewed before it is presented, not after it ships. And a design nobody has looked at is not reviewed: a dashboard once passed eight specialist reviews while wasting 39% of the display because every reviewer read source and nobody opened a page.
+Generated code is code. It gets reviewed before it is presented, not after it ships. And a design nobody has looked at is not reviewed: reviewers who read only source miss wasted display width and flatness that a render shows at a glance.
 
 ### Step 5a: Render and look (when a browser tool exists)
 

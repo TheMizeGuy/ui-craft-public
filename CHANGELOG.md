@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.6.5 — 2026-10-04
+
+Releases the 2026-10-04 prompt-audit fixes that sat under Unreleased: the
+agents state their output rules positively, the steering text gives its
+reasons in the present tense instead of as history, and the contradictions the
+audit found between agents, skills and references are resolved.
+
+Applies the ui-craft findings of the 2026-10-04 prompt audit. Steering text,
+references and `CLAUDE.md`; no scanner, corpus, schema or CI change, no freedom
+ceiling or dogfood count moves, and the reference count stays 60.
+
+- **Output rules stated positively.** The eight agents' closing output rule drops
+  its banned stock phrases ("Great start!", "Hope this helps", "Great work
+  overall!") and its lists of tics, and states the report's shape instead: where
+  it starts and ends, plain and definite statements, no emoji. Five keep the name
+  "No AI slop"; the anti-slop auditor and the visual reviewer call it "Plain,
+  definite output", the architect "The output is the step-9 structure". The
+  auditor's "Be brutal" becomes "Be direct", the architect's "Ship the POV" names
+  the defaults to check against instead of "looks AI-generated", and the visual
+  reviewer drops its trait claim about under-reporting.
+- **Present-tense reasons instead of history.** The passages the audit named lose
+  their incident stories (six campaigns, eight reviews, "the last time it was
+  raised"), dated owner-directive tags, release-number references and "used to",
+  "no longer" and "before this file" phrasing. Each rule keeps its reason, stated
+  in the present tense.
+- **Contradictions resolved.** `ui-verifier` cites
+  `references/review/04-verdicts-and-verification.md` § Evidence sufficiency (the
+  section it named did not exist) and sends an unmeasured substance claim to
+  TASTE, as its own addition 5 and that table already did. `ui-visual-reviewer`'s
+  shadcn check names the Tailwind v4 OKLCH init as well as the pre-v4 HSL pair.
+  The house font default in `references/aesthetic/04-style-taxonomy.md` and the
+  catalogue's house font doctrine count as a type decision only under the
+  checkable rule in `references/design/02-typography.md` § 2. The Linear exemplar
+  in `references/aesthetic/01-point-of-view.md` reads tabular numerals.
+  `optimize-ui` acceptance criterion 2 accepts a loading-choreography finding's
+  user-visible consequence as its impact line, as the perf engineer is told to
+  write it. `design-ui` sends native iOS design to `apple-ui-craft` and calls
+  native Android design out of scope. `references/aesthetic/06-substance-floor.md`
+  cites the taste checklist's § 1b, where it said section 5. `design/08` § 4b,
+  `design/12` and `review/05` state the per-surface bars without the retired
+  exemption.
+- **Screenshot geometry.** `references/review/02-evidence-pipeline.md` and
+  `04-verdicts-and-verification.md` ground "a screenshot alone is never geometry
+  evidence" in re-measurability instead of a model-capability claim; the rule is
+  unchanged.
+- **`CLAUDE.md`**: the scorer gates recall, precision and the clean controls, and
+  exit 1 means any of them failed; the scripts sentence points at the Layout list;
+  the palette row matches Layout; the scrub-gate paragraph keeps every row and
+  drops its incident history.
+
 ## 0.6.4 — 2026-10-02
 
 Releases the 2026-10-02 instruction sweep that sat under Unreleased: the agents

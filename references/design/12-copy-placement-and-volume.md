@@ -8,9 +8,9 @@ audience: ui-designer, ui-reviewer
 # Copy Placement and Volume: Where Words Go, and How Many
 
 `design/08-ux-writing.md` governs how copy reads and, in its section 4b, how long a
-paragraph may run in a control surface. Neither it nor any other file governed
-WHERE a paragraph may sit, and section 4b exempted marketing, documentation and
-onboarding from any length bar at all. That gap has a shipping history: a
+paragraph may run in a control surface. This file sets WHERE a paragraph may sit on
+every surface, and the length bar for every other surface (a structure rule for
+long-form reading). Without those rules, copy fails in ways no sentence-level review catches: a
 four-paragraph, 300-word introduction above the product on a reference page; prose
 dropped between a card grid and a table with no heading over it; paragraphs that
 jumped position when a third-party slot beside them failed to render; pages the
@@ -19,7 +19,7 @@ navigate. Every sentence in them was clear, correctly toned and accurate, and ev
 copy review passed them, because the rules only asked how the words read.
 
 This file is the placement doctrine. It applies to every surface type, including
-the ones section 4b exempts, and it is a design input as much as a review rule: the
+long-form reading with no paragraph bar, and it is a design input as much as a review rule: the
 architect decides where every paragraph lives before writing one.
 
 ## 1. Every paragraph has a home
@@ -76,13 +76,13 @@ Two rules follow:
 
 ## 3. Budgets by surface type
 
-`design/08` § 4b keeps its 30-word paragraph bar for control surfaces. The other
-surfaces are no longer exempt; each has its own bar, chosen so the page stays
-scannable at the measure it renders in.
+`design/08` § 4b sets the 30-word paragraph bar for control surfaces. Every other
+surface has its own bar, or for long-form reading a structure rule, chosen so the
+page stays scannable at the measure it renders in.
 
 | Surface | Lede above the primary content | Any visible paragraph | Per section | First viewport |
 |---|---|---|---|---|
-| Control surface (dashboard, settings, form, admin) | One line or none | 30 words (existing rule) | One paragraph, or a helper per control | Prose under 10% of the viewport height |
+| Control surface (dashboard, settings, form, admin) | One line or none | 30 words (`design/08` § 4b) | One paragraph, or a helper per control | Prose under 10% of the viewport height |
 | Content or reference page (entity page, database page, guide index) | 40 words | 60 words | Two paragraphs, then a heading, list, table or figure | Prose under 25% of the first viewport; the primary content starts inside it |
 | Marketing page | 25 words (the hero subtext) | 50 words | Two paragraphs; sections answer one question each (`design/10` § 7) | The focal visual is inside the first viewport |
 | Article, documentation, long-form guide | Not applicable | No bar; the template is for reading | A heading every 250 to 350 words; lists and tables for enumerations | Its own route or template, measure 60 to 75ch |
