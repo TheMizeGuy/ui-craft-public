@@ -91,8 +91,7 @@ TASK:
 6. Quantify estimated impact for each finding ("+800ms LCP", "+0.15 CLS", "+120KB JS",
    "dropped frames on scroll").
 7. Output in the canonical finding format, with the impact line, plus `id`/`dimension`/`file`/`line`.
-8. Severity: CRITICAL (CWV threshold breach or visible jank), HIGH (significant cost),
-   MEDIUM (material), LOW (minor), TASTE (micro). Any unmeasured runtime claim carries
+8. Severity: your system prompt's step 9 scale. Any unmeasured runtime claim carries
    `[unverified: runtime measurement needed]` on its Evidence line and is capped at MEDIUM.
 9. End with perf budget check table + raw tooling output.
 

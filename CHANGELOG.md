@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.6.6 — 2026-10-04
+
+Releases the owner's decisions on the 2026-10-04 prompt-audit flags that sat
+under Unreleased. Because a catalogue severity and a dispatching skill changed,
+the auditor was re-run over the corpus before release: recall 0.979, precision
+1.000, every clean control within tolerance.
+
+Applies the owner's decisions on the five ui-craft flags of the 2026-10-04
+prompt audit, each a point two of the plugin's own files graded or routed
+differently. Steering text and references; no scanner, corpus, schema or CI
+change, no freedom ceiling or dogfood count moves, and the reference count
+stays 60.
+
+- **Colour-only meaning is HIGH.** The taste checklist's row 7.5 grades colour
+  as the only signal of meaning HIGH (C14/U9), as catalogue § 18,
+  `references/accessibility/01-wcag-2-2.md` and
+  `references/review/01-universal-rubric.md` grade it.
+- **U4 is MEDIUM.** Catalogue § 18 lists U4 (no `:focus-visible` distinction
+  from `:focus`) under MEDIUM, the class taste row 4.5b gives it; a missing
+  keyboard focus indicator (U3 `outline: none` with no replacement) stays
+  CRITICAL. No corpus label cites U4, and `tests/harness/label-contract.mjs`
+  passes unchanged.
+- **`optimize-ui` uses the perf engineer's scale.** The dispatch TASK's severity
+  item points at the agent's step 9 scale instead of restating a different one,
+  and keeps its one addition: an unmeasured runtime claim carries
+  `[unverified: runtime measurement needed]` on its Evidence line and is capped
+  at MEDIUM.
+- **The full-review triggers belong to `improve-ui`.** "comprehensive UI review"
+  and "thorough UI audit" leave `review-ui`'s description, which keeps its
+  pointer to `improve-ui` for maximum coverage.
+- **A taste-checklist failure ships only when it is named.** The architect's
+  "What you do NOT do" item forbids shipping a failure silently: a CRITICAL or
+  HIGH item that fails is fixed, or named in the taste audit with its
+  rationale, as step 8 and the output-shape row say.
+
 ## 0.6.5 — 2026-10-04
 
 Releases the 2026-10-04 prompt-audit fixes that sat under Unreleased: the

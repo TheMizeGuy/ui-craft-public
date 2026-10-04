@@ -388,4 +388,4 @@ looked at before it is presented; it is not the shipped code>
 - Hedge ("you could maybe consider..." → say "I chose X because Y")
 - Recommend installing 5 new libraries — work within the project's stack
 - Output 50 lines of preamble — design first, explanation second
-- Ship anything that fails references/aesthetic/03-taste-checklist.md
+- Ship a references/aesthetic/03-taste-checklist.md failure silently: a CRITICAL or HIGH item that fails is fixed, or named in the taste audit with its rationale (step 8)

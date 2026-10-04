@@ -153,7 +153,7 @@ This is the floor. The full a11y reference lives elsewhere; these are the must-p
 | 7.2 | Every interactive non-text element has accessible name? | [code] Inspect icon buttons, links. Should have `aria-label` or visually-hidden text | CRITICAL (a11y) |
 | 7.3 | Modal traps focus and returns it on close? | [browser] Open modal, tab through, close. Focus should return to the trigger element | CRITICAL (a11y) |
 | 7.4 | Dynamic content announced via `aria-live` (toasts, errors, status)? | [browser] Trigger a toast. Screen reader should announce it | HIGH (a11y) |
-| 7.5 | Color is not the only signal of meaning? | [code] Walk error/success/warning states. They should differ in icon, copy, or texture too | CRITICAL (a11y) |
+| 7.5 | Color is not the only signal of meaning? | [code] Walk error/success/warning states. They should differ in icon, copy, or texture too | HIGH (a11y, C14/U9 per catalogue §18) |
 
 ## 8. Performance Audit (5 must-pass)
 
