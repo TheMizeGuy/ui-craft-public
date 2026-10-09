@@ -191,6 +191,11 @@ see references/design/06-shadcn-customization.md.
 - The CI artifact and ledger schemas in `ARCHITECTURE.md` carry these same
   fields; a change to the names here is a schema change and bumps
   `schemaVersion` there.
+- Severity decides what blocks a merge. Under the CI gate's default blocking
+  policy only CRITICAL and HIGH findings block; MEDIUM, LOW and TASTE findings
+  ship recorded in the artifact's `evidence.open_findings` behind a YELLOW
+  verdict, and after two fix rounds on one change they are recorded rather
+  than chased (`ci/README.md`, Verdict policy).
 
 ## Objective vs subjective boundaries
 

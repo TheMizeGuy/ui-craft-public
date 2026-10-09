@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "urn:ui-craft:schema:verdict-artifact:v3",
   "title": "ui-craft verdict artifact (schemaVersion 3)",
-  "description": "Self-attested JSON verdict bundle written after a /ui-craft:improve-ui pass. Not signed and not cryptographically bound: its independent cross-checks are the reviewed-sha binding and the no-CRITICAL-finding rule that ci/ui-craft-gate.sh applies on top of this shape. The gate requires an artifact matching this schema -- every verdict GREEN, overall GREEN, blocker_findings empty -- before a UI-adjacent PR may merge, and it parses THIS FILE at runtime rather than reimplementing it, so every constraint declared here is enforced. Lineage: v1 was ui-review-artifact-schema, in production at LemonGames. v2 made 'reviewer' and 'scope' mandatory (a GREEN verdict with no attribution or scope is not trustworthy), made 'pr' optional (sha is the authoritative binding key), and added the antiAiAesthetic and typescriptSafety verdicts as optional. v3 promotes antiAiAesthetic to required (every UI surface can be judged for AI-default aesthetics, so omitting the key was a free way to drop the plugin's headline dimension from the gate) and adds the 'usability' finding dimension plus its optional verdict, so a task-flow defect can be recorded and gated instead of being unrepresentable.",
+  "description": "Self-attested JSON verdict bundle written after a /ui-craft:improve-ui pass. Not signed and not cryptographically bound: its independent cross-checks are the reviewed-sha binding and the no-CRITICAL-or-HIGH-finding rule that ci/ui-craft-gate.sh applies on top of this shape. The gate requires an artifact matching this schema before a UI-adjacent PR may merge: under the default blocking policy no verdict RED, blocker_findings empty, no CRITICAL or HIGH finding in any array, and every YELLOW backed by evidence.open_findings; under the opt-in strict policy (UI_CRAFT_GATE_POLICY=strict) every verdict and overall GREEN as well. It parses THIS FILE at runtime rather than reimplementing it, so every constraint declared here is enforced. Lineage: v1 was ui-review-artifact-schema, in production at LemonGames. v2 made 'reviewer' and 'scope' mandatory (a GREEN verdict with no attribution or scope is not trustworthy), made 'pr' optional (sha is the authoritative binding key), and added the antiAiAesthetic and typescriptSafety verdicts as optional. v3 promotes antiAiAesthetic to required (every UI surface can be judged for AI-default aesthetics, so omitting the key was a free way to drop the plugin's headline dimension from the gate) and adds the 'usability' finding dimension plus its optional verdict, so a task-flow defect can be recorded and gated instead of being unrepresentable.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,7 +20,7 @@
     "schemaVersion": {
       "type": "integer",
       "const": 3,
-      "description": "Artifact schema version. Bump on any field addition, rename, or type change; ui-craft-gate.sh reads this const and hard-rejects any other value."
+      "description": "Artifact schema version. Bump on any field addition, rename, or type change; ui-craft-gate.sh reads this const and hard-rejects any other value. The 0.6.7 blocking policy reads evidence.open_findings, a convention inside the already open 'evidence' object, so it added no field and the version stays 3."
     },
     "pr": {
       "type": "string",
@@ -72,7 +72,7 @@
     },
     "overall": {
       "$ref": "#/definitions/verdict",
-      "description": "Aggregate gate token. GREEN only when every present dimension (required and optional) is GREEN."
+      "description": "Aggregate gate token. GREEN only when every present dimension (required and optional) is GREEN; YELLOW when any is YELLOW and none is RED. An overall GREEN over a YELLOW dimension contradicts itself and fails the gate."
     },
     "blocker_findings": {
       "type": "array",
@@ -81,20 +81,20 @@
     },
     "high_findings": {
       "type": "array",
-      "description": "Findings with severity HIGH -- strongly recommended before merge but not gate-blocking on their own (a HIGH finding with all verdicts GREEN reflects a specialist's judgment call; the verdict, not the finding list, is what the gate enforces). A finding with severity CRITICAL filed here still fails the gate: severity, not which array it landed in, decides.",
+      "description": "Findings with severity HIGH -- must be fixed before merge. The derivation table in references/review/04-verdicts-and-verification.md gives a dimension with a HIGH finding a RED verdict, so since 0.6.7 the gate fails any artifact carrying a HIGH or CRITICAL finding in this array or any other, under either policy: severity, not which array it landed in, decides.",
       "items": { "$ref": "#/definitions/finding" }
     },
     "evidence": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Optional pointers to supporting screenshots, traces, or transcripts produced during the review."
+      "description": "Optional pointers to supporting screenshots, traces, or transcripts produced during the review. One key carries gate meaning: open_findings, an array of canonical findings (#/definitions/finding: id, dimension, severity, confidence, file, title) at severity MEDIUM, LOW or TASTE, the findings the review left open. Under the blocking policy every YELLOW verdict, a dimension's or overall, requires a non-empty open_findings, and the gate validates each entry against #/definitions/finding and fails any at CRITICAL or HIGH. It is a convention inside this open object rather than a declared property, so it changed no field."
     }
   },
   "definitions": {
     "verdict": {
       "type": "string",
       "enum": ["GREEN", "YELLOW", "RED"],
-      "description": "GREEN = ship. YELLOW = human decision needed, gate fails (no soft-pass). RED = blocker, gate fails."
+      "description": "GREEN = ship. YELLOW = ship with the open findings recorded in evidence.open_findings; it fails only under the strict policy. RED = blocker, gate fails."
     },
     "finding": {
       "type": "object",

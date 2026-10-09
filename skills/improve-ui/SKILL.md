@@ -292,12 +292,15 @@ Run the team lead in the foreground when the user is waiting on the report.
                  "runtime": "...", "antiAiAesthetic": "...",
                  "typescriptSafety": "<omit on non-TypeScript projects>",
                  "usability": "<omit unless 04-verdicts-and-verification.md defines a usability family>"},
-    "overall": "GREEN|YELLOW|RED", "blocker_findings": [], "high_findings": []}
+    "overall": "GREEN|YELLOW|RED", "blocker_findings": [], "high_findings": [],
+    "evidence": {"open_findings": []}}
    ```
 
    `schemaVersion` is the const in the schema (3 at time of writing); the gate hard-rejects any other value, so read it from `${CLAUDE_PLUGIN_ROOT}/ci/verdict-artifact-schema.json` rather than assuming. `sha` is mandatory and is the gate's binding key; `pr` is optional and additional, never a substitute. SIX `verdicts` keys are required: `visual`, `responsive`, `motion`, `accessibility`, `runtime`, `antiAiAesthetic`. Only `typescriptSafety` and `usability` may be omitted, because only those two can be genuinely inapplicable. Finding arrays use the canonical finding shape (`id`, `dimension`, `severity`, `confidence`, `file`, `title`, optional `line`/`evidence`).
 
-   Map each dimension's four-point verdict token to a gate token: best token to GREEN, second to YELLOW, third or fourth to RED. Worked example for the visual family (STRONG / ADEQUATE / WEAK / BROKEN): STRONG is GREEN, ADEQUATE is YELLOW, WEAK and BROKEN are RED. The dimension-name mapping (`performance` to `runtime`, `anti-ai` to `antiAiAesthetic`, `typescript` to `typescriptSafety`) is in `ci/README.md`. `overall` is GREEN only when every present verdict is GREEN, and a CRITICAL finding fails the gate whichever array it sits in.
+   Map each dimension's four-point verdict token to a gate token: best token to GREEN, second to YELLOW, third or fourth to RED. Worked example for the visual family (STRONG / ADEQUATE / WEAK / BROKEN): STRONG is GREEN, ADEQUATE is YELLOW, WEAK and BROKEN are RED. The dimension-name mapping (`performance` to `runtime`, `anti-ai` to `antiAiAesthetic`, `typescript` to `typescriptSafety`) is in `ci/README.md`. Write the verifier's real tokens. `overall` is GREEN only when every present verdict is GREEN, and YELLOW when any is YELLOW. A YELLOW dimension lists its MEDIUM, LOW and TASTE findings in `evidence.open_findings` (canonical finding shape). The gate's default blocking policy passes a YELLOW whose findings are recorded there and fails a RED verdict, a YELLOW with nothing recorded, and a CRITICAL or HIGH finding whichever array it sits in (`ci/README.md`, Verdict policy).
+
+   **The fix-round cap.** After two fix rounds on one change, the remaining MEDIUM, LOW and TASTE findings go into `evidence.open_findings` and the artifact is written with the verifier's real tokens. Each pass over a changed tree finds a fresh set of MEDIUM and LOW findings, so a re-run to chase GREEN does not terminate; a YELLOW artifact with its findings recorded is the normal way a reviewed change ships.
 
 ## Step 6: Post-application verification
 
@@ -307,7 +310,7 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 3. If Tailwind: check that `@theme` tokens are valid.
 4. If a browser is available: re-run `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` at 1920 and report the before/after numbers side by side -- accent chroma, surface levels and their boundary ratios, focal visual, image count, viewport utilisation, `wordsBeforePrimary`. A fix that was supposed to add substance and moved no number did not land, and a fix that removed a device without its replacement shows up here as a number going the wrong way.
 5. Report any breakage with the fix, and offer to iterate.
-6. Offer to re-run the full pass to verify the fixes, or an individual skill (`review-ui`, `optimize-ui`) on a specific area. Write a learning to the goodmem Learnings space, if goodmem is configured in this session, when a non-obvious pattern came up.
+6. Offer to re-run the full pass to verify the fixes while the change is inside its two fix rounds (Step 5 item 8, the fix-round cap), or an individual skill (`review-ui`, `optimize-ui`) on a specific area. Write a learning to the goodmem Learnings space, if goodmem is configured in this session, when a non-obvious pattern came up.
 
 ## Anti-patterns
 

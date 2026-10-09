@@ -37,7 +37,8 @@ table during the merge.
 
 A set flag caps its dimension at the 3rd token of its family, never the 1st or 2nd: a
 blocker means users excluded or a path broken, which is what the 3rd token names, and it maps
-to RED at the CI gate rather than YELLOW.
+to RED, which fails the CI gate, rather than YELLOW, which ships with its open findings
+recorded.
 
 | Flag | Dimension it caps |
 |---|---|
@@ -86,6 +87,15 @@ score:
 
 Only after the dimension table does an optional one-line overall summary belong -- it
 never replaces the blocker flags or the verdict table.
+
+The CI artifact carries these tokens as written: 1st token GREEN, 2nd YELLOW, 3rd and 4th
+RED. Under the gate's default blocking policy (`ci/README.md`, Verdict policy) RED and any
+CRITICAL or HIGH finding block the merge, and a YELLOW passes when the MEDIUM, LOW and TASTE
+findings behind it are listed in `evidence.open_findings`. After two fix rounds on one change,
+the remaining findings are recorded there and the change ships on the verifier's real tokens;
+each pass over a changed tree finds a fresh set of MEDIUM and LOW findings, so another pass to
+reach the 1st token does not terminate. A 2nd token earned by static evidence alone has no
+finding to record, so it fails the gate until that dimension has driven or measured evidence.
 
 ## Verifier rule set
 

@@ -12,9 +12,11 @@ cross-checks are the two below:
 
 1. **Reviewed-sha binding.** The artifact names the commit it was reviewed against, and the gate
    recomputes that commit from the diff. Push more UI changes and the artifact goes stale.
-2. **Self-contradiction.** A GREEN artifact that carries a CRITICAL finding, or any entry at all in
-   `blocker_findings`, fails. Deleting the finding to pass is a lie the reviewer has to tell on
-   purpose, which is a different thing from an omission nobody notices.
+2. **Self-contradiction.** An artifact that carries a CRITICAL or HIGH finding in any array, or any
+   entry at all in `blocker_findings`, fails: the derivation table makes a dimension with such a
+   finding RED, so a GREEN or YELLOW beside it contradicts itself. Deleting the finding to pass is a
+   lie the reviewer has to tell on purpose, which is a different thing from an omission nobody
+   notices.
 
 Files in this directory:
 
@@ -31,7 +33,7 @@ Verify the kit works before adopting it:
 
 ```bash
 bash ci/selftest.sh
-# -> 28 passed, 0 failed (exit 0)
+# -> 40 passed, 0 failed (exit 0)
 ```
 
 ## Which sha the artifact names
@@ -70,8 +72,9 @@ with `ui-verifier`, so it is the only skill that produces every verdict this gat
 specialists by design, so it cannot fill the six required verdicts, and a hand-completed artifact
 claiming dimensions nobody reviewed is worse than no artifact.
 
-Write the resulting per-dimension verdicts and any CRITICAL/HIGH findings into a JSON file matching
-`verdict-artifact-schema.json`, saved at:
+Write the verifier's per-dimension verdicts, any CRITICAL/HIGH findings, and the open MEDIUM, LOW
+and TASTE findings behind any YELLOW (in `evidence.open_findings`, see **Verdict policy** below)
+into a JSON file matching `verdict-artifact-schema.json`, saved at:
 
 ```
 .claude/ui-craft-artifacts/<PR_NUMBER-or-reviewed-short-sha>.json
@@ -109,7 +112,8 @@ A minimal all-GREEN artifact:
   },
   "overall": "GREEN",
   "blocker_findings": [],
-  "high_findings": []
+  "high_findings": [],
+  "evidence": { "open_findings": [] }
 }
 ```
 
@@ -144,6 +148,54 @@ convenience. Every UI surface can be judged for AI-default aesthetics, so "the a
 is a gap to fix, not a reason to omit the key, and while it was optional the path of least
 resistance for a failing anti-AI pass was to delete the key and pass. Only `typescriptSafety` and
 `usability` can be genuinely inapplicable, so only those two stay optional.
+
+## Verdict policy
+
+`UI_CRAFT_GATE_POLICY` picks the policy. Unset, or any value other than `strict`, means `blocking`.
+
+**`blocking` (the default).** Only CRITICAL and HIGH findings block a merge:
+
+- Every verdict and `overall` is GREEN or YELLOW. A RED verdict fails; the derivation table gives
+  RED only to a dimension with a HIGH or CRITICAL finding.
+- A YELLOW, a dimension's or `overall`, passes only when `evidence.open_findings` records the
+  findings behind it: a non-empty array of canonical findings at MEDIUM, LOW or TASTE. A YELLOW with
+  nothing recorded fails, because a verdict nobody can act on later is not a verdict.
+- `overall` is GREEN only when every present verdict is GREEN, and YELLOW when any is YELLOW. An
+  `overall` of GREEN over a YELLOW dimension fails as self-contradictory.
+
+**`strict` (opt-in, `UI_CRAFT_GATE_POLICY=strict`).** The rule before 0.6.7: every verdict and
+`overall` GREEN, so a single MEDIUM or LOW finding fails the merge.
+
+**Both policies** fail a non-empty `blocker_findings` and any CRITICAL or HIGH finding in
+`blocker_findings`, `high_findings` or `evidence.open_findings`, and validate each
+`evidence.open_findings` entry against the schema's finding definition. No value of the variable
+passes an artifact the blocking policy fails.
+
+A YELLOW artifact with its findings recorded differs from the GREEN one above in these fields:
+
+```json
+  "verdicts": {
+    "visual": "YELLOW", "responsive": "GREEN", "motion": "GREEN",
+    "accessibility": "GREEN", "runtime": "GREEN", "antiAiAesthetic": "GREEN"
+  },
+  "overall": "YELLOW",
+  "evidence": {
+    "open_findings": [
+      { "id": "visual-card-rhythm-uneven", "dimension": "visual", "severity": "MEDIUM",
+        "confidence": "Quality defect", "file": "src/Card.tsx", "line": 14,
+        "title": "Card padding drifts between 12 and 16px" }
+    ]
+  }
+```
+
+**The fix-round cap.** After two fix rounds on one change, the remaining MEDIUM, LOW and TASTE
+findings go into `evidence.open_findings` and the artifact carries the verifier's real tokens. Each
+pass over a changed tree finds a fresh set of MEDIUM and LOW findings, so rerunning the review to
+chase a GREEN does not terminate; a YELLOW artifact with its findings recorded is the normal way a
+reviewed change ships.
+
+`evidence` is an open object in the schema, so `open_findings` is a convention inside it rather
+than a new field, and `schemaVersion` stays 3.
 
 ## Pre-push hook wiring
 
@@ -203,7 +255,7 @@ the sentences above as "wire this up in your project", never as "this is already
 
 ## Configuration reference
 
-Every variable has a CLI flag twin; the flag wins. `bash ci/ui-craft-gate.sh --help` prints the
+Every variable but `UI_CRAFT_GATE_POLICY` has a CLI flag twin; the flag wins. `bash ci/ui-craft-gate.sh --help` prints the
 same table plus the live default pattern list.
 
 | Variable | Flag | Default | Purpose |
@@ -214,6 +266,7 @@ same table plus the live default pattern list.
 | `SCHEMA_FILE` | `--schema` | `verdict-artifact-schema.json` next to the script | The schema the artifact is validated against. Parsed at runtime, so editing it changes what the gate accepts |
 | `UI_PATHS_FILE` | `--ui-paths` | unset (built-in defaults) | Path to a file of glob patterns, one per line, `#` comments and blank lines ignored. Overrides the built-in pattern set entirely (not additive). A file yielding zero patterns is exit 2, not a silent pass |
 | `PR_NUMBER` | `--pr` | unset | PR number; artifact lookup tries `$ARTIFACT_DIR/$PR_NUMBER.json` before the sha-named file, and (when the artifact carries a `pr` field) is checked against it |
+| `UI_CRAFT_GATE_POLICY` | none | unset (`blocking`) | The verdict policy (see **Verdict policy** above): `strict` requires every verdict GREEN; anything else applies `blocking` |
 
 `GITHUB_SHA` is no longer read at all. See "Which sha the artifact names" above.
 
@@ -221,8 +274,8 @@ same table plus the live default pattern list.
 
 | Code | Meaning |
 |---|---|
-| `0` | No UI-adjacent change, or a UI change plus a valid all-GREEN artifact |
-| `1` | UI change with a missing, malformed, sha-mismatched, non-GREEN, or self-contradicting artifact |
+| `0` | No UI-adjacent change, or a UI change plus a valid artifact that passes the verdict policy |
+| `1` | UI change with a missing, malformed, sha-mismatched, or self-contradicting artifact, or one the verdict policy fails (a RED verdict, a YELLOW with no open findings recorded, any non-GREEN under `strict`) |
 | `2` | Usage or configuration error: unknown flag, missing flag value, unresolvable `HEAD_REF`, missing or unparseable schema, a `UI_PATHS_FILE` with no usable patterns, or a failed `git` invocation |
 
 The `2` row is the important one. A gate that cannot tell "no UI files changed" apart from "the

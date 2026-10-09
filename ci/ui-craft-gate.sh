@@ -8,12 +8,14 @@
 # committed verdict artifact for the reviewed tree, validates that artifact
 # against ci/verdict-artifact-schema.json -- the schema file is PARSED and
 # enforced at runtime, stdlib json only, no jsonschema dependency -- and
-# enforces that every verdict AND overall is GREEN before the merge proceeds.
+# blocks the merge on a RED verdict or a CRITICAL or HIGH finding, the
+# verdict policy below.
 #
 # The artifact is not signed and this script does not claim it is. It is a
 # self-attested verdict whose only independent cross-checks are the sha
-# binding below and the CRITICAL-finding check: an artifact that reports
-# GREEN while carrying a CRITICAL finding is rejected as self-contradictory.
+# binding below and the blocking-finding check: an artifact that reports
+# GREEN or YELLOW while carrying a CRITICAL or HIGH finding is rejected as
+# self-contradictory.
 #
 # ui-craft cannot run headlessly in CI (no Claude bridge on hosted/ephemeral
 # runners). The gate instead requires a committed JSON artifact at:
@@ -33,14 +35,35 @@
 #   changes and the reviewed sha advances, correctly invalidating the
 #   artifact.
 #
-# Verdict policy (no soft-pass):
-#   - Every verdict in the artifact MUST be GREEN, AND overall MUST be
-#     GREEN, AND blocker_findings MUST be empty, AND no finding anywhere may
-#     carry severity CRITICAL -> exit 0.
-#   - Any RED verdict -> exit 1 (blocker, hard fail).
-#   - Any YELLOW verdict -> exit 1 (needs full GREEN; YELLOW means a human
-#     decision is wanted, not a merge-blocking defect -- rerun the review
-#     after addressing the finding and recommit a GREEN artifact).
+# Verdict policy, chosen by UI_CRAFT_GATE_POLICY ("strict" selects strict;
+# unset or any other value selects blocking). Only CRITICAL and HIGH findings
+# block a merge by default; MEDIUM, LOW and TASTE findings ship recorded.
+#   blocking (the default):
+#     - Every verdict and overall is GREEN or YELLOW. Any RED -> exit 1.
+#     - A YELLOW verdict (a dimension's or overall) passes only when
+#       evidence.open_findings records the findings behind it: a non-empty
+#       array of canonical findings at MEDIUM, LOW or TASTE. A YELLOW with
+#       nothing recorded -> exit 1, because a verdict nobody can act on later
+#       is not a verdict.
+#     - overall is GREEN only when every present verdict is GREEN; overall
+#       GREEN over a YELLOW dimension -> exit 1 (self-contradictory).
+#   strict (opt-in, the rule before 0.6.7):
+#     - Every verdict AND overall MUST be GREEN. Any YELLOW or RED -> exit 1.
+#   Both policies:
+#     - blocker_findings MUST be empty, and no finding in blocker_findings,
+#       high_findings or evidence.open_findings may carry severity CRITICAL
+#       or HIGH -> otherwise exit 1. The derivation table gives a dimension
+#       with such a finding a RED verdict, so one sitting beside GREEN or
+#       YELLOW verdicts is a self-contradicting artifact, whichever array
+#       holds it.
+#     - evidence.open_findings, when present, is an array of canonical
+#       findings (validated against the schema's finding definition).
+#   The fix-round cap lives with this rule: after two fix rounds on one
+#   change, the remaining MEDIUM/LOW/TASTE findings go into
+#   evidence.open_findings and the artifact carries the verifier's real
+#   tokens. A YELLOW artifact with its findings recorded is the normal way a
+#   reviewed change ships; rerunning the review to chase a GREEN is the loop
+#   this policy exists to end.
 #
 # UI-adjacent detection:
 #   Every changed path (BASE_REF...HEAD_REF, or all tracked files on a fresh
@@ -70,6 +93,9 @@
 #   SCHEMA_FILE     JSON schema path          (default: verdict-artifact-schema.json next to this script)
 #   UI_PATHS_FILE   optional glob-pattern file (default: unset -> built-in defaults)
 #   PR_NUMBER       GitHub (or equivalent) PR number (optional; falls back to the reviewed short sha)
+#   UI_CRAFT_GATE_POLICY  verdict policy (default: blocking; "strict" requires
+#                   every verdict GREEN). No flag twin: a repo sets it once in
+#                   its CI job, not per run.
 #
 #   GITHUB_SHA is deliberately NOT read. On pull_request events it names the
 #   ephemeral merge commit GitHub synthesizes for the check run, a sha that
@@ -79,14 +105,18 @@
 #   touched the UI file.
 #
 # Exit codes:
-#   0 -- no UI-adjacent change, OR UI change + a valid all-GREEN artifact
-#   1 -- UI change + missing / malformed / sha-mismatched / non-GREEN artifact
+#   0 -- no UI-adjacent change, OR UI change + a valid artifact that passes
+#        the verdict policy
+#   1 -- UI change + missing / malformed / sha-mismatched artifact, or one the
+#        verdict policy fails
 #   2 -- usage or configuration error (bad flag, unresolvable ref, missing or
 #        unparseable schema, no usable UI patterns, git failure)
 #
 # No env-var or CLI-flag bypass. Wire this as a required status check (or a
 # pre-push hook step) so a failing gate blocks the merge; nothing here reads
-# a "skip" variable by design.
+# a "skip" variable by design. UI_CRAFT_GATE_POLICY picks between two
+# policies that both fail a RED verdict and a CRITICAL or HIGH finding; no
+# value of it passes an artifact the blocking policy fails.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -121,6 +151,15 @@ PR_NUMBER); the flag wins.
 The artifact binds to the REVIEWED SHA -- the last commit touching a
 UI-adjacent path -- not to HEAD, so that committing the artifact does not
 invalidate it. Full rationale in the header of this script and in ci/README.md.
+
+Verdict policy (UI_CRAFT_GATE_POLICY; unset or any value but "strict" means
+blocking):
+  blocking  GREEN and YELLOW pass, RED fails. A YELLOW passes only when
+            evidence.open_findings records the MEDIUM, LOW and TASTE findings
+            behind it. overall GREEN over a YELLOW dimension fails.
+  strict    every verdict and overall must be GREEN.
+  Both fail a non-empty blocker_findings and any CRITICAL or HIGH finding in
+  blocker_findings, high_findings or evidence.open_findings.
 
 Default UI-adjacent patterns (replaced wholesale, not extended, by --ui-paths):
 $(printf '  %s\n' "${DEFAULT_UI_PATTERNS[@]}")
@@ -234,20 +273,26 @@ Stdlib only (json, re, argparse, sys). Two subcommands:
   validate <artifact> --schema S [--reviewed-full SHA] [--reviewed-short SHA] [--pr N]
       Validates the artifact against the schema file (parsed, not
       reimplemented) and then applies the gate policy the schema cannot
-      express: sha binding, all-GREEN verdicts, no CRITICAL findings.
+      express: sha binding, the verdict policy (UI_CRAFT_GATE_POLICY,
+      blocking unless it reads "strict"), no CRITICAL or HIGH findings.
       Exit 0 on pass, 1 on any failure, 2 on a usage error.
 """
 import argparse
 import json
+import os
 import re
 import sys
 
 
 ALLOWED_VERDICTS = ("GREEN", "YELLOW", "RED")
-# Findings at this severity contradict a GREEN verdict by definition. The
-# schema says blocker_findings are "must be fixed before merge"; the gate is
-# where that sentence acquires teeth.
-BLOCKING_SEVERITY = "CRITICAL"
+# Findings at these severities contradict a GREEN or YELLOW verdict by
+# definition: the derivation table in references/review/04-verdicts-and-
+# verification.md gives a dimension with one the 3rd or 4th token of its
+# family, which maps to RED. The schema says blocker_findings are "must be
+# fixed before merge"; the gate is where that sentence acquires teeth.
+BLOCKING_SEVERITIES = ("CRITICAL", "HIGH")
+POLICY_ENV = "UI_CRAFT_GATE_POLICY"
+OPEN_FINDINGS = "evidence.open_findings"
 DATE_TIME_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}:\d{2}(\.\d+)?([Zz]|[+-]\d{2}:?\d{2})$"
 )
@@ -507,6 +552,53 @@ def verdict_keys(schema):
     return required, optional
 
 
+def gate_policy():
+    """'strict' only when the variable says exactly that; anything else,
+    unset included, is the default 'blocking' policy."""
+    raw = os.environ.get(POLICY_ENV, "")
+    if raw == "strict":
+        return "strict"
+    if raw not in ("", "blocking"):
+        err("{}={!r} is not 'strict'; applying the blocking policy.".format(POLICY_ENV, raw))
+    return "blocking"
+
+
+ABSENT = object()
+
+
+def open_findings_of(data):
+    """evidence.open_findings, or ABSENT when the key is not there (a JSON
+    null is present, and malformed). `evidence` is an open object in the
+    schema, so this convention is checked here."""
+    evidence = data.get("evidence")
+    if not isinstance(evidence, dict) or "open_findings" not in evidence:
+        return ABSENT
+    return evidence["open_findings"]
+
+
+def open_findings_errors(data, schema):
+    """Shape errors in evidence.open_findings: an array of canonical findings,
+    each validated against the schema's own finding definition."""
+    found = open_findings_of(data)
+    if found is ABSENT:
+        return []
+    if not isinstance(found, list):
+        return ["{}: expected array, got {}".format(OPEN_FINDINGS, type_name(found))]
+    finding = (schema.get("definitions") or {}).get("finding")
+    if not isinstance(finding, dict):
+        raise SchemaError("definitions/finding is missing, so {} cannot be checked".format(OPEN_FINDINGS))
+    errors = []
+    for idx, element in enumerate(found):
+        validate_node(element, finding, schema, "{}[{}]".format(OPEN_FINDINGS, idx), errors)
+    return errors
+
+
+def describe(group, finding):
+    return "{}: [{}] {} ({})".format(
+        group, finding.get("severity", "?"), finding.get("title", "<untitled>"),
+        finding.get("id", "<no id>"))
+
+
 def cmd_validate(argv):
     parser = argparse.ArgumentParser(prog="helper.py validate", add_help=False)
     parser.add_argument("artifact")
@@ -547,6 +639,8 @@ def cmd_validate(argv):
     errors = []
     try:
         validate_node(data, schema, schema, "", errors)
+        if isinstance(data, dict):
+            errors += open_findings_errors(data, schema)
     except SchemaError as exc:
         err("schema {} is not usable: {}".format(args.schema, exc))
         return 2
@@ -586,54 +680,98 @@ def cmd_validate(argv):
             err("artifact 'pr'={!r} does not match expected PR {!r}".format(artifact_pr, args.pr))
             return 1
 
-    non_green = sorted(d for d, v in verdicts.items() if v != "GREEN")
-    if non_green or overall != "GREEN":
-        lines = []
-        for dim in required_dims + [d for d in optional_dims if d in verdicts]:
-            lines.append("  - {:18s} {}".format(dim + ":", verdicts.get(dim, "<missing>")))
-        lines.append("  - {:18s} {}".format("overall:", overall))
-        lines.append("")
-        if non_green:
-            lines.append("Non-GREEN dimension(s): {}".format(", ".join(non_green)))
-        if overall != "GREEN":
-            lines.append("Overall is not GREEN.")
-        lines += [
-            "",
-            "YELLOW means the reviewer wants a human decision -- address the",
-            "finding, rerun /ui-craft:improve-ui, and replace the artifact with",
-            "a GREEN verdict. RED means a blocker; fix the defect before",
-            "merging. No bypass -- this gate is unconditional by design.",
-        ]
-        banner("NON-GREEN VERDICT", lines)
-        return 1
+    # --- verdict policy ----------------------------------------------------
+    policy = gate_policy()
+    present = required_dims + [d for d in optional_dims if d in verdicts]
+    reds = [d for d in present if verdicts[d] == "RED"]
+    yellows = [d for d in present if verdicts[d] == "YELLOW"]
+    non_green = [d for d in present if verdicts[d] != "GREEN"]
+    open_findings = open_findings_of(data)
+    if open_findings is ABSENT:
+        open_findings = []
 
-    # A GREEN artifact that carries a CRITICAL finding contradicts itself.
-    # This is the gate's only check that does not take the reviewer's word
-    # for the outcome, so it is not optional.
-    criticals = []
-    for group in ("blocker_findings", "high_findings"):
-        for finding in data[group]:
-            if finding.get("severity") == BLOCKING_SEVERITY or group == "blocker_findings":
-                criticals.append("{}: [{}] {} ({})".format(
-                    group, finding.get("severity", "?"), finding.get("title", "<untitled>"),
-                    finding.get("id", "<no id>")))
-    if criticals:
-        banner("BLOCKING FINDINGS IN A GREEN ARTIFACT", [
-            "Every verdict reads GREEN, but the artifact carries findings that",
-            "cannot coexist with a GREEN verdict:",
-            "",
-        ] + ["  - " + c for c in criticals] + [
-            "",
-            "blocker_findings must be empty and no finding may carry severity",
-            "{}. Fix the defects, rerun the review, and commit the".format(BLOCKING_SEVERITY),
-            "artifact the fixed tree produces.",
+    # A finding at CRITICAL or HIGH contradicts a GREEN or YELLOW verdict, and
+    # anything in blocker_findings is a blocker by its own definition. This is
+    # the gate's only check that does not take the reviewer's word for the
+    # outcome, so both policies apply it.
+    blocking = []
+    for group, findings in (("blocker_findings", data["blocker_findings"]),
+                            ("high_findings", data["high_findings"]),
+                            (OPEN_FINDINGS, open_findings)):
+        for finding in findings:
+            if group == "blocker_findings" or finding.get("severity") in BLOCKING_SEVERITIES:
+                blocking.append(describe(group, finding))
+
+    problems = []
+    if policy == "strict":
+        if non_green or overall != "GREEN":
+            problems.append([
+                "Non-GREEN under the strict policy ({}=strict): {}.".format(
+                    POLICY_ENV, ", ".join(non_green + (["overall"] if overall != "GREEN" else []))),
+                "This repo requires every verdict and overall GREEN. Under the default",
+                "blocking policy a YELLOW with its open findings recorded in",
+                "{} passes, and only RED or a CRITICAL/HIGH finding blocks.".format(OPEN_FINDINGS),
+            ])
+    else:
+        if reds or overall == "RED":
+            problems.append([
+                "RED verdict(s): {}.".format(", ".join(reds + (["overall"] if overall == "RED" else []))),
+                "RED means a CRITICAL or HIGH finding in that dimension: fix the",
+                "defect, rerun /ui-craft:improve-ui, and commit the artifact the",
+                "fixed tree produces.",
+            ])
+        if overall == "GREEN" and non_green:
+            problems.append([
+                "overall is GREEN over non-GREEN dimension(s): {}.".format(", ".join(non_green)),
+                "overall is GREEN only when every present verdict is GREEN; with a",
+                "YELLOW dimension it is YELLOW. Copy the verifier's tokens rather",
+                "than deriving overall by hand.",
+            ])
+        if (yellows or overall == "YELLOW") and not open_findings:
+            problems.append([
+                "YELLOW verdict(s) with no open findings recorded: {}.".format(
+                    ", ".join(yellows + (["overall"] if overall == "YELLOW" else []))),
+                "A YELLOW passes only when {} lists the MEDIUM, LOW".format(OPEN_FINDINGS),
+                "and TASTE findings behind it (canonical finding shape: id, dimension,",
+                "severity, confidence, file, title). Record the verifier's open",
+                "findings there and commit the artifact again; a YELLOW with its",
+                "findings recorded passes, so the review is not rerun to chase GREEN.",
+            ])
+    if blocking:
+        problems.append([
+            "CRITICAL or HIGH findings beside GREEN or YELLOW verdicts:",
+        ] + ["  - " + b for b in blocking] + [
+            "blocker_findings must be empty and no finding in any array may carry",
+            "severity {}. A dimension with such a finding is RED, so this".format(" or ".join(BLOCKING_SEVERITIES)),
+            "artifact contradicts itself. Fix the defects, rerun the review, and",
+            "commit the artifact the fixed tree produces.",
         ])
+
+    if problems:
+        lines = ["Policy: {}".format(policy), ""]
+        for dim in present:
+            lines.append("  - {:18s} {}".format(dim + ":", verdicts[dim]))
+        lines.append("  - {:18s} {}".format("overall:", overall))
+        for problem in problems:
+            lines.append("")
+            lines += problem
+        lines += ["", "No bypass: this gate is unconditional by design."]
+        banner("VERDICT POLICY FAILED", lines)
         return 1
 
     print("[ui-craft-gate] Artifact valid against {} (schemaVersion {}).".format(
         args.schema.rsplit("/", 1)[-1], want_version))
     print("[ui-craft-gate] Bound to reviewed sha {}.".format(reviewed_short or reviewed_full))
-    print("[ui-craft-gate] All verdicts GREEN, overall GREEN, no blocking findings. PASS.")
+    if policy == "strict":
+        print("[ui-craft-gate] Policy strict: all verdicts GREEN, overall GREEN, "
+              "no blocking findings. PASS.")
+    elif yellows or overall == "YELLOW":
+        print("[ui-craft-gate] Policy blocking: no RED verdict, no CRITICAL or HIGH finding; "
+              "YELLOW ({}) backed by {} open finding(s) in {}. PASS.".format(
+                  ", ".join(yellows) or "overall", len(open_findings), OPEN_FINDINGS))
+    else:
+        print("[ui-craft-gate] Policy blocking: all verdicts GREEN, overall GREEN, "
+              "no CRITICAL or HIGH finding. PASS.")
     return 0
 
 
@@ -761,12 +899,17 @@ if [ -z "$FOUND_ARTIFACT" ]; then
   echo '         },'
   echo '         "overall": "GREEN",'
   echo '         "blocker_findings": [],'
-  echo '         "high_findings": []'
+  echo '         "high_findings": [],'
+  echo '         "evidence": {"open_findings": []}'
   echo "       }"
   echo ""
   echo "     The sha is $REVIEWED_SHORT, the last commit that touched a UI"
   echo "     path -- NOT the current HEAD. Committing the artifact does not"
   echo "     change it, which is why this flow terminates."
+  echo ""
+  echo "     Write the verifier's real tokens. A YELLOW verdict passes when"
+  echo "     evidence.open_findings lists the MEDIUM, LOW and TASTE findings"
+  echo "     behind it; RED and any CRITICAL or HIGH finding fail."
   echo ""
   echo "  3. Commit + push the artifact on the branch:"
   echo ""

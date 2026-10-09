@@ -1,5 +1,74 @@
 # Changelog
 
+## 0.6.7 — 2026-10-09
+
+The CI gate blocks on CRITICAL and HIGH only. On a reviewed pull request an
+`improve-ui` pass ran three times on one admin page: each pass resolved the
+previous findings and filed a fresh set of MEDIUM and LOW ones (25, then 15,
+then 16, with HIGH findings only in the first), and the gate failed every
+time, because it required every verdict GREEN and the derivation table gives
+GREEN only to a dimension with no MEDIUM or LOW finding at all. That made the
+gate a treadmill and contradicted the review policy its adopters run under:
+only evidence-backed blockers block, and fix rounds stop at two. The owner
+decided on 2026-10-09 that the gate blocks on blockers only.
+
+- **The blocking policy, the new default.** An artifact passes when it is
+  schema-valid and bound to the reviewed sha, every verdict and `overall` is
+  GREEN or YELLOW, `blocker_findings` is empty, and no finding in
+  `blocker_findings`, `high_findings` or `evidence.open_findings` carries
+  CRITICAL or HIGH. A RED verdict fails. A YELLOW, a dimension's or
+  `overall`, passes only when `evidence.open_findings` records the findings
+  behind it: a non-empty array of canonical findings at MEDIUM, LOW or TASTE,
+  each validated against the schema's finding definition. A YELLOW with
+  nothing recorded fails, because a verdict nobody can act on later is not a
+  verdict. `overall` is GREEN only when every present verdict is GREEN; an
+  `overall` of GREEN over a YELLOW dimension fails as before.
+- **HIGH now fails beside any verdict.** The derivation table gives a dimension
+  with a HIGH or CRITICAL finding a RED verdict, so such a finding next to
+  GREEN or YELLOW verdicts is a self-contradicting artifact, whichever array
+  holds it. Before 0.6.7 a HIGH finding in `high_findings` beside all-GREEN
+  verdicts passed; an adopter with such an artifact committed sees it fail and
+  re-reviews. Both policies apply this check.
+- **The strict policy, opt-in.** `UI_CRAFT_GATE_POLICY=strict` keeps the rule
+  before 0.6.7: every verdict and `overall` GREEN. Unset, or any other value,
+  means `blocking`, and the gate names an unrecognised value on stderr. No
+  bypass is added: no value of the variable passes an artifact the blocking
+  policy fails.
+- **The fix-round cap is doctrine.** `improve-ui` Step 5 item 8 writes the
+  verifier's real tokens and lists a YELLOW dimension's findings in
+  `evidence.open_findings`; after two fix rounds on one change the remaining
+  MEDIUM, LOW and TASTE findings are recorded there and the change ships
+  YELLOW, with no further pass to chase GREEN. Step 6's re-run offer holds to
+  the same two rounds. `references/review/04-verdicts-and-verification.md`
+  (the blocker-flag paragraph and Report usage, which also notes that a 2nd
+  token earned by static evidence alone has nothing to record and still
+  fails), `references/review/01-universal-rubric.md` § Gate contract,
+  `ARCHITECTURE.md` § Data contracts, `ci/README.md` (a new Verdict policy
+  section and the configuration table), `README.md` and `USAGE.md` state the
+  rule. The gate's header, `--help`, failure banners and PASS line say which
+  policy ran.
+- **Schema text, not shape.** `ci/verdict-artifact-schema.json` rewrites the
+  `verdict`, `overall`, `high_findings`, `evidence` and top-level descriptions
+  and documents `open_findings` as a convention inside `evidence`, which was
+  already an open object (`additionalProperties: true`). No field is added,
+  renamed or retyped, so `schemaVersion` stays 3 and every artifact that
+  validated before still validates.
+- **Selftest: 40 cases (was 28).** New: a YELLOW with open findings recorded
+  passes; the same artifact fails under `strict`; an unrecognised policy value
+  means blocking; a YELLOW with no `evidence.open_findings`, and one with an
+  empty array, fail and the message names `evidence.open_findings`; an open
+  finding at HIGH fails; a malformed open finding is a shape error; RED fails
+  with open findings recorded; `overall` GREEN over a YELLOW dimension fails;
+  a HIGH finding beside all-GREEN verdicts fails. Two cases changed: "overall
+  YELLOW" is now "overall YELLOW, nothing recorded" and keeps its artifact,
+  which carries no open findings and so still fails under the default; "usability
+  dimension accepted" records its usability finding as a MEDIUM open finding
+  behind a YELLOW usability verdict, since its HIGH finding beside GREEN
+  verdicts now fails.
+
+No scanner, corpus or agent change; the freedom ceilings and dogfood counts do
+not move, and the reference count stays 60.
+
 ## 0.6.6 — 2026-10-04
 
 Releases the owner's decisions on the 2026-10-04 prompt-audit flags that sat
