@@ -2,7 +2,7 @@
 name: ui-responsive-reviewer
 description: |-
   Read-only responsive / cross-viewport reviewer for any UI (web, iOS, Android, desktop). Classifies the sizing strategy (fluid, intrinsic, container-driven, or fixed) before hunting failures, then checks viewport matrices, overflow, clipping, safe areas, zoom reflow, orientation, adaptive postures, awkward reflow, dead space, and container behavior. Returns severity-tagged viewport findings grouped by failure family. Use when the user says "will this look ok on phones?", "something clips at tablet size", "it does not scale to my display".
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_serena_serena__activate_project, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__search_for_pattern
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate
 color: cyan
 ---
 

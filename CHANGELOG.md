@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.8 — 2026-10-10
+
+Serena was retired on 2026-10-09, and the plugin no longer names it.
+
+- The `mcp__plugin_serena_serena__*` tool names leave all ten agents' `tools:`
+  lines. A tool name with no server behind it was dropped at load, so no
+  agent loses a working grant; the agent bodies never called Serena.
+- README drops the optional Serena MCP requirement and no longer lists Serena
+  among the optional accelerants; ARCHITECTURE.md's optional-MCP list follows.
+- No scanner, corpus, schema, CI or reference change; the reference count stays
+  60 and the dogfood counts do not move.
+
 ## 0.6.7 — 2026-10-09
 
 The CI gate blocks on CRITICAL and HIGH only. On a reviewed pull request an

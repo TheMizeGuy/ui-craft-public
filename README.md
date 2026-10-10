@@ -142,7 +142,7 @@ Neither the agent frontmatter nor the skills' dispatches pin a model or effort; 
 
 ## Knowledge base
 
-57 reference files across 12 domains, all of them inside the plugin. Every path an agent is told to read resolves under `${CLAUDE_PLUGIN_ROOT}`; no agent reads a machine-local note, a sibling plugin's cache, or any path outside this repo, so a fresh install on a new machine has the same depth as the author's. GoodMem, Serena, Context7 and Playwright are optional accelerants covered under **Requirements**, not sources the reference library leans on.
+57 reference files across 12 domains, all of them inside the plugin. Every path an agent is told to read resolves under `${CLAUDE_PLUGIN_ROOT}`; no agent reads a machine-local note, a sibling plugin's cache, or any path outside this repo, so a fresh install on a new machine has the same depth as the author's. GoodMem, Context7 and Playwright are optional accelerants covered under **Requirements**, not sources the reference library leans on.
 
 ### catalogue/ (2 files): the canonical AI-tell corpus
 
@@ -292,7 +292,6 @@ Three operational surfaces added in 0.1.2 that keep the catalogue, the auditor, 
 - Claude Code with plugin support and a model capable of the design and review work. The session chooses the model per dispatch; nothing in the plugin pins a model or effort.
 - The toolkit surfaces (`tests/harness/`, `ci/`, `scripts/`) need Node >= 18; the CI gate additionally needs `bash`, `python3` and `git`. No npm packages, ever. The four skills and ten agents need none of this.
 - Optional: **GoodMem MCP** for cross-run learnings, written to the goodmem Learnings space when goodmem is configured. Without it, agents work entirely from the reference library.
-- Optional: **Serena MCP** for semantic code navigation in TypeScript/React codebases.
 - Optional: **Context7 MCP** for live library documentation (Tailwind v4, React 19, Motion, TanStack Query) when a finding depends on current API surface.
 - Optional: **Playwright MCP** for web evidence capture (screenshots, DOM, accessibility scans, traces) backing the geometry evidence rule.
 
