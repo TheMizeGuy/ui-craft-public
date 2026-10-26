@@ -2,16 +2,16 @@
   "meta": {
     "purpose": "Ground truth for the ui-craft regression corpus. Each fixture lists the findings a by-the-book review SHOULD produce, in the canonical finding shape (id, dimension, severity, title) plus a tellRef citing the catalogue section or tell ID it maps to. The scorer (tests/harness/score-review.mjs) matches emitted findings to these labels by tellRef first, then by (fixture, dimension) + fuzzy title overlap.",
     "findingShape": "id, dimension (visual|anti-ai|accessibility|motion|responsive|performance|typescript|usability), severity (CRITICAL|HIGH|MEDIUM|LOW|TASTE), title, tellRef, confidence (Hard defect|Quality defect|Pattern smell|Taste note per references/review/01-universal-rubric.md).",
-    "tellRefConvention": "A short catalogue code (V5, L6, L13, C18, S3, T1, W2, I7, C3, C5, C11, D1, L7, P1, P3, S12, U3), a ranked fingerprint (Strongest-10 #1, Strongest-10 #9), the cream-serif-sage emerging tell, or a catalogue section number (section 12, section 14, section 15) from references/catalogue/01-ai-tells.md. See that file for the tell definition and severity of each code. A label's severity is not a free choice: tests/harness/label-contract.mjs parses section 18 and fails on any label whose severity disagrees with the class that table gives its tellRef (a code section 18 does not list defaults to MEDIUM, per agents/ui-anti-slop-auditor.md section 14).",
-    "cleanControlRule": "A clean control has expected == [] and a per-fixture maxIncidentalFindings. Four carry 1 -- the three older controls (small-avatar-clean, clean-intentional, fluid-adaptive-clean) and hero-scroll-poster, whose one permitted incidental is a finding against a construct no catalogue row covers: the review may surface at most one incidental note before the control is treated as failed. Every control added since carries 0, because the single plausible incidental on each is exactly the regression the control exists to catch: reduced-motion-opt-in and allowed-choice (2026-09-01), framed-panels-clean (0.6.0 rescope), and the six near-miss controls ported from anti-slop on 2026-09-22 (near-miss-controls, chosen-border-gray, tokens-clean, hatched-wordmark, responsive-type-clean, media-control-glyph). A clean control's incidentals are bounded per fixture AND counted in the corpus-wide precision denominator, so an over-firing rule costs twice.",
+    "tellRefConvention": "A short catalogue code (V5, L6, L13, C18, S3, T1, W2, I7, C3, C5, C11, D1, L7, P1, P3, P4, P9, P12, P16, S12, T12, T16, U3, U4, V3, V9, V11, C7, M2, M4), a ranked fingerprint (Strongest-10 #1, Strongest-10 #9), the cream-serif-sage emerging tell, or a catalogue section number (section 12, section 14, section 15) from references/catalogue/01-ai-tells.md. See that file for the tell definition and severity of each code. A label's severity is not a free choice: tests/harness/label-contract.mjs parses section 18 and fails on any label whose severity disagrees with the class that table gives its tellRef (a code section 18 does not list defaults to MEDIUM, per agents/ui-anti-slop-auditor.md section 14).",
+    "cleanControlRule": "A clean control has expected == [] and a per-fixture maxIncidentalFindings. Four carry 1 -- the three older controls (small-avatar-clean, clean-intentional, fluid-adaptive-clean) and hero-scroll-poster, whose one permitted incidental is a finding against a construct no catalogue row covers: the review may surface at most one incidental note before the control is treated as failed. Every control added since carries 0, because the single plausible incidental on each is exactly the regression the control exists to catch: reduced-motion-opt-in and allowed-choice (2026-09-01), framed-panels-clean (0.6.0 rescope), the six near-miss controls ported from anti-slop on 2026-09-22 (near-miss-controls, chosen-border-gray, tokens-clean, hatched-wordmark, responsive-type-clean, media-control-glyph), and in 0.7.0 the clean partner of every new rule pair, each one step from its positive. A clean control's incidentals are bounded per fixture AND counted in the corpus-wide precision denominator, so an over-firing rule costs twice.",
     "severityIsInformational": "severity on a label records the catalogue's by-the-book class; the scorer matches on tellRef/title, not severity, so an auditor calling a tell one class higher or lower still counts as a hit.",
-    "dimensionCoverage": "anti-ai: 38 labels across 25 fixtures. responsive: 9 labels across 4 fixtures (fixed-desktop-shell L13 x3, legacy-theme L13 x2 + P3, viewport-query-card P1, vh-bottom-bar P3 x2) plus one clean responsive control (fluid-adaptive-clean). Thirteen clean controls in total: small-avatar-clean, clean-intentional, fluid-adaptive-clean and hero-scroll-poster at tolerance 1; reduced-motion-opt-in, allowed-choice, framed-panels-clean, near-miss-controls, chosen-border-gray, tokens-clean, hatched-wordmark, responsive-type-clean and media-control-glyph at tolerance 0. Labels whose tell is a catalogue row the ui-anti-slop-auditor walks carry dimension anti-ai even where another specialist owns the same defect (M3 motion, U13 and U3 accessibility, V13/W11/W12/L14/I8 substance and placement); they are not motion- or accessibility-dimension coverage, and tellRef-first matching scores either producer. visual, accessibility, motion, performance, typescript and usability still have no labels of their own; adding them is tracked work, not a claim this corpus already covers them. Read any pooled recall number as \"recall over the labeled dimensions\", never as coverage of the plugin's seven dimensions.",
+    "dimensionCoverage": "Labels carry dimension anti-ai for every catalogue row the ui-anti-slop-auditor walks, responsive for the sizing rows (L13, P1, P3), and, since 0.7.0, accessibility (P4, P9, P12, P16 and the T12 floors), visual (the T16 reading mechanics and C7's gray-on-colour leg) and motion (the M2 bounce candidate). The clean controls at tolerance 1 are small-avatar-clean, clean-intentional, fluid-adaptive-clean and hero-scroll-poster; every other clean control carries tolerance 0. Labels whose tell is a catalogue row the auditor walks carry dimension anti-ai even where another specialist owns the same defect (M3 motion, U3, U4 and U13 accessibility, V13/W11/W12/L14/I8 substance and placement); tellRef-first matching scores either producer. performance, typescript and usability still have no labels of their own; adding them is tracked work, not a claim this corpus already covers them. Read any pooled recall number as \"recall over the labeled dimensions\", never as coverage of the plugin's seven dimensions.",
     "responsiveControlContract": "fluid-adaptive-clean.html is the guard against the failure mode where a reviewer 'fixes' an AI tell by deleting responsive behaviour. It uses every construct the catalogue prescribes -- clamp() type and padding ramps, width: min(), repeat(auto-fit, minmax()), @container, 100dvh, env(safe-area-inset-bottom), a viewport meta with viewport-fit=cover, and a visible :focus-visible ring -- and must produce ZERO findings. A run that flags any of those has learned the wrong lesson from Strongest-10 #9 and T14 and fails the gate here.",
-    "exampleFindingsFileIsPartial": "tests/harness/examples/sample-findings.json is the hand-authored answer key: one finding per label, written against this file, so it is the ceiling the labels permit and never evidence of detection. It was extended on 2026-09-01 alongside the label split and again for the five catalogue-review labels, and on 2026-09-22 for the twelve labels the anti-slop design port added. It scores one finding per label at precision 1.000, with every clean control at zero. When a label is added here, extend the example in the same change or its recall drops by construction.",
+    "exampleFindingsFileIsPartial": "tests/harness/examples/sample-findings.json is the hand-authored answer key: one finding per label, written against this file, so it is the ceiling the labels permit and never evidence of detection. It was extended on 2026-09-01 alongside the label split and again for the five catalogue-review labels, on 2026-09-22 for the twelve labels the anti-slop design port added, and in 0.7.0 for every label the anti-slop 2.5.0 port and the U4 pair added. It scores one finding per label at precision 1.000, with every clean control at zero. When a label is added here, extend the example in the same change or its recall drops by construction.",
     "droppedTells": [
       "frosted-nav-neon.html carries an anti-slop 'z-index-escalation' tell (.modal { z-index: 9999 }). ui-craft deliberately does NOT catalogue z-index stacking: references/catalogue/01-ai-tells.md section 19 closing note scopes framework-engineering anti-patterns (z-index, useEffect, font-loading, bundling) OUT of the visual-tell catalogue and into code review. It has no ui-craft catalogue home, so it is not an expected finding here.",
       "gallery-unlabelled.html carries two anti-slop tells with no ui-craft catalogue home. missing-alt (one img with no alt at all, one whose alt is the placeholder word 'photo') is WCAG 1.1.1 and is covered by references/accessibility/04-screen-reader.md section 11, but no row of references/catalogue/01-ai-tells.md names alt text -- the web platform overlay's fifteen rows cover disabled zoom, div-onclick, heading skips, lang, skip links, tabindex, CSS order, title-as-tooltip and aria-live, and stop there. img-no-dimensions (one img with no intrinsic width/height) has no catalogue row either; it is a CLS defect and sits in the performance dimension, which this corpus does not label. Neither is an expected finding here, and both would be caught by the accessibility and performance reviewers rather than by the catalogue-walking auditor.",
-      "hero-scroll-poster.html carries anti-slop's hero-scroll-hint tell (a 'Scroll to explore' hero label, split out of its generic-microcopy rule in 2.2.1). ui-craft has no row for it: W2 is vague benefit copy and W5 is SaaS-speak, neither of which describes a scroll affordance, and the section-5 detection cue's list of generic microcopy AI reuses ('Get started today!', 'Unlock the power of...', 'Join thousands of satisfied users', 'We're here to help', 'Stay in the loop', 'Transform the way you...') does not carry it. Both W rows are concentration tells in any case, and the page carries one instance. The fixture is labelled instead for the cream-plus-warm-clay combination its palette genuinely plants.",
+      "hero-scroll-poster.html carries anti-slop's hero-scroll-hint tell (a 'Scroll to explore' hero label, split out of its generic-microcopy rule in 2.2.1). ui-craft has no row for it: W2 is vague benefit copy and W5 is SaaS-speak, neither of which describes a scroll affordance, and the section-5 detection cue's list of generic microcopy AI reuses ('Get started today!', 'Unlock the power of...', 'Join thousands of satisfied users', 'We're here to help', 'Stay in the loop', 'Transform the way you...') does not carry it. Both W rows are concentration tells in any case, and the page carries one instance. It carries no label: its palette is cream plus the warm-clay variant with no serif display face, which the combination rule counts as one leg plus a variant (the withdrawn label is recorded below).",
       "media-control-glyph.tsx carries anti-slop's media-control-glyph tell (a bare play, pause or next-track sign used as a button's visible content). ui-craft has no row for it: V12 names emoji as interface chrome, and U+25B6, U+23F8 and U+23ED carry Emoji_Presentation=No, so a bare transport sign is typography rather than emoji -- their U+FE0F presentation forms are what V12 would fire on. No other row covers a text glyph standing in for an icon. The fixture is therefore a clean control at tolerance 0 rather than a tell fixture, and it doubles as the negative side of U13, since every one of its icon-bearing buttons carries an aria-label."
     ],
     "translationNotes": [
@@ -36,17 +36,21 @@
       "gallery-unlabelled.html: outline-none -> U3 at CRITICAL, the class section 18 gives 'outline: none with no :focus-visible replacement' as distinct from the MEDIUM it gives an untouched browser-default ring. The file has outline: none on a:focus and button:focus and no :focus-visible rule anywhere, which is the CRITICAL shape. missing-alt and img-no-dimensions are dropped; see meta.droppedTells.",
       "legacy-theme.css: fixed-page-shell -> L13 (width: 1180px, not max-width) and fixed-grid-tracks -> L13 (grid-template-columns: repeat(4, 260px)), two of the four constructs L13's row names; vh-viewport-shell -> P3 at MEDIUM rather than a third L13, matching vh-bottom-bar.html, because the surface is an app shell and not the modal, sheet, drawer or full-height form P3 rates HIGH. uniform-literal-radius does NOT reach D1: the sheet carries three border-radius declarations at 6px, 6px and 12px, so the most-repeated value appears twice against the three-or-more bar, and neither value is the 8px or 10px shadcn default the row names. The sticky .toolbar carries no backdrop-filter and no translucency, so L6 is one step away and must stay silent.",
       "The six ported clean controls carry tolerance 0 and each names the tell it sits one step from in its own note: near-miss-controls.html (thirteen constructs, one token each from L13, T5, Strongest-10 row 4, C11, D2, L7, S12, W10, section 15, P8, D1 and U3), chosen-border-gray.css (C3, and both legs of the cream-serif-sage combination), tokens-clean.css (the correct idiom for every geometry row legacy-theme.css breaks, plus C3 at hue 250 / chroma 0.14 and L6 on a sticky bar with no blur), hatched-wordmark.html (the anti-slop-allow escape hatch on a real V5 span), responsive-type-clean.html (Strongest-10 row 9 and T14, the regression that would delete fluid type) and media-control-glyph.tsx (V12 and U13 at once). The one construct on near-miss-controls.html that matches a catalogue grep literally is width: 720px inside @media (min-width: 900px), which L13's detection cue would read as a fixed-pixel shell; it applies only at or above 900px, so it caps rather than overflows and breaks at no width, and the tolerance stays 0 because a finding there is over-firing rather than an incidental.",
-      "Three tell fixtures ported on 2026-09-22 carry a warm palette that a strict reading of the cream test would flag, and two of them are read as committed rather than as the emerging tell. hero-triplet-verbatim.html, uniform-control-radius.html and responsive-type-clean.html share --paper oklch(0.97 0.008 85) and --signal oklch(0.55 0.15 45): the ground sits exactly on the cream test's chroma floor of 0.008 -- below the catalogue's own #f5f1e8 at 0.0127, and the catalogue's canonical cream #faf8f5 itself measures 0.0045, under its own stated floor -- while the accent is the burnt-orange near oklch(0.58 0.16 40) that C3's Instead column prescribes as a replacement hue, and no serif is declared. hero-scroll-poster.html is labelled because its ground is unambiguous: #f6f1e7 at chroma 0.0143 is three times the floor and inside the catalogue's own cream band, its accent #8c3b16 measures C 0.1205 / H 42.4 inside the warm-clay window, and it declares no font-family at all. The line is the measurement, and it is recorded here so a later reader can move it deliberately rather than by accident.",
+      "Three tell fixtures ported on 2026-09-22 carry a warm palette that a strict reading of the cream test would flag, and two of them are read as committed rather than as the emerging tell. hero-triplet-verbatim.html, uniform-control-radius.html and responsive-type-clean.html share --paper oklch(0.97 0.008 85) and --signal oklch(0.55 0.15 45): the ground sits exactly on the cream test's chroma floor of 0.008 -- below the catalogue's own #f5f1e8 at 0.0127, and the catalogue's canonical cream #faf8f5 itself measures 0.0045, under its own stated floor -- while the accent is the burnt-orange near oklch(0.58 0.16 40) that C3's Instead column prescribes as a replacement hue, and no serif is declared. hero-scroll-poster.html was the one labelled on the first pass, because its ground is unambiguous: #f6f1e7 at chroma 0.0143 is three times the floor and inside the catalogue's own cream band, its accent #8c3b16 measures C 0.1205 / H 42.4 inside the warm-clay window, and it declares no font-family at all. The line is the measurement, and it is recorded here so a later reader can move it deliberately rather than by accident. Settled 2026-10-26 in favour of the two-leg rule: catalogue line 52 no longer flags the clay accent on a cream ground by itself.",
       "Four labels moved on 2026-09-22 after the blind run over the ported batch, two withdrawn and two added, and every one of the four is a statement about what the fixture contains rather than an adjustment to the score. Withdrawn: cream-serif-sage on hero-scroll-poster.html, because the combination names cream background, serif display and sage green, and the file has the first plus the rusty-orange drift variant of the third and no declared font-family at all -- one named marker is not two, and the tell's own rule is that one alone may be a real decision; and L7 on motion-rhythm.html, because L7's row is py-24 on every section and the file carries py-20, py-20 and py-24, which is neither three identical treatments nor a single treatment dominating the surface. Added: M6 on motion-rhythm.html, an absence the first pass simply missed -- two controls carry decorative hover transitions and the document contains no prefers-reduced-motion query in either direction, which is exactly what M6 fires on, at section 18's CRITICAL; and section 14 on bootstrap-unthemed.css, the component-library-defaults bullet, which is the whole unmodified compile (primary, both darkens, the framework's #dee2e6 borders, no tuned border, radius, shadow or transition) and a different span from C3's hue reading. Both additions follow the 2026-09-01 label-split precedent and the T15 addition of the same day: ground truth enumerates the defects a fixture really contains, and a correct finding that scored as a false positive only because no label existed yet is a gap in the labels, not in the run.",
-      "Two findings in the 2026-09-22 blind run cite no catalogue code and are left unlabelled on purpose, because a label must cite a tellRef from references/catalogue/01-ai-tells.md. On gallery-unlabelled.html the run filed the missing and placeholder alt text under 'WCAG 1.1.1' at dimension accessibility; on hero-scroll-poster.html it filed the scroll hint under 'design/10 § 3'. Both are correct readings of the files and neither has a catalogue row, so both land in the false-positive column, which is the same deliberate cost this corpus already carries for C15 on cream-serif-sage.html. Adding a tellRef for either means adding a row to the catalogue first."
+      "Two findings in the 2026-09-22 blind run cite no catalogue code and are left unlabelled on purpose, because a label must cite a tellRef from references/catalogue/01-ai-tells.md. On gallery-unlabelled.html the run filed the missing and placeholder alt text under 'WCAG 1.1.1' at dimension accessibility; on hero-scroll-poster.html it filed the scroll hint under 'design/10 § 3'. Both are correct readings of the files and neither has a catalogue row, so both land in the false-positive column, which is the same deliberate cost this corpus already carries for C15 on cream-serif-sage.html. Adding a tellRef for either means adding a row to the catalogue first.",
+      "The 0.7.0 port of the anti-slop 2.5.0 rule pairs translates each anti-slop rule to the catalogue code it reports and takes the class from section 18: low-contrast and low-contrast-near-bar -> P16 at HIGH and LOW (decision D3); side-stripe-accent -> V3 at MEDIUM, user-banned, so one instance fires (decision D2 keeps the 3px square-box leg); text-size-floor -> T12 at MEDIUM; tight-leading, wide-tracking, justified-narrow-column and crushed-tracking -> T16 at MEDIUM, the crushed floor under T16 rather than T8 (decision D4); bounce-easing -> M2 at MEDIUM, filed by the scanner as a heuristic candidate (decision D8); pulsing-dot -> V11 at HIGH; viewport-zoom-lock -> P4 at CRITICAL and positive-tabindex -> P12 at HIGH. Each label keeps the confidence class the catalogue row implies, not anti-slop's.",
+      "The P2 rules of the same port: marquee -> M4 at HIGH (section 18 since 0.7.0, an absent pause control under WCAG 2.2.2, so it fires on one instance; the logo wall it scrolls is L8's convention and is not labelled); background-pattern -> V9 at LOW (the dot-grid run is a section-11 verbatim fingerprint, presence); radial-halo -> C11 at LOW (the CSS form of the decorative blob on a dark page); gray-on-color -> C7 at MEDIUM, its gray-on-colour leg firing on one instance because one colour declaration sets every line of secondary text on its surface (catalogue, How to apply); skipped-heading -> P9 at HIGH (on the hard-defect list since 0.7.0). design-system-font -> section 14 at HIGH as a heuristic candidate, with no corpus fixture yet (see provenance.copied0700)."
     ],
     "provenance": {
       "copied": "gradient-hero.html, shadcn-card-kit.html, frosted-nav-neon.html, legacy-marketing-page.html and small-avatar-clean.html originate from anti-slop/anti-slop/scripts/test/corpus/design/ (same owner, MIT). Labels derived from that corpus's labels.json, translated to ui-craft catalogue IDs. In 0.2.4 each gained one line, a <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">, so that the responsive doctrine added in the same release does not co-fire on fixtures whose planted tell is unrelated to sizing. Nothing else in them changed; they are otherwise still verbatim.",
       "authored": "presence-single.html, cream-serif-sage.html, token-drift.html, missing-states.html, clean-intentional.html, and (0.2.4) fixed-desktop-shell.html, viewport-query-card.html, vh-bottom-bar.html, uncommitted-radius.html, fluid-adaptive-clean.html, and (2026-09-01, the catalogue review) shadcn-oklch-default.html, slow-page-transition.html, emoji-chrome.html, icon-only-button.html, reduced-motion-opt-in.html, allowed-choice.html are new for ui-craft.",
       "revisedIn024": "clean-intentional.html was rewritten: its body font moved off a Berkeley/Sohne Mono stack onto the platform system sans, digits now align with font-variant-numeric: tabular-nums, and a real log pane keeps the mono face where mono belongs. The old version applied mono to labels, stats and timestamps, which is exactly tell T13 -- so the 'must produce ZERO findings' control was itself a T13 violation and any auditor faithful to the 2026-07-17 mono directive failed the gate on it. token-drift.html and missing-states.html had their incidental six-digit hex converted to OKLCH (C15 is CRITICAL and was co-firing unlabeled on both, and token-drift's --surface: #ffffff was also C2); the planted tells are untouched, since token drift is about hardcoded off-token values, not about hex notation.",
-      "copied0600": "On 2026-09-22 the fourteen remaining labelled design fixtures were ported from the same source, byte-for-byte with no edit of any kind (every one already carried a viewport meta where it is an HTML page). Tell fixtures: hero-triplet-verbatim.html, uniform-control-radius.html, bootstrap-unthemed.css, marketing-defaults.html, motion-rhythm.html, gallery-unlabelled.html, legacy-theme.css. Clean controls: near-miss-controls.html, chosen-border-gray.css, tokens-clean.css, hatched-wordmark.html, responsive-type-clean.html and media-control-glyph.tsx as near-miss controls at tolerance 0, and hero-scroll-poster.html at tolerance 1, its tell having no ui-craft catalogue home. Every label is anti-slop's ground truth re-derived against references/catalogue/01-ai-tells.md, never carried across: anti-slop's own severities and confidences are discarded, the ui-craft class comes from section 18, and a label survives only where the catalogue's presence or concentration rule actually holds on the file at the instance count the file carries. Nine of the twenty anti-slop labels on these files did not survive that test: five fail a ui-craft threshold (ai-purple-class, uppercase-overline, transition-all, important-overuse, uniform-literal-radius) and four have no ui-craft catalogue home at all (missing-alt, img-no-dimensions, hero-scroll-hint, media-control-glyph); the tenth, generic-microcopy, translates to W10 rather than to W2 or W5. Each is recorded in meta.translationNotes or meta.droppedTells with its count."
+      "copied0600": "On 2026-09-22 the fourteen remaining labelled design fixtures were ported from the same source, byte-for-byte with no edit of any kind (every one already carried a viewport meta where it is an HTML page). Tell fixtures: hero-triplet-verbatim.html, uniform-control-radius.html, bootstrap-unthemed.css, marketing-defaults.html, motion-rhythm.html, gallery-unlabelled.html, legacy-theme.css. Clean controls: near-miss-controls.html, chosen-border-gray.css, tokens-clean.css, hatched-wordmark.html, responsive-type-clean.html and media-control-glyph.tsx as near-miss controls at tolerance 0, and hero-scroll-poster.html at tolerance 1, its tell having no ui-craft catalogue home. Every label is anti-slop's ground truth re-derived against references/catalogue/01-ai-tells.md, never carried across: anti-slop's own severities and confidences are discarded, the ui-craft class comes from section 18, and a label survives only where the catalogue's presence or concentration rule actually holds on the file at the instance count the file carries. Nine of the twenty anti-slop labels on these files did not survive that test: five fail a ui-craft threshold (ai-purple-class, uppercase-overline, transition-all, important-overuse, uniform-literal-radius) and four have no ui-craft catalogue home at all (missing-alt, img-no-dimensions, hero-scroll-hint, media-control-glyph); the tenth, generic-microcopy, translates to W10 rather than to W2 or W5. Each is recorded in meta.translationNotes or meta.droppedTells with its count.",
+      "copied0700": "In 0.7.0 the 2.5.0 rule pairs were ported from the same source, byte for byte: contrast-pairs.html and contrast-ground.html with contrast-clean.html and contrast-ground-clean.html (P16), side-stripe-cards.html with side-stripe-clean.html (V3), type-floors.html with type-floors-clean.html (T12), reading-mechanics.html with reading-mechanics-clean.html (T16), motion-bounce.html with motion-spring-clean.html (M2), live-dot.html with live-dot-clean.html (V11), the 2.4.0 accessibility pair zoom-lock-tabindex.html with viewport-clean.html (P4, P12), and the P2 pairs marquee-logos.html with marquee-clean.html (M4), pattern-backgrounds.html with pattern-backgrounds-clean.html (V9), radial-halo.html with radial-halo-clean.html (C11), gray-on-color.html with gray-on-color-clean.html (C7) and skipped-heading.html with skipped-heading-clean.html (P9). anti-slop's design-system/ pair (DESIGN.md, palette-declared.html, drift.css) is not copied yet: the DESIGN.md reader walks up from each file, so the pair needs its own subdirectory, which the blind copy does not read yet; the scanner's DESIGN.md readings are pinned by scratch-directory probes in the scan-tells selftest until it lands. The shared fixtures anti-slop corrected for contrast or for the control-face doctrine were re-copied byte for byte in the same release, each correction recorded with its before and after values in the fixture note. Labels follow the 2026-09-22 rule: anti-slop's severities and confidences are discarded and the class comes from section 18.",
+      "authored0700": "focus-ring-on-focus.html and focus-visible-clean.html are new for ui-craft in 0.7.0: the U4 rule (a focus: ring with no focus-visible: variant) is ui-craft's alone, because anti-slop stays silent on that pattern by decision D13, so there was no shared pair to copy."
     },
-    "labelSeverityContract": "Label severity is checked mechanically by tests/harness/label-contract.mjs, which parses references/catalogue/01-ai-tells.md section 18 into a map from catalogue code to severity class and fails on any label that disagrees. The catalogue is the source of truth: when the contract reports a mismatch, the LABEL is corrected, never the table. Codes section 18 places in more than one class (U3, which is CRITICAL as outline: none with no :focus-visible replacement and MEDIUM as an untouched browser-default ring; S12, which section 18 rates LOW while the section-11 stats-row note rates the full composition HIGH) are accepted at any class the table gives them, and the contract prints them so the ambiguity stays visible rather than being silently resolved in labels.json. Its first run over the 46-label corpus on 2026-09-22 reported zero mismatches, so no label was corrected; the codes it could not find in section 18 at all (D1) and the two it found in two classes (S12, U3) are printed on every run rather than suppressed."
+    "labelSeverityContract": "Label severity is checked mechanically by tests/harness/label-contract.mjs, which parses references/catalogue/01-ai-tells.md section 18 into a map from catalogue code to severity class and fails on any label that disagrees. The catalogue is the source of truth: when the contract reports a mismatch, the LABEL is corrected, never the table. Codes section 18 places in more than one class (U3, which is CRITICAL as outline: none with no :focus-visible replacement and MEDIUM as an untouched browser-default ring; P16, which is HIGH below the AA bar and LOW within 0.3 of it, decision D3) are accepted at any class the table gives them, and the contract prints them so the ambiguity stays visible rather than being silently resolved in labels.json. Its first run over the 46-label corpus on 2026-09-22 reported zero mismatches, so no label was corrected; the codes it could not find in section 18 at all (D1) and the two it found in two classes (S12, U3) are printed on every run rather than suppressed. In 0.7.0 section 18 gained a class for every catalogue tell, D1 and W10 included, and its HIGH row hands S12 back to LOW explicitly (a lone demo value is LOW, the whole stats row HIGH on the L10 basis), so the contract now prints only U3 and P16 as two-class codes."
   },
   "fixtures": [
     {
@@ -118,7 +122,7 @@
     {
       "file": "legacy-marketing-page.html",
       "source": "copied:anti-slop",
-      "note": "The T1 label reads 'sans companion on content copy', not 'primary face': this fixture's primary IS a serif (Instrument Serif on body) and Inter is set only on .subtitle. The operative distinction, which cream-serif-sage.html sits on the other side of: Inter on a UI control label is permitted by T1 as a utility fallback; Inter carrying content copy in a design that has already declared a display face is the tell. Severity defers to catalogue section 18, which classes T1 CRITICAL; the HIGH recorded here is informational only and the scorer never matches on it.",
+      "note": "The T1 label reads 'sans companion on content copy', not 'primary face': this fixture's primary IS a serif (Instrument Serif on body) and Inter is set only on .subtitle. The operative distinction, which cream-serif-sage.html sits on the other side of: Inter on a UI control label is permitted by T1 as a utility fallback; Inter carrying content copy in a design that has already declared a display face is the tell. Severity defers to catalogue section 18, which classes T1 CRITICAL; the HIGH recorded here is informational only and the scorer never matches on it. Fixture corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): the hero gained its sub-line with class=\"subtitle\", so the planted Inter is set on live copy rather than on a rule that styled nothing; the labels are unchanged.",
       "expected": [
         {
           "id": "anti-ai-cream-serif-combo",
@@ -179,7 +183,7 @@
     {
       "file": "cream-serif-sage.html",
       "source": "authored",
-      "note": "The tasteful-default combination in full: cream #faf8f5 background + Instrument Serif display + sage #15573a accent (all three of the combo present). Two accepted incidentals, both deliberate: the Inter button font-family (Inter as a UI-label fallback is permitted per T1), and the six-digit hex notation, which stays because the catalogue documents this tell by its literal hexes and converting them to OKLCH would weaken the very signature the fixture exists to plant.",
+      "note": "The tasteful-default combination in full: cream #faf8f5 background + Instrument Serif display + sage #15573a accent (all three of the combo present). Fixture corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): the planted Inter moved from the .btn control to the hero line (.lede), because a reflex face set only on a control is the permitted UI label fallback (T1) when the page sets another face for its content; Inter on content copy beside a declared serif display is T1, so the fixture now carries that label as well. One accepted incidental, deliberate: the six-digit hex notation, which stays because the catalogue documents this tell by its literal hexes and converting them to OKLCH would weaken the very signature the fixture exists to plant.",
       "expected": [
         {
           "id": "anti-ai-cream-serif-sage-combo",
@@ -188,13 +192,21 @@
           "title": "Cream + serif + sage tasteful-default combination",
           "tellRef": "cream-serif-sage",
           "confidence": "Pattern smell"
+        },
+        {
+          "id": "anti-ai-inter-on-content-copy",
+          "dimension": "anti-ai",
+          "severity": "CRITICAL",
+          "title": "Inter on content copy beside a declared serif display",
+          "tellRef": "T1",
+          "confidence": "Pattern smell"
         }
       ]
     },
     {
       "file": "token-drift.html",
       "source": "authored",
-      "note": "A CSS custom-property token system (--brand, --space-300, --radius) is defined in the same file, then the .save/.hint block bypasses it with hardcoded off-token colors and off-scale values (padding 11px/17px, radius 5px, margin 9px). Colors are OKLCH throughout so C15 does not co-fire: the tell is bypassing the token, not the notation. Split into two labels on 2026-09-01: the off-token colour and the off-scale spacing/radius are the two drifts this note describes, both under catalogue section 14.",
+      "note": "A CSS custom-property token system (--brand, --space-300, --radius) is defined in the same file, then the .save/.hint block bypasses it with hardcoded off-token colors and off-scale values (padding 11px/17px, radius 5px, margin 9px). Colors are OKLCH throughout so C15 does not co-fire: the tell is bypassing the token, not the notation. Split into two labels on 2026-09-01: the off-token colour and the off-scale spacing/radius are the two drifts this note describes, both under catalogue section 14. Contrast corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): .save background oklch(0.587 0.104 159) -> oklch(0.543 0.104 159), 3.79:1 -> 4.55:1; .save:hover background oklch(0.639 0.11 160) -> oklch(0.5 0.11 160), 3.07:1 -> 5.43:1; .hint oklch(0.578 0.006 107) -> oklch(0.554 0.006 107), 4.31:1 -> 4.77:1 on white (the literals stay literals, so the off-token tell is intact); the planted construct is unchanged.",
       "expected": [
         {
           "id": "anti-ai-hardcoded-color-bypasses-token",
@@ -240,7 +252,7 @@
     {
       "file": "uncommitted-radius.html",
       "source": "authored",
-      "note": "Six interactive controls (text input, select, textarea, three chips, submit button) all carrying border-radius: 8px, the shadcn --radius default, with no radius identity stated anywhere. This is what D1 actually describes, and it is what frosted-nav-neon.html never contained. Everything else is committed: OKLCH tokens on a non-AI hue, the platform system sans, fluid padding, real copy, a visible focus ring.",
+      "note": "Six interactive controls (text input, select, textarea, three chips, submit button) all carrying border-radius: 8px, the shadcn --radius default, with no radius identity stated anywhere. This is what D1 actually describes, and it is what frosted-nav-neon.html never contained. Everything else is committed: OKLCH tokens on a non-AI hue, the platform system sans, fluid padding, real copy, a visible focus ring. Contrast corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): --moss oklch(0.55 0.13 145) -> oklch(0.541 0.13 145), 4.46:1 -> 4.63:1 against its button text; the planted construct is unchanged.",
       "expected": [
         {
           "id": "anti-ai-uncommitted-radius",
@@ -255,7 +267,7 @@
     {
       "file": "fixed-desktop-shell.html",
       "source": "authored",
-      "note": "A page composed for one canvas: no viewport meta at all, a container at a hard width: 1200px (not max-width), a grid asserting grid-template-columns: repeat(3, 360px), and px type and padding throughout. Below 1200px it overflows horizontally; above it, it never uses the room. The remediation the review must name is width: min(100% - 2rem, 72rem) plus repeat(auto-fit, minmax(18rem, 1fr)) plus the viewport meta, never a second fixed width. Split into three labels on 2026-09-01 so ground truth enumerates the three defects this note already describes (the 2026-07-27 blind run reported all three and was scored as two false positives). All three live under catalogue L13, whose definition names the fixed width, the fixed grid tracks, and the absent viewport meta. The viewport-meta label deliberately sits last: the scorer binds explicit-tellRef pairs in label order before it tries the fuzzy title path, so a run that files the missing meta under another code still lands on this label instead of stealing an L13 match from the first two.",
+      "note": "A page composed for one canvas: no viewport meta at all, a container at a hard width: 1200px (not max-width), a grid asserting grid-template-columns: repeat(3, 360px), and px type and padding throughout. Below 1200px it overflows horizontally; above it, it never uses the room. The remediation the review must name is width: min(100% - 2rem, 72rem) plus repeat(auto-fit, minmax(18rem, 1fr)) plus the viewport meta, never a second fixed width. Split into three labels on 2026-09-01 so ground truth enumerates the three defects this note already describes (the 2026-07-27 blind run reported all three and was scored as two false positives). All three live under catalogue L13, whose definition names the fixed width, the fixed grid tracks, and the absent viewport meta. The viewport-meta label deliberately sits last: the scorer binds explicit-tellRef pairs in label order before it tries the fuzzy title path, so a run that files the missing meta under another code still lands on this label instead of stealing an L13 match from the first two. Contrast corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): --signal oklch(0.58 0.16 40) -> oklch(0.571 0.16 40), 4.40:1 -> 4.57:1 on --paper; the planted construct is unchanged.",
       "expected": [
         {
           "id": "responsive-fixed-pixel-shell",
@@ -294,7 +306,7 @@
     {
       "file": "viewport-query-card.html",
       "source": "authored",
-      "note": "The container-query failure in its purest form. The page shell is genuinely fluid (clamp padding, min() width, a flexible rail), but the .firing component switches to a two-column layout on @media (min-width: 60rem) while living in BOTH a ~16rem rail and a wide main column. At a 1200px window the rail copy gets the wide-column layout it has no room for. The remediation is container-type: inline-size on the host plus @container (min-width: 22rem), never deleting the query.",
+      "note": "The container-query failure in its purest form. The page shell is genuinely fluid (clamp padding, min() width, a flexible rail), but the .firing component switches to a two-column layout on @media (min-width: 60rem) while living in BOTH a ~16rem rail and a wide main column. At a 1200px window the rail copy gets the wide-column layout it has no room for. The remediation is container-type: inline-size on the host plus @container (min-width: 22rem), never deleting the query. Contrast corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): --ember oklch(0.6 0.16 30) -> oklch(0.571 0.16 30), 4.04:1 -> 4.56:1 on --paper; the planted construct is unchanged.",
       "expected": [
         {
           "id": "responsive-viewport-query-for-component",
@@ -309,7 +321,7 @@
     {
       "file": "vh-bottom-bar.html",
       "source": "authored",
-      "note": "A mobile task surface at height: 100vh with a position: fixed bottom action bar that has no env(safe-area-inset-bottom) padding and no viewport-fit=cover. On iOS with the toolbar visible the last ~60-100px of the 100vh shell sits under browser chrome and the two primary buttons are partly unreachable; on a notched device the bar also runs into the home indicator. The remediation is 100dvh (or 100svh) plus padding-bottom: max(0.75rem, env(safe-area-inset-bottom)), never a fixed pixel height. Split into two labels on 2026-09-01: the 100vh shell and the bar with no safe-area padding are two defects with two remediations, both under catalogue P3, whose remediation row covers the bar pinned to the shell's bottom edge.",
+      "note": "A mobile task surface at height: 100vh with a position: fixed bottom action bar that has no env(safe-area-inset-bottom) padding and no viewport-fit=cover. On iOS with the toolbar visible the last ~60-100px of the 100vh shell sits under browser chrome and the two primary buttons are partly unreachable; on a notched device the bar also runs into the home indicator. The remediation is 100dvh (or 100svh) plus padding-bottom: max(0.75rem, env(safe-area-inset-bottom)), never a fixed pixel height. Split into two labels on 2026-09-01: the 100vh shell and the bar with no safe-area padding are two defects with two remediations, both under catalogue P3, whose remediation row covers the bar pinned to the shell's bottom edge. Contrast corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): --harbor oklch(0.55 0.11 215) -> oklch(0.536 0.11 215), 4.45:1 -> 4.70:1 against its button text; the planted construct is unchanged.",
       "expected": [
         {
           "id": "responsive-vh-full-height-shell",
@@ -332,7 +344,7 @@
     {
       "file": "fluid-adaptive-clean.html",
       "source": "authored",
-      "note": "Clean responsive control. Every construct the catalogue prescribes for dynamic sizing is present and correct: a clamp() type ramp in --step-* custom properties, clamp() padding, width: min(), repeat(auto-fit, minmax(16rem, 1fr)), container-type plus an @container rule, 100dvh, env(safe-area-inset-bottom), viewport-fit=cover, tabular-nums, a committed 2px radius token, a visible :focus-visible ring, and real copy on a non-AI ochre accent. Must produce ZERO findings. Any finding against the clamp ramp, the container query, dvh or the safe-area inset means the reviewer has read Strongest-10 #9 or T14 as a ban on responsive sizing rather than on the verbatim Tailwind default, which is the specific regression this control exists to catch.",
+      "note": "Clean responsive control. Every construct the catalogue prescribes for dynamic sizing is present and correct: a clamp() type ramp in --step-* custom properties, clamp() padding, width: min(), repeat(auto-fit, minmax(16rem, 1fr)), container-type plus an @container rule, 100dvh, env(safe-area-inset-bottom), viewport-fit=cover, tabular-nums, a committed 2px radius token, a visible :focus-visible ring, and real copy on a non-AI ochre accent. Must produce ZERO findings. Any finding against the clamp ramp, the container query, dvh or the safe-area inset means the reviewer has read Strongest-10 #9 or T14 as a ban on responsive sizing rather than on the verbatim Tailwind default, which is the specific regression this control exists to catch. Contrast corrected 2026-10 (anti-slop 2.5.0, re-copied byte for byte in ui-craft 0.7.0): --ochre oklch(0.68 0.14 75) -> oklch(0.558 0.14 75), 2.81:1 -> 4.56:1 on --paper; the planted construct is unchanged.",
       "expected": [],
       "maxIncidentalFindings": 1
     },
@@ -399,7 +411,7 @@
     {
       "file": "icon-only-button.html",
       "source": "authored",
-      "note": "One <button> whose only content is an inline <svg> with no aria-label, no visually hidden text and no <title>, so its accessible name is empty. The hit target is 2.75rem square and a :focus-visible ring is present, so target-size and focus tells do not co-fire; everything else is clean. Dimension is anti-ai because U13 is a catalogue micro tell walked by the ui-anti-slop-auditor's step 11; the ui-accessibility-reviewer would file the same defect under accessibility (WCAG 4.1.2), and tellRef-first matching scores either producer. Severity CRITICAL is section 18's class for U13.",
+      "note": "One <button> whose only content is an inline <svg> with no aria-label, no visually hidden text and no <title>, so its accessible name is empty. The hit target is 2.75rem square and a :focus-visible ring is present, so target-size and focus tells do not co-fire; everything else is clean. Dimension is anti-ai because U13 is a catalogue micro tell walked by the ui-anti-slop-auditor's step 11; the ui-accessibility-reviewer would file the same defect under accessibility (WCAG 4.1.2), and tellRef-first matching scores either producer. Severity CRITICAL is section 18's class for U13. Contrast corrected 2026-10 (ui-craft 0.7.0): --clay oklch(0.58 0.13 45) -> oklch(0.566 0.13 45), 4.32:1 -> 4.58:1 for the button glyph colour on --paper, so the fixture plants only U13; the planted construct is unchanged.",
       "expected": [
         {
           "id": "anti-ai-icon-only-button-no-accessible-name",
@@ -414,7 +426,7 @@
     {
       "file": "reduced-motion-opt-in.html",
       "source": "authored",
-      "note": "Clean motion control. The only decorative motion (a 280ms settle on the heading and a colour transition on the link) sits inside @media (prefers-reduced-motion: no-preference), and there is no (prefers-reduced-motion: reduce) block at all. That is the pattern references/design/04-motion.md section 7 prescribes (motion as the opt-in), so a finding of M6 against this page means the reviewer has read 'no reduce block' as 'no reduced-motion handling', which is the regression this control exists to catch. Everything else is clean: system stack, OKLCH, viewport meta, fluid sizing, a committed radius, a visible focus ring, real copy. Must produce ZERO findings; tolerance is 0, not the older controls' 1, because the one plausible incidental IS the regression.",
+      "note": "Clean motion control. The only decorative motion (a 280ms settle on the heading and a colour transition on the link) sits inside @media (prefers-reduced-motion: no-preference), and there is no (prefers-reduced-motion: reduce) block at all. That is the pattern references/design/04-motion.md section 7 prescribes (motion as the opt-in), so a finding of M6 against this page means the reviewer has read 'no reduce block' as 'no reduced-motion handling', which is the regression this control exists to catch. Everything else is clean: system stack, OKLCH, viewport meta, fluid sizing, a committed radius, a visible focus ring, real copy. Must produce ZERO findings; tolerance is 0, not the older controls' 1, because the one plausible incidental IS the regression. Contrast corrected 2026-10 (ui-craft 0.7.0): --ember oklch(0.6 0.16 30) -> oklch(0.575 0.16 30), 4.07:1 -> 4.52:1 for the .temp readout and the link on --paper; the planted construct is unchanged.",
       "expected": [],
       "maxIncidentalFindings": 0
     },
@@ -428,7 +440,7 @@
     {
       "file": "flat-terminal.html",
       "source": "authored:0.6.0",
-      "note": "The 2026 second default, and the one six consecutive remediation campaigns produced on one data product. A near-black ground at oklch(0.12 0.003 270) with panels one step above it at 0.13 (a tint step far under the 1.15:1 floor), a single hairline at 0.08 alpha of white as the only boundary, no elevation anywhere, the one accent at chroma 0.02, colour otherwise reserved for the two status states, the system stack at 400/600 on every surface, no badges, no frames, no imagery. Substance checks S3 and S4 fail together with S1 and S2, which is the V13 signature (references/aesthetic/06-substance-floor.md section 1). Everything else is deliberately clean: viewport meta, fluid padding, auto-fit tracks, tabular figures, thousands separators, real copy, and no controls that could want states. The system stack at default weights is part of the planted signature rather than a second tell; a T2 finding here is the same span read one level down, not a false positive.",
+      "note": "The 2026 second default, and the one six consecutive remediation campaigns produced on one data product. A near-black ground at oklch(0.12 0.003 270) with panels one step above it at 0.13 (a tint step far under the 1.15:1 floor), a single hairline at 0.08 alpha of white as the only boundary, no elevation anywhere, the one accent at chroma 0.02, colour otherwise reserved for the two status states, the system stack at 400/600 on every surface, no badges, no frames, no imagery. Substance checks S3 and S4 fail together with S1 and S2, which is the V13 signature (references/aesthetic/06-substance-floor.md section 1). Everything else is deliberately clean: viewport meta, fluid padding, auto-fit tracks, tabular figures, thousands separators, real copy, and no controls that could want states. The system stack at default weights is part of the planted V13 signature; it is not T2, which covers a chosen Roboto, Helvetica or Arial primary.",
       "expected": [
         {
           "id": "anti-ai-flat-terminal-subtraction-only-system",
@@ -443,7 +455,7 @@
     {
       "file": "prose-blob-top.html",
       "source": "authored:0.6.0",
-      "note": "The canonical W11 case from the shipping history: a reference page that is a guide with a tool at the bottom instead of a tool with a guide underneath. One paragraph sits inside the identity block and four more run to about 281 words before the first data element, against a 40-word lede budget for a content or reference surface (references/design/12-copy-placement-and-volume.md section 3). The rest of the page is deliberately clean so the blob is the only signal: the prose lives in a headed section so W12 cannot fire, only two consecutive sections carry no non-text child so L14 cannot fire, the identity block carries the entity's icon so the first viewport is not text-only, and the type system declares a display face with explicit weight and tracking so the T2 checkable rule is satisfied.",
+      "note": "The canonical W11 case from the shipping history: a reference page that is a guide with a tool at the bottom instead of a tool with a guide underneath. One paragraph sits inside the identity block and four more run to about 281 words before the first data element, against a 40-word lede budget for a content or reference surface (references/design/12-copy-placement-and-volume.md section 3). The rest of the page is deliberately clean so the blob is the only signal: the prose lives in a headed section so W12 cannot fire, only two consecutive sections carry no non-text child so L14 cannot fire, the identity block carries the entity's icon so the first viewport is not text-only, and the type system declares a display face with explicit weight and tracking so the system-stack flatness check has nothing to read.",
       "expected": [
         {
           "id": "anti-ai-prose-blob-above-primary-content",
@@ -481,7 +493,7 @@
     {
       "file": "icon-cards-no-imagery.html",
       "source": "authored:0.6.0",
-      "note": "A marketing page for a physical camera with four icon-card sections and zero img, picture, figure, video or canvas anywhere: the structural complaint the corpus records as 'most good websites are like 50% images if not more'. I8 is presence-flaggable on a visual product, and the substance floor gives it the number (one real image or figure per two sections, S6). The icons are plain unwrapped inline SVG at line height with no tinted containers, so V1 and Strongest-10 row 6 must not fire; the cards carry a border and a radius but no shadow, so row 1 must not fire either; section padding alternates so L7 is absent; there is no testimonial block, no pricing table and no dual CTA, so the L1 scaffold is absent.",
+      "note": "A marketing page for a physical camera with four icon-card sections and zero img, picture, figure, video or canvas anywhere: the structural complaint the corpus records as 'most good websites are like 50% images if not more'. I8 is presence-flaggable on a visual product, and the substance floor gives it the number (one real image or figure per two sections, S6). The icons are plain unwrapped inline SVG at line height with no tinted containers, so V1 and Strongest-10 row 6 must not fire; the cards carry a border and a radius but no shadow, so row 1 must not fire either; section padding alternates so L7 is absent; there is no testimonial block, no pricing table and no dual CTA, so the L1 scaffold is absent. Contrast corrected 2026-10 (ui-craft 0.7.0): --brass oklch(0.62 0.13 72) -> oklch(0.563 0.13 72), 3.63:1 -> 4.58:1 for the .cta text on its brass fill, so the fixture plants only I8; the planted construct is unchanged.",
       "expected": [
         {
           "id": "anti-ai-no-real-imagery-on-visual-product",
@@ -556,7 +568,7 @@
     {
       "file": "hero-scroll-poster.html",
       "source": "copied:anti-slop:0.6.0",
-      "note": "Clean control by elimination, and the fixture that shows where the cream-serif-sage combination stops. The tell anti-slop planted here (hero-scroll-hint, a 'Scroll to explore' label) has no ui-craft catalogue home. The palette was labelled for the combination on the first pass and the label was withdrawn on the same day, before it shipped: --paper #f6f1e7 (OKLCH L 0.959 / C 0.0143 / H 84.6) is cream by the tell's own test, but --ember #8c3b16 (C 0.1205 / H 42.4) is the rusty-orange drift VARIANT of the accent leg rather than the sage green the combination names, and no font-family is declared anywhere, so no serif display face is chosen either. That is one of the three named markers plus a variant, and the tell's own rule is that one alone may be a real decision. Tolerance is 1: the one permitted incidental is a finding against the scroll hint, which no catalogue row covers and which the 2026-09-22 blind run filed against a design reference rather than a tell code. Everything else is committed: a fluid clamp() hero ramp, token radius and spacing, real alt text with intrinsic dimensions, and a focus-visible ring.",
+      "note": "Clean control by elimination, and the fixture that shows where the cream-serif-sage combination stops. The tell anti-slop planted here (hero-scroll-hint, a 'Scroll to explore' label) has no ui-craft catalogue home. The palette was labelled for the combination on the first pass and the label was withdrawn on the same day, before it shipped: --paper #f6f1e7 (OKLCH L 0.959 / C 0.0143 / H 84.6) is cream by the tell's own test, but --ember #8c3b16 (C 0.1205 / H 42.4) is the rusty-orange drift VARIANT of the accent leg rather than the sage green the combination names, and no font-family is declared anywhere, so no serif display face is chosen either. That is one of the three named markers plus a variant, and the tell's own rule is that one alone may be a real decision. Tolerance is 1: the one permitted incidental is a finding against the scroll hint, which no catalogue row covers and which the 2026-09-22 blind run filed against a design reference rather than a tell code. Everything else is committed: a fluid clamp() hero ramp, token radius and spacing, real alt text with intrinsic dimensions, and a focus-visible ring. Settled 2026-10-26 in favour of the two-leg rule: catalogue line 52 no longer flags the clay accent on a cream ground by itself.",
       "expected": [],
       "maxIncidentalFindings": 1
     },
@@ -715,6 +727,376 @@
           "tellRef": "T13"
         }
       ]
+    },
+    {
+      "file": "contrast-pairs.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for P16, copied byte for byte from anti-slop 2.5.0. Three pairs below the bar, one per tier the measurement reads: .btn white on its ochre fill at 2.9:1 (block), .btn:hover borrowing its text colour from .btn at 2.3:1 (hover state), and .card .meta #64748b on the #0f172a card at 3.8:1 (ancestor). One pair within 0.3 of the bar: .tag #6b7280 on #f1f5f9 at 4.4:1. Two labels because section 18 gives P16 two classes: HIGH below the bar, LOW within 0.3 of it (decision D3). Body text is #1f2937 on white and every other pair passes.",
+      "expected": [
+        {
+          "id": "accessibility-low-contrast",
+          "dimension": "accessibility",
+          "severity": "HIGH",
+          "title": "Text below WCAG AA contrast on its declared surface",
+          "tellRef": "P16",
+          "confidence": "Quality defect"
+        },
+        {
+          "id": "accessibility-low-contrast-near-bar",
+          "dimension": "accessibility",
+          "severity": "LOW",
+          "title": "Text within 0.3 of the AA contrast bar",
+          "tellRef": "P16",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "contrast-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of contrast-pairs.html, copied byte for byte from anti-slop 2.5.0: the same selectors one step past the bar (.btn 6.65:1, .btn:hover 8.59:1, .tag 6.92:1, .card .meta 6.96:1), plus the constructs P16 must leave alone or measure correctly: a disabled button (exempt), a gradient hero surface (not measured statically), and a labelled field whose placeholder is measured and passes at 4.83:1 (decision D12). Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "contrast-ground.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for the page-ground tier of P16, copied byte for byte from anti-slop 2.5.0: the page ground is the file's only painted surface, so .note #8a8a8a measures against it at 3.5:1. A file that paints any other surface switches this tier off, which is why the case has its own fixture.",
+      "expected": [
+        {
+          "id": "accessibility-low-contrast",
+          "dimension": "accessibility",
+          "severity": "HIGH",
+          "title": "Text below WCAG AA contrast on its declared surface",
+          "tellRef": "P16",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "contrast-ground-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of contrast-ground.html, copied byte for byte from anti-slop 2.5.0: .note #6b6b6b at 5.33:1 on the page ground, and a 28px bold .display #8f8f8f at 3.23:1, which clears the large-text bar of 3:1. The same colour at body size is the exemption's should-flag twin in the scan-tells selftest. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "side-stripe-cards.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for V3, copied byte for byte from anti-slop 2.5.0, one coloured side stripe per syntax: a 4px border-left on a rounded card, a 3px border-inline-start on a blockquote whose radius cannot be read, a 4px absolute ::before bar, an inset 4px side shadow, and a rounded-xl border-l-4 border-teal-600 class set. V3 is user-banned and fires on one instance (catalogue, How to apply); section 18 classes it MEDIUM.",
+      "expected": [
+        {
+          "id": "anti-ai-side-stripe-accent",
+          "dimension": "anti-ai",
+          "severity": "MEDIUM",
+          "title": "Coloured accent stripe on one side of a card",
+          "tellRef": "V3",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "side-stripe-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of side-stripe-cards.html, copied byte for byte from anti-slop 2.5.0, one step from each syntax: a neutral 2px rule on timeline items, a selected tab's edge, a live region's severity edge, a uniform 1px card border, a 1px divider, a bottom-border spinner with role=status and a hidden label, and border-l-4 on a button and on a table cell. Each is substance, not V3. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "type-floors.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for the T12 floors, copied byte for byte from anti-slop 2.5.0: an 11px paragraph of running text under .article p (floor 12px), a 0.625rem price note and 10px footer links (functional floor 11px). Under its floors T12 is a legibility defect on one instance (catalogue, How to apply); section 18 classes it MEDIUM.",
+      "expected": [
+        {
+          "id": "accessibility-text-size-floor",
+          "dimension": "accessibility",
+          "severity": "MEDIUM",
+          "title": "Text below the 12px running / 11px functional floor",
+          "tellRef": "T12",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "type-floors-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of type-floors.html, copied byte for byte from anti-slop 2.5.0: an 11px uppercase eyebrow and an 11px .post-meta row (functional text at its floor), a 10px footnote marker (sup is exempt), 10px small print inside .legal (small-print floor 10px), 12px code and an em-sized caption, which a static scan does not judge. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "reading-mechanics.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Shared positive for the four T16 readings, copied byte for byte from anti-slop 2.5.0, one construct each: .article p at 16px with line-height 1.15 over a long paragraph, .note p tracked 0.12em in mixed case, .sidebar-note justified at 22ch with no hyphens, and .hero h1 at 32px with letter-spacing -0.1em. Four labels under T16 at MEDIUM: the crushed tracking files under T16 rather than T8, whose HIGH entry in section 18 is untuned tracking left at 0, not over-tightening (decision D4). A rule cut from a release has its construct removed from this file in the same commit, or its label kept with no severity as a known false negative (corpus README, exemption twins).",
+      "expected": [
+        {
+          "id": "visual-tight-leading",
+          "dimension": "visual",
+          "severity": "MEDIUM",
+          "title": "Body leading under 1.3",
+          "tellRef": "T16",
+          "confidence": "Quality defect"
+        },
+        {
+          "id": "visual-wide-tracking",
+          "dimension": "visual",
+          "severity": "MEDIUM",
+          "title": "Running text tracked wider than 0.05em",
+          "tellRef": "T16",
+          "confidence": "Quality defect"
+        },
+        {
+          "id": "visual-justified-narrow-column",
+          "dimension": "visual",
+          "severity": "MEDIUM",
+          "title": "Justified text in a column under 45 characters",
+          "tellRef": "T16",
+          "confidence": "Quality defect"
+        },
+        {
+          "id": "visual-crushed-tracking",
+          "dimension": "visual",
+          "severity": "MEDIUM",
+          "title": "Letter-spacing tight enough that glyphs collide",
+          "tellRef": "T16",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "reading-mechanics-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of reading-mechanics.html, copied byte for byte from anti-slop 2.5.0, one step from each construct: a tight 20px heading, 22px lead text at 1.2, a 12px badge and preformatted code at 1.25, a bold card title; caps, small-caps, Japanese and button tracking; justify on a 65ch measure and on a hyphenated 18rem column; -0.05em on 56px display type (ordinary display tracking, not T16), -0.02em on a title and a -0.08em wordmark (the wordmark exemption). Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "motion-bounce.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for the bounce reflex of M2, copied byte for byte from anti-slop 2.5.0: a bounce-in toast whose keyframes rise and fall twice, a menu transition on cubic-bezier(0.68, -0.55, 0.265, 1.55), which both anticipates and overshoots, and an animate-bounce scroll cue. The motion is opted in under prefers-reduced-motion: no-preference, so M6 does not co-fire. The scanner files it as a heuristic candidate at MEDIUM (decision D8); the auditor confirms it against the action's gravity.",
+      "expected": [
+        {
+          "id": "motion-bounce-easing",
+          "dimension": "motion",
+          "severity": "MEDIUM",
+          "title": "Bounce or elastic easing",
+          "tellRef": "M2",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "motion-spring-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of motion-bounce.html, copied byte for byte from anti-slop 2.5.0: a linear() spring token that is read, an elastic --ease-bounce token that nothing reads, a single-overshoot pop curve, a skeleton named bounce-soft whose keyframes only fade and shrink, and a float that rises and settles once. A spring that settles is the motion doctrine's own tool (references/design/04-motion.md), not M2. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "live-dot.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for V11, copied byte for byte from anti-slop 2.5.0: an 8px round .live-dot running an infinite opacity and scale pulse beside the word Live (the animation is opted in under no-preference and the box lives in the base rule), and an h-2 w-2 rounded-full animate-ping span. V11 is user-banned and fires on one instance; section 18 classes it HIGH.",
+      "expected": [
+        {
+          "id": "anti-ai-pulsing-dot",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Pulsing status dot",
+          "tellRef": "V11",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "live-dot-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of live-dot.html, copied byte for byte from anti-slop 2.5.0, one step from each gate: a 4x24px equaliser bar (not a dot), an 8px dot that pulses once, a 12px dot that floats (it moves rather than pulses), and a 24px spinner (over 16px, role=status with a hidden label). Every infinite animation is opted in under no-preference. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "zoom-lock-tabindex.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "The two web accessibility rows anti-slop added in 2.4.0, on one realistic page, copied byte for byte from anti-slop 2.5.0. The viewport meta carries both blocking legs (maximum-scale=1 and user-scalable=no) and counts once as P4; the search form hand-numbers its four controls with positive tabindex values, which is P12. Section 18 classes P4 CRITICAL and P12 HIGH; both are hard defects that fire on one instance (catalogue, How to apply).",
+      "expected": [
+        {
+          "id": "accessibility-viewport-zoom-lock",
+          "dimension": "accessibility",
+          "severity": "CRITICAL",
+          "title": "Viewport meta blocks pinch zoom",
+          "tellRef": "P4",
+          "confidence": "Hard defect"
+        },
+        {
+          "id": "accessibility-positive-tabindex",
+          "dimension": "accessibility",
+          "severity": "HIGH",
+          "title": "Positive tabindex overrides the natural focus order",
+          "tellRef": "P12",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "viewport-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of zoom-lock-tabindex.html, copied byte for byte from anti-slop 2.5.0: width=device-width with initial-scale=1 and nothing else, tabindex=\"0\" joining the natural order, tabindex=\"-1\" on a script-focused region, and a maximum-scale=5 cap that still leaves a usable zoom range. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "focus-ring-on-focus.html",
+      "source": "authored:0.7.0",
+      "note": "Positive for U4 in its Tailwind form, authored for ui-craft because anti-slop deliberately stays silent on it (decision D13). Both buttons carry focus:outline-none with a focus: ring and no focus-visible: variant, so the ring paints on pointer focus as well as keyboard focus. An indicator is present, so this is not U3: U3 at CRITICAL is the outline removed with nothing in its place. Everything else is committed: a near-neutral ground under the cream floor, the platform system stack, a teal action colour off the AI purple arc, two controls rather than D1's three, and real copy.",
+      "expected": [
+        {
+          "id": "anti-ai-focus-ring-not-visible",
+          "dimension": "anti-ai",
+          "severity": "MEDIUM",
+          "title": "Focus ring on :focus with no :focus-visible variant",
+          "tellRef": "U4",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "focus-visible-clean.html",
+      "source": "authored:0.7.0",
+      "note": "Clean partner of focus-ring-on-focus.html, one step from it: the button and the link carry focus-visible:outline-none with a focus-visible: ring, which is the canonical Tailwind focus pattern and must fire neither U3 nor U4, and the textarea pairs focus:outline-none with a focus-visible: ring, which also replaces the indicator on keyboard focus. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "marquee-logos.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for M4, copied byte for byte from anti-slop 2.5.0: a row of customer logos carried half its width sideways by an infinite linear keyframes loop with no pause control, opted in under prefers-reduced-motion: no-preference so M6 does not co-fire. The opt-in protects readers who asked for less motion; everyone else still gets motion they cannot stop, which is the WCAG 2.2.2 defect section 18 classes HIGH. The logo wall itself is L8's convention composition and is not labelled.",
+      "expected": [
+        {
+          "id": "anti-ai-marquee",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Marquee that scrolls forever with no pause control",
+          "tellRef": "M4",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "marquee-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of marquee-logos.html, copied byte for byte from anti-slop 2.5.0: a one-shot slide-in heading, a notice that rises once (finite), and a scroll-snap rail the reader moves by hand. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "pattern-backgrounds.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for V9, copied byte for byte from anti-slop 2.5.0, one pattern per form: a two-axis hairline grid on a 24px tile behind the page, a 1px dot field on a 16px tile behind the hero, and repeating 45deg stripes behind a promo strip. The dot-grid run is a section-11 verbatim fingerprint and fires on one instance; section 18 classes V9 LOW.",
+      "expected": [
+        {
+          "id": "anti-ai-background-pattern",
+          "dimension": "anti-ai",
+          "severity": "LOW",
+          "title": "Dot, grid or stripe background pattern behind content",
+          "tellRef": "V9",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "pattern-backgrounds-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of pattern-backgrounds.html, copied byte for byte from anti-slop 2.5.0: one tiled hairline (a ruled-paper rule, not a grid), a repeating gradient that runs its whole length and paints once, and a plain two-colour gradient. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "radial-halo.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for the radial-halo form of C11, copied byte for byte from anti-slop 2.5.0: on a #0b0b10 page the hero sits on a cyan radial gradient that starts at 0.8 alpha and fades to transparent. It is the CSS form of the decorative blob, filler that carries no information; section 18 classes C11 LOW.",
+      "expected": [
+        {
+          "id": "anti-ai-radial-halo",
+          "dimension": "anti-ai",
+          "severity": "LOW",
+          "title": "Saturated radial halo behind a section of a dark page",
+          "tellRef": "C11",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "radial-halo-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of radial-halo.html, copied byte for byte from anti-slop 2.5.0, on the same dark page: a translucent wash whose first stop sits at 0.3 alpha, and a single untiled radial gradient with a 1px stop (a spot, not a halo, and not a tiled dot field). The same halo on a light page is the should-pass twin in the scan-tells selftest. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "gray-on-color.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for C7's gray-on-colour leg, copied byte for byte from anti-slop 2.5.0: text-gray-300 on bg-blue-800 in one class set, and .promo #d1d5db on #1e40af, which passes contrast at 5.92:1 so the fixture plants only this tell. One colour declaration sets every line of secondary text on its surface, so the leg fires on one instance (catalogue, How to apply); section 18 classes C7 MEDIUM.",
+      "expected": [
+        {
+          "id": "visual-gray-on-color",
+          "dimension": "visual",
+          "severity": "MEDIUM",
+          "title": "Neutral mid-grey text on a chromatic surface",
+          "tellRef": "C7",
+          "confidence": "Pattern smell"
+        }
+      ]
+    },
+    {
+      "file": "gray-on-color-clean.html",
+      "source": "copied:anti-slop:2.5.1",
+      "note": "Clean partner of gray-on-color.html, copied byte for byte from anti-slop 2.5.1: near-black text-gray-700 on a pale bg-amber-100 (9.26:1), a slate link whose red is a hover tint, a grey span beside a blue sibling, a ternary with the grey in one arm and the colour in the other, and off-white #e5e7eb on navy (8.37:1). The 2.5.0 copy set the link and the span to text-slate-400 and text-gray-400 on the white page (2.56:1 and 2.54:1), a real P16 failure no static scan resolves because both are Tailwind utilities; anti-slop 2.5.1 corrected both to -600 (7.58:1 and 7.56:1), which keeps every near-miss shape, and this copy follows it. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "skipped-heading.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for P9, copied byte for byte from anti-slop 2.5.0: h1, h2, then an h4 chosen for its size in the main content. A skipped level breaks the outline screen-reader users move through, so it is a defect on one instance; section 18 classes P9 HIGH.",
+      "expected": [
+        {
+          "id": "accessibility-skipped-heading",
+          "dimension": "accessibility",
+          "severity": "HIGH",
+          "title": "Heading level skipped for size",
+          "tellRef": "P9",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "skipped-heading-clean.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean partner of skipped-heading.html, copied byte for byte from anti-slop 2.5.0: h1, h2, h3, back up to h2, then a footer whose first heading is an h4, the h2-to-h4 step the footer exemption in P9's row must clear. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
+    },
+    {
+      "file": "design-system/drift.css",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Positive for the section-14 face check, copied byte for byte from anti-slop 2.5.0: the directory's DESIGN.md declares Söhne as the one face, and .hero sets Lobster, a face with no standing in the system; the body keeps the declared face. The scanner files it as a heuristic candidate.",
+      "expected": [
+        {
+          "id": "anti-ai-design-system-font",
+          "dimension": "anti-ai",
+          "severity": "HIGH",
+          "title": "Face set outside the typography DESIGN.md declares",
+          "tellRef": "section 14",
+          "confidence": "Quality defect"
+        }
+      ]
+    },
+    {
+      "file": "design-system/palette-declared.html",
+      "source": "copied:anti-slop:2.5.0",
+      "note": "Clean control for the DESIGN.md palette exemption, copied byte for byte from anti-slop 2.5.0: DESIGN.md declares violet oklch(0.55 0.2 295); the bg-violet-600 button, the violet-500 to violet-600 gradient and the violet-700 text sit within 15 degrees of it, so each is the documented palette. Tolerance 0.",
+      "expected": [],
+      "maxIncidentalFindings": 0
     }
   ]
 }

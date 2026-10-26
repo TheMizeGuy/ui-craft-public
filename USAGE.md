@@ -23,8 +23,9 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    generated code only after you explicitly approve. The exception to read-only is the plugin's own state, all of it under
    `.claude/ui-craft/` in the reviewed repo and all of it announced in one line: the three review
    skills write `last-review.json` on every run without asking (it is what makes the second
-   run a delta instead of a cold re-listing), a browser run also writes its evidence captures
-   under `runs/<timestamp>/evidence/`, and a full `improve-ui` pass also writes
+   run a delta instead of a cold re-listing), `review-ui` and `improve-ui` also write the run's
+   evidence under `runs/<timestamp>/evidence/` (the scanner output on every run, the captures on
+   a browser run), and a full `improve-ui` pass also writes
    `runs/<timestamp>/merged-report.md`, because a seven-specialist report exceeds the ~60KB at
    which a subagent's reply truncates. Add `.claude/ui-craft/` to `.gitignore` if your repo runs
    a clean-tree check, but do not ignore `.claude/` wholesale: gate artifacts under
@@ -216,6 +217,15 @@ touched, then reports any breakage with the fix. Code that does not compile is n
    HIGH/CRITICAL; accessibility blockers never below HIGH), mark every unmeasured spatial claim
    `[unverified: geometry measurement needed]` and cap it at MEDIUM, set the blocker flags, then
    re-rank and number the findings.
+8. The scanner is held back until that merge. Before dispatching, the skill runs
+   `scripts/scan_tells.mjs` over the files in scope and writes its output to
+   `.claude/ui-craft/runs/<timestamp>/evidence/scan_tells.json`, but keeps it out of every
+   specialist prompt: the auditor and the visual reviewer form their own read first, because
+   detector output anchors judgment even when it is right. At the merge the coordinator folds
+   the scanner's findings in by `references/review/04-verdicts-and-verification.md`
+   § Scanner merge and writes the four merge lines on the report's Merge notes line. The
+   measurement scripts work the same way: their numbers reach the specialists, their findings
+   wait for the merge.
 
 **You get:**
 
@@ -227,6 +237,9 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 **Specialists:** ui-visual-reviewer, ui-accessibility-reviewer, ui-responsive-reviewer, ui-anti-slop-auditor, ui-typescript-engineer
 **Dimensions not reviewed:** motion (no animation in scope), runtime (no performance concern and no measurable runtime)
 **Evidence level:** code-only
+**Product context:** none found
+**Not exercised:** touch drag, keyboard-only path, 200% zoom, reduced motion, offline
+**Surface:** control
 **Flows reviewed:** complete a checkout (3 steps)
 
 ### Dimension Verdicts
@@ -249,6 +262,8 @@ Why it matters: screen reader users hear "button" with no indication of what it 
 Evidence: rendered markup has no accessible name in the code path
 Recommended change: add aria-label="Place order" or visible button text
 ...
+
+**Merge notes:** Scanner-confirmed: 1. Scanner-only kept: none. Scanner false positive: none. Scanner candidate not confirmed: none.
 ```
 
 Every finding carries a severity tag, one of the four canonical confidence classes, the
@@ -317,7 +332,11 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
    last, always last, never in parallel: evidence sufficiency, false-positive filtering,
    deduplication, severity re-validation. It deliberately skips inapplicable specialists rather
    than dispatching them for completeness, because an undispatched dimension is an honest gap
-   while a speculative verdict row manufactures confidence the run never earned.
+   while a speculative verdict row manufactures confidence the run never earned. The team
+   lead runs `scripts/scan_tells.mjs` itself in its first phase and hands the output to the
+   verifier with the specialist reports, never to a specialist; the verifier merges the two by
+   `references/review/04-verdicts-and-verification.md` § Scanner merge and records the four
+   `Scanner-` lines in Verification Notes.
 5. The team lead merges everything into one report with a per-dimension verdict table, so an
    accessibility gap can never get buried under an otherwise-strong visual score, and every
    recommended removal names the device that replaces it (a plan that only strips frames, badges
@@ -336,7 +355,10 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
 **Specialists dispatched:** visual + usability, anti-slop, accessibility, responsive, motion, perf, typescript (7 of 7) + Verifier
 **Dimensions not reviewed:** none
 **Evidence level:** code + browser
+**Product context:** PRODUCT.md, DESIGN.md read
 **Widths exercised:** 320, 375, 430, 768, 1024, 1440
+**Not exercised:** touch drag, offline
+**Surface:** marketing (landing), control (checkout, team settings)
 **Flows reviewed:** complete a checkout (4 steps), invite a teammate (3 steps)
 **Token system:** shadcn default
 **Primary font:** Inter, FAIL
@@ -376,7 +398,8 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
 
 ### Verification Notes
 [findings the verifier removed, downgraded, capped, reclassed, upgraded, or merged, each with a
-one-line reason. Never omitted: "none" when there were none]
+one-line reason, then the scanner merge: Scanner-confirmed, Scanner-only kept, Scanner false
+positive and Scanner candidate not confirmed. Never omitted: "none" when there were none]
 
 ## Improvement plan (ordered by impact)
 
@@ -396,6 +419,28 @@ skipped). Use `review-ui` for a quick, targeted check where the team lead's extr
 overhead isn't worth it. If you only wanted an audit (no changes), the skill stops after
 presenting; otherwise it prompts for which findings to apply, then runs the typecheck gate and
 lint after applying.
+
+**After the fixes:** the skill recaptures the same widths and states into
+`runs/<timestamp>/evidence/after/` and dispatches `ui-verifier` in FINISH MODE with a fresh
+context, so the session that applied the fixes never scores its own work. The return opens with
+one of four words:
+
+```
+disposition: fix
+verdict
+| Finding | Score | After evidence |
+|---|---|---|
+| #2 icon-only buttons have no accessible name | resolved | both buttons carry an aria-label in the after snapshot |
+| #3 checkout summary clips the pay button below 430px | partial | evidence/after/375.png: the button fits, the total still clips |
+| #1 default shadcn token fingerprint in globals.css | unresolved | the tokens in the diff are unchanged |
+regressions: none
+remaining: #1, #3
+```
+
+`fix` means one more batch inside the two-round cap, `recapture` means the after evidence was
+invalid, `rebuild` means the finding needs a redesign rather than a patch, and `ship` covers the
+scored fixes, not the whole surface (`references/review/04-verdicts-and-verification.md`
+§ Finish pass).
 
 ## Walkthrough: `/ui-craft:optimize-ui`: performance audit
 
@@ -541,6 +586,64 @@ The rest of the catalogue behind that dimension is dual axes, rainbow or cycled 
 recolor-on-filter, value ramps on nominal categories, a number printed on every point,
 tooltip-gated values, pies comparing close values, missing table views, and eyeballed
 colorblind-safety.
+
+## Design hook (opt-in)
+
+The hook ships with the plugin and does nothing until a project asks for it. To turn it on,
+create `.claude/ui-craft/hook.json` in the project:
+
+```json
+{ "enabled": true, "surface": "control" }
+```
+
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | none | Must be `true`; a missing or unparseable file, or any other value, keeps the hook silent |
+| `surface` | `content` | `control`, `content`, `marketing` or `article`: the surface class the scanner reads the copy rules against (`references/design/12-copy-placement-and-volume.md` § 3) |
+| `perEdit` | `true` | `false` prints nothing per edit and keeps recording the edited files for the stop pass |
+| `stop` | `true` | `false` turns the stop pass off |
+| `quiet` | `false` | `true` drops the one clean acknowledgement and the pause notice; findings still print |
+| `ignore` | `[]` | Globs relative to the project root (`**`, `*`, `?`); a trailing `/` covers a directory, and a glob without a slash matches at the root only, so use `**/name` for any depth |
+| `log` | `false` | `true` appends one NDJSON line per invocation to `hook-log.ndjson` in the hook's state directory, for measuring its noise |
+
+Unknown keys are ignored. Committing `hook.json` turns the hook on for everyone who works in
+the repo; keep it untracked to keep the setting to yourself. `UI_CRAFT_HOOK=off` in the
+environment silences the hook in every project.
+
+What it reads: `.html`, `.htm`, `.css`, `.jsx`, `.tsx`, `.vue` and `.svelte` files on every edit,
+plus `.js`, `.ts`, `.mjs` and `.cjs` files that carry markup or styles at the stop pass. It
+skips `node_modules`, `dist`, `build`, `out`, `coverage`, `.next`, `.nuxt`, `.svelte-kit`,
+`.git`, `.claude` and `vendor`, minified, generated and `.d.ts` files, any file over 128 KB or
+with a line longer than 20,000 characters, and markdown and prose. After a file's eighth edit in
+one session its per-edit checks pause, and the stop pass still covers it.
+
+What the agent sees after writing a page with an unlabelled image and gradient heading text:
+the per-edit rules catch the image at once,
+
+```
+[ui-craft hook] src/hero.html: 1 design finding(s) from the per-edit rules
+- L4 [CRITICAL] WCAG 1.1.1 <img> with no alt, or a placeholder alt value. Fix: write what the image conveys; `alt=""` only when it is decorative.
+Triage each finding and say in your reply what you fixed and what you waived. Real problem: fix it and keep keyboard, contrast, responsive and reduced-motion behaviour; leave the surface no flatter. Confident false positive or a choice the brief or owner made: `anti-slop-allow: <who decided: evidence>` on or above the line, disclosed. Ignore globs and turning the hook off are the user's call. Unsure: ask in one line.
+```
+
+and the stop pass, which runs every rule, lists the Pattern smells the edit introduced, marked
+`new`, and names the per-edit finding that is still open:
+
+```
+[ui-craft hook] deep pass over 1 file(s) edited this session: 2 finding(s) to triage
+- src/hero.html:L3 [HIGH] [new] C5 Banned default gradient (purple/indigo to pink, blue or teal). Fix: use one committed brand hue with depth -- a photograph, a product shot or a subject artefact behind it -- or a rare...
+- src/hero.html:L3 [HIGH] [new] V5 Gradient text on heading words. Fix: carry the emphasis in the typography -- size contrast, weight contrast across the whole headline, or a serif/sans...
+Still open from the per-edit pass: src/hero.html:WCAG 1.1.1.
+Triage: fix real problems; waive only with an anti-slop-allow reason you disclose; unsure, ask in one line.
+```
+
+The agent triages each finding by `references/review/07-surgical-visual-upgrade.md` § 8: a real
+problem is fixed, a confident false positive or a device the brief names takes a disclosed
+`anti-slop-allow: <who decided: evidence>` on its line, and anything wider (an `ignore` entry,
+turning the hook off) is your decision. A finding that was in the file before this session's
+first edit is counted on one line and not listed; a file the hook could not verify a baseline
+for marks its findings `attribution unknown`. The hook never blocks a tool call or a stop, and
+it fires at most one stop continuation per finding per session.
 
 ## Troubleshooting
 

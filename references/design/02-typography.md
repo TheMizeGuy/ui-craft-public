@@ -80,13 +80,13 @@ For long-form reading (articles, documentation, editorial body) the house serif 
 
 > A project passes the type gate when it declares (a) a `--font-display` distinct from `--font-sans`, **and** (b) an explicit heading weight and tracking (`font-variation-settings` or `font-weight` + `letter-spacing`) rather than browser defaults, **and** (c) at least three weights or optical sizes actually in use on the surface, not merely declared in the token file.
 
-A globals.css whose entire type system is `--font-sans: <system stack>` with default weights and default tracking has made no type decision, regardless of intent. That is the tell.
+A globals.css whose entire type system is `--font-sans: <system stack>` with default weights and default tracking has made no type decision, regardless of intent. That is a flatness signal, not a face tell: the system stack is a legitimate face, so the finding is the missing hierarchy, filed under substance check S7 (`references/aesthetic/06-substance-floor.md` § 1) or, beside the rest of the subtraction-only system, catalogue V13, at the class its measurement earns. It is never T2, which covers a chosen Roboto, Helvetica or Arial primary.
 
 ### Banned by default
 
 | Family | Reason |
 |---|---|
-| Inter (body) | The most-used AI default. Never the primary face. Two tolerated uses: Inter Display in a header with tightened tracking, and Inter as the utility/UI-label fallback behind a chosen face (catalogue T1) |
+| `Inter` (body) | The most-used AI default. Never the primary face. Two tolerated uses: Inter Display in a header with tightened tracking, and Inter as the utility/UI-label fallback behind a chosen face (catalogue T1) |
 | Roboto **as a chosen face** | Android system font; reads as "framework demo" when downloaded onto other platforms. Reaching it via the system stack's Android leg is in scope |
 | Arial | Generic, no point-of-view |
 | Helvetica | Same: overused, no design intent |
@@ -95,7 +95,7 @@ A globals.css whose entire type system is `--font-sans: <system stack>` with def
 
 | Family | Use | Why |
 |---|---|---|
-| System stack | Body, UI, information-dense surfaces; the house default | Native-feeling, zero payload, no self-hosting risk. Only counts as a decision under the checkable rule above: applied on every surface at default weights it has made no decision (catalogue T2, substance check S7 in `references/aesthetic/06-substance-floor.md`) and is the type half of the flat-terminal default |
+| System stack | Body, UI, information-dense surfaces; the house default | Native-feeling, zero payload, no self-hosting risk. Only counts as a decision under the checkable rule above: applied on every surface at default weights it has made no decision, which is a flatness signal (substance check S7 in `references/aesthetic/06-substance-floor.md`, or catalogue V13 as the type half of the flat-terminal default) at its measured class, never a face tell (not T2) |
 | Poppins | Display, modern-elegant areas | House display face for elegant marketing and hero moments; geometric warmth, strong at 500-700 display weights |
 | Geist / Geist Mono | Only when deliberately chosen and paired against a distinctive display face | Never the fallback default. Geist plus Vercel-blue plus a dotted grid is a catalogued AI tell (`references/aesthetic/02-distinctive-systems.md`); the face is fine, the unexamined Vercel-stack combination is not |
 | Söhne | Body, display | Modern grotesque with character; broad family |
@@ -104,8 +104,8 @@ A globals.css whose entire type system is `--font-sans: <system stack>` with def
 | Berkeley Mono | Code only | Premium mono with strong personality -- stays inside code/log surfaces, never UI chrome |
 | Commit Mono | Code | Free, opinionated, contemporary |
 | IBM Plex Sans | Technical apps | Engineered feel, multi-script |
-| Instrument Serif | Display | Editorial serif with high contrast |
-| Fraunces | Display | Variable axes for `opsz`, `SOFT`, `WONK` |
+| `Instrument Serif` | Display | Editorial serif with high contrast |
+| `Fraunces` | Display | Variable axes for `opsz`, `SOFT`, `WONK` |
 | Recoleta | Display | Distinctive humanist serif |
 | Söhne Schmal | Display, distinctive UI | Condensed variant of Söhne -- weight + width carry the technical voice |
 | Söhne Mono | Code only | Mono variant of Söhne, for code blocks and log panes |
@@ -153,7 +153,7 @@ The ratio gives you the steps; the surface caps how many you use. Landing pages 
 
 ### Display tightening
 
-Large text ships loose by default. Tighten on the catalogue T8 ladder (`references/catalogue/01-ai-tells.md`), which is what the auditor detects by: at 48px+ tighten to **-0.02em**, at 72px+ to **-0.03em**, never below **-0.04em**; between 32 and 48px at most **-0.01em**; line-height **110-120%** on display sizes. This single adjustment moves header text from "template" to "set with intent" -- it is the highest-leverage microtypography move on hero and section headings. Body text stays at the foundry's tracking (see anti-patterns below); the tightening applies only as size grows.
+Large text ships loose by default. Tighten on the catalogue T8 ladder (`references/catalogue/01-ai-tells.md`), which is what the auditor detects by: at 48px+ tighten to **-0.02em**, at 72px+ to **-0.03em**, and **-0.04em** is the tightest the ladder prescribes; between 32 and 48px at most **-0.01em**; line-height **110-120%** on display sizes. The defect floor sits further out: letters set tighter than **-0.07em** (**-0.09em** at 40px and up) start to collide, and that is filed as crushed tracking under T16 (reading mechanics, MEDIUM), not as untuned T8. This single adjustment moves header text from "template" to "set with intent", and no other microtypography move does as much for hero and section headings. Body text stays at the foundry's tracking (see anti-patterns below); the tightening applies only as size grows.
 
 ```css
 .hero-title {
@@ -162,6 +162,10 @@ Large text ships loose by default. Tighten on the catalogue T8 ladder (`referenc
   line-height: 1.15;          /* 110-120% for display, never body's 1.5 */
 }
 ```
+
+### The display ceiling
+
+The largest display step stays at or under `6rem` (96px) at the widest width, unless the brief or the visual reference names a poster scale and the copy map or an `anti-slop-allow` line records it. Bigger is not more remarkable: past roughly `6rem` a headline stops being read and starts being looked at, crowds the first viewport, and takes over the line breaks the `clamp()` upper bound was meant to control. Set the clamp maximum from this ceiling, not from the viewport. The ceiling and the ladder's `-0.04em` limit above both agree with impeccable's craft floor.
 
 ## 4. Fluid typography with `clamp()`
 
@@ -222,7 +226,7 @@ Reference: [web.dev min-max-clamp](https://web.dev/articles/min-max-clamp).
 }
 ```
 
-Fonts with strong `opsz`: Fraunces, Roboto Flex, Source Serif 4, Recursive, Inter Display.
+Fonts with strong `opsz`: `Fraunces`, Roboto Flex, Source Serif 4, Recursive, Inter Display.
 
 Check the build, not the family name. Source Serif 4 ships two variable packages that both carry the axes: Google Fonts' `SourceSerif4[opsz,wght].ttf` and Adobe's `VAR/SourceSerif4Variable-Roman.ttf` (`wght` 200-900, `opsz` 8-60, default 20). What lacks the axis is any of Adobe's five *static* optical cuts (Caption, SmText, Text, Subhead, Display) or a third-party subset that stripped `opsz`. Self-host one of those and `font-optical-sizing: auto` does nothing, with no error and no fallback: the page renders and the axis is absent. Confirm the axes in the binary you are actually shipping (Wakamai Fondue, or `fonttools ttx -t fvar`) rather than trusting the family name. Optical sizing is a property of the file, not the typeface.
 
@@ -320,7 +324,7 @@ Reference: [MDN font-variant-numeric](https://developer.mozilla.org/en-US/docs/W
 | `font-size: 16px` everywhere | Fixed px breaks browser zoom for vision-impaired users | `rem` units + a modular scale |
 | `letter-spacing: 0.5px` on body | Body text already shipped at the foundry's optimal tracking | Tracking only on display sizes; tighten as size grows |
 | Shipping 5 weights | Bloats LCP, payload, render time | Variable font with the 2-3 weights you actually use, animate via `wght` |
-| Inter on a generic SaaS landing | Maximum AI tell in 2026 | Söhne, GT Walsheim, DM Sans, Plus Jakarta Sans, or pair Instrument Serif + Söhne |
+| Inter on a generic SaaS landing | Maximum AI tell in 2026 | Söhne, GT Walsheim, DM Sans, Plus Jakarta Sans, or pair `Instrument Serif` + Söhne |
 | Loading the full Latin Extended subset | Most apps need only Latin Basic | Subset with `unicode-range`, drop ~70% of glyphs |
 | `line-height: 1` on body | Crowds descenders, illegible | `1.5` for body, `1.2-1.3` for headings |
 | Justifying text without `hyphens: auto` | Creates rivers of whitespace | Either left-align or hyphenate |

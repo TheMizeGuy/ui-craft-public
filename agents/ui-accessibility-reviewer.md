@@ -79,6 +79,7 @@ From the accessibility references (`references/accessibility/01-wcag-2-2.md` thr
 - Touch targets >= platform minimum?
 - No drag-only actions?
 - No multi-pointer gestures without alternative?
+- Drag interactions survive interruption and offer a single-pointer alternative (WCAG 2.5.7; usability/04 § 5b)?
 
 #### Motion accessibility
 - `prefers-reduced-motion` respected?

@@ -59,7 +59,7 @@ A failure without a stated reason is a finding at the severity in the last colum
 | 2.1 | Primary font is a deliberate choice, not an unconsidered default (Inter/Roboto/Helvetica/Arial as fallback)? | [code] Check `font-family` token. House default (2026-07-17): SF Pro / the platform system stack used deliberately -- weight + optical size differentiate. Poppins approved for modern-elegant display areas. Other sans/serif with personality (Söhne, Author, Switzer, GT America) fine when the brand defines them. A mono face is never the primary; Inter only as utility fallback | CRITICAL |
 | 2.2 | Variable font with multiple weight stops in use? | [code] Check `font-variation-settings` or `wght` axis. If only `400` and `700`, you're not using the variable axis | MEDIUM |
 | 2.3 | Type scale is a modular ratio (1.2, 1.25, 1.333, 1.5)? | [code] Check tokens. 12 -> 14 -> 17 -> 20 (1.2) or 16 -> 20 -> 25 -> 31 (1.25). Random sizes (13, 18, 22) are a tell | HIGH |
-| 2.4 | Display headlines have tuned `letter-spacing` (negative on large, positive on small caps)? | [code] Inspect headline CSS. `letter-spacing: 0` on a 64px headline is untuned. Should be `-0.02em` to `-0.04em` | HIGH (T8 per catalogue §18) |
+| 2.4 | Display headlines have tuned `letter-spacing` (negative on large, positive on small caps)? | [code] Inspect headline CSS. `letter-spacing: 0` on a 64px headline is untuned. Should be `-0.02em` to `-0.04em`, the tightest the ladder prescribes. Tighter than `-0.07em` (`-0.09em` at 40px and up) is the crushed-tracking defect, filed under T16 at MEDIUM, not under this row | HIGH (T8 per catalogue §18) |
 | 2.5 | Body text uses optical sizing where the font supports it? | [code] Check `font-optical-sizing: auto;` on body or specific sizes for `opsz` axis | LOW |
 | 2.6 | Tabular nums (`font-feature-settings: 'tnum'`) on tables and money? | [code] Inspect any table with numbers. Numerals should align by column | HIGH |
 | 2.7 | `text-wrap: balance` on headlines? | [code] Inspect h1, h2 CSS. Should have `text-wrap: balance` to avoid orphan words | LOW |
@@ -103,7 +103,7 @@ whether it passed. Depth on each technique: `references/responsive/01-fluid-and-
 | 3b.10 | Content adapts above 1600px instead of dead-spacing? | [browser] At 1920px and 2560px, measure content width as a percentage of viewport. Under 60% with no second column, sidebar, or reading-measure reason is a failure. Centring is not the fix: two 500px gutters waste what one 1000px gutter did. On a control, content, reference or dashboard surface the shell spends the width (75% or more used, through extra columns, a supporting pane or a wider table; `references/usability/05-app-shells-and-content-layout.md` § 3b) and the reading measure sits on the prose block, never on the shell | HIGH under 60% with no reason (`references/review/05-density-and-economy.md`); MEDIUM at 60-75% |
 | 3b.11 | Orientation is not locked, and orientation-sensitive layout keys off aspect ratio? | [code] No `screen.orientation.lock()` and no manifest orientation lock unless essential (WCAG 1.3.4). Layout that must differ by orientation uses `@media (orientation: landscape)` or an aspect-ratio query, never a width breakpoint: a 568px width cannot tell a landscape phone from a small tablet | MEDIUM |
 
-## 4. Component Audit (11)
+## 4. Component Audit (12)
 
 | # | Question | Verify | Severity if failed |
 |---|----------|--------|--------------------|
@@ -118,6 +118,7 @@ whether it passed. Depth on each technique: `references/responsive/01-fluid-and-
 | 4.8 | Empty states are designed (not "No data" or blank page)? | [code] Trigger every empty state. Should have illustration or specific copy + action ("No invoices yet. Send your first one") | HIGH (missing empty/error states, catalogue §12 and §18) |
 | 4.9 | Error states have actionable next steps? | [code] Trigger every error. Should explain what failed AND what the user can do. "Network error" is a fail; "Couldn't load. [Retry]" is a pass | HIGH |
 | 4.10 | No skeleton loaders on content that loads in <300ms? | [browser] Throttle network and time the loads. If skeleton flashes for <300ms, drop it -- adds perceived latency | LOW (S10 per catalogue §18) |
+| 4.11 | Browser-drawn surfaces themed from the palette? | [code] `::selection` colours, `caret-color`, `accent-color` on native checkboxes, radios and ranges, `scrollbar-color` (theme the native scrollbar; replacing it with a script or a thinner drag target fails the remediation floor, catalogue S8), a designed `:focus-visible` ring (4.5), `text-underline-offset` and `text-decoration-thickness` on links, `font-variant-numeric: tabular-nums` on tabular and changing numbers. One left at its default is minor; all of them at default is the page that was assembled rather than built | MEDIUM when none is themed; LOW for a single gap |
 
 ## 5. Motion Audit (5)
 
@@ -133,10 +134,10 @@ whether it passed. Depth on each technique: `references/responsive/01-fluid-and-
 
 | # | Question | Verify | Severity if failed |
 |---|----------|--------|--------------------|
-| 6.1 | No lorem ipsum, "Welcome back!", "Get started today!", "Your future, today"? | [code] `grep -ri "lorem ipsum\|welcome back\|get started today\|the future of" src/` -- any hit blocks ship | CRITICAL |
+| 6.1 | No `lorem ipsum`, "Welcome back!", "Get started today!", "Your future, today"? | [code] `grep -ri "lorem ipsum\|welcome back\|get started today\|the future of" src/` -- any hit blocks ship | CRITICAL |
 | 6.2 | No SaaS-speak ("seamless", "leverage", "supercharge", "unlock the power", "streamline")? | [code] `grep -ri "seamless\|leverage\|supercharge\|unlock the power\|unlock the potential\|streamline\|cutting-edge" src/`. Read each hit in context: marketing filler in product chrome is HIGH (W5); an exact product verb ("Unlock account") is not a hit | HIGH |
 | 6.3 | Dates have explicit format (not ambiguous `1/2/26`)? | [code] Inspect every date display. Should be `Jan 2, 2026`, `2026-01-02`, or relative (`2 days ago`) | MEDIUM |
-| 6.4 | Plurals handled correctly (not "1 items" or "0 item")? | [code] Trigger 0, 1, 2, many counts. Use `Intl.PluralRules` | HIGH |
+| 6.4 | Plurals handled correctly (not "1 items" or "0 item")? | [code] Trigger 0, 1, 2, many counts. Use `Intl.PluralRules` | MEDIUM (U12 per catalogue section 18) |
 | 6.5 | Empty states have voice (not "Nothing here" or "No data")? | [code] Walk every empty state. Should have personality matching POV: tactical/editorial/workshop tone | MEDIUM |
 | 6.6 | No running prose above the primary content beyond the lede budget? | [code] Identify the primary content element (the first `table`, `form`, entity list, chart root or non-nav control inside `main`) and sum the words of running prose before it: 25 on product and marketing surfaces, 40 on content and reference pages (`references/design/12-copy-placement-and-volume.md` § 3). Any paragraph inside the hero fails regardless of the count | HIGH (W11 per catalogue §18) |
 | 6.7 | Does every paragraph sit in a headed section at a 45-75ch measure, with no orphans? | [code] Walk each `p` of running prose up to its nearest `section`, `article` or `aside`: that ancestor carries a heading or an `aria-labelledby`, the paragraph's siblings are prose rather than a card grid, table, form or chart, and the measure is capped on the prose block rather than on the page shell | MEDIUM (W12 per catalogue §18) |
@@ -203,10 +204,12 @@ If any of these fail, the design needs more iteration before ship. These are the
 | 9.6 | Would a designer at the reference product (Linear, Stripe, etc.) approve this without changes? | If no, identify the specific component that fails the bar and rebuild it |
 | 9.7 | Is there a single visible AI tell from the strongest-10 list (catalogue file 01) that we did not deliberately choose to keep? | If yes, fix or document the deliberate exception |
 | 9.8 | Have all empty / error / loading states been designed, or just the populated view? | "Happy path only" is the AI default. Production needs all four states for every screen |
-| 9.9 | The mirror pass, both directions: one accessory you can remove without losing meaning, AND one device you can add or strengthen so it carries more of the design's job? | Name both and do both in the same pass. A pass that only removes is not a mirror pass, it is the subtraction reflex 9.10 catches one step later. If nothing is removable, verify that is discipline and not emptiness -- the quality floor (responsive to mobile, visible keyboard focus, reduced motion respected, and the substance floor of `references/aesthetic/06-substance-floor.md` § 1) must hold without being announced |
+| 9.9 | The mirror pass, both directions: one accessory you can remove without losing meaning, AND one device you can add or strengthen so it carries more of the design's job? | Name both and do both in the same pass. A pass that only removes is not a mirror pass, it is the subtraction reflex 9.10 catches one step later. If nothing is removable, verify that is discipline and not emptiness -- the quality floor (responsive to mobile, visible keyboard focus, reduced motion respected, and the substance floor of `references/aesthetic/06-substance-floor.md` § 1) must hold without being announced. The removal half is the removal test: take the device away, and if nobody would notice, it is the accessory |
 | 9.10 | Subtraction-only: can the whole system be described as a list of things it does not do (one hairline, no frames, no badges, no elevation, colour only for status)? | FAIL. That list is the 2026 AI default, not a point of view (owner directive 2026-09-16). Name what the design adds and what each removed device was replaced with; a removal with no replacement goes back to the owner as an open question |
 | 9.11 | The stranger's word test (runs on a render, never on source): show the rendered page to someone with no context, or look at it yourself after a minute away, and write down the first word | "Grey", "flat", "empty", "plain", "unfinished", "template", "wireframe" or "terminal" fails the design whatever the audit tables said. "Busy", "loud", "gaudy" or "decorated" sends it to the mirror pass. The mechanical proxy when nobody is available: `hueCount >= 2`, `surfaceLevels >= 3`, `firstViewportVisual = true`, `weightCount >= 3` on the first viewport; three of four failing predicts the word will be grey (`references/aesthetic/06-substance-floor.md` § 3) |
 | 9.12 | Is there a paragraph above the product? | The page leads with prose instead of the thing the person came for. One lede stays (25 words on product and marketing surfaces, 40 on content and reference pages); explanation, methodology and search copy move below the primary content, behind a `details` whose summary names its content, or onto their own route (`references/design/12-copy-placement-and-volume.md` § 2) |
+| 9.13 | The squint and skeleton pair: blur the render (or squint at it). Do the primary element, the secondary element and the major groups read in that order? Then strip the copy from one section. Do hierarchy and the system's devices alone still say what the section is? | Hierarchy is carried by words, not design (substance S7), and the boldness is in the text size. Fix the structure, not the copy |
+| 9.14 | The neighbour swap: replace the product's name with its nearest competitor's in every headline, the lede and the signature moment. Does anything become false? | Nothing becoming false means the copy (W2, W5) or the moment is generic; the logo-swap test (9.4) is its visual twin |
 
 ## 10. Sign-Off Template
 
@@ -245,6 +248,8 @@ Use at the end of the audit. Save in `design/audit-YYYY-MM-DD.md`.
 - 9.10 Subtraction-only system? [pass | fail]
 - 9.11 Stranger's word test? [the first word: ... | not assessed, no browser pass]
 - 9.12 Paragraph above the product? [pass | fail]
+- 9.13 Squint and skeleton? [pass | fail | not assessed, no render]
+- 9.14 Neighbour swap? [pass | fail]
 
 ## Sign-off
 Designer: [name]

@@ -37,7 +37,7 @@ Primary sources cited inline: MDN, web.dev, W3C, and the APCA reference implemen
 | `H` (Hue) | `0` .. `360` (deg) | 30=orange, 100=yellow-green, 145=green, 200=cyan, 260=blue, 320=magenta |
 | `alpha` | `0` .. `1`, or `0%` .. `100%` | Same as RGB alpha |
 
-The ramp below is a syntax demonstration on a face-value blue, not a palette recommendation. Hue 250 sits inside the 250-285 indigo/purple band that `references/aesthetic/03-taste-checklist.md` item 1.3 scores HIGH when it turns up as a *brand accent*, because that band is where every unconsidered default lands. Naming a blue `--blue-500` at hue 250 is honest; pointing `--brand` at it is the failure.
+The ramp below is a syntax demonstration on a face-value blue, not a palette recommendation. Hue 250 sits five degrees below the AI purple window (OKLCH hue 255-325 at chroma 0.15 or more, catalogue C3), which `references/aesthetic/03-taste-checklist.md` item 1.3 scores HIGH when it turns up as a *brand accent*, and Tailwind `blue-500` at 259.8 sits inside it. Naming a blue `--blue-500` at hue 250 is honest; pointing `--brand` at a hue inside the window without a stated reason is the failure.
 
 ```css
 /* Same hue at multiple lightnesses (deterministic ramp) */
@@ -123,7 +123,7 @@ Start with **one primary color** — usually the brand color. Lighten it (raise 
 
 CSS relative color syntax (Chrome 119+, Safari 16.4+, Firefox 128+) lets the ramp derive itself at runtime from one source token. Killer for white-label themes.
 
-Pick the origin hue from the POV brief, not from this file. Two bands are effectively pre-spent: **250-285** (indigo through purple) is the shadcn/Tailwind default accent and the single most common AI-generated brand colour, and **~180** (teal) is the second. Landing in either without a reason is a HIGH finding under `references/aesthetic/03-taste-checklist.md` item 1.3. The worked example below uses hue 95 for that reason, and nothing about the method depends on the number: change `--brand-hue` and the entire ramp re-derives.
+Pick the origin hue from the POV brief, not from this file. Two bands are effectively pre-spent: **255-325 at chroma 0.15 or more** (indigo through fuchsia, Tailwind `blue-500` at 259.8 included; catalogue C3) is the shadcn/Tailwind default accent family and the single most common AI-generated brand colour, and **~182 at chroma 0.1 or more** (`teal-500`, C4) is the second. Landing in either without a reason is a HIGH finding under `references/aesthetic/03-taste-checklist.md` item 1.3. The worked example below uses hue 95 for that reason, and nothing about the method depends on the number: change `--brand-hue` and the entire ramp re-derives.
 
 ```css
 :root {
@@ -144,6 +144,8 @@ Pick the origin hue from the POV brief, not from this file. Two bands are effect
 ```
 
 Change `--brand` once, the whole ramp regenerates. Chroma tapers at the extremes because high chroma at very high or very low L is unstable in P3. ([MDN relative color syntax](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_colors/Relative_colors)).
+
+**Browser-drawn surfaces.** The browser paints a handful of surfaces from its own defaults unless the palette reaches them: `::selection { background: oklch(from var(--brand) l c h / 0.25); color: inherit }`, `caret-color: var(--brand)`, `accent-color: var(--brand)` on native checkboxes, radios and ranges, and `scrollbar-color: <thumb> <track>` with both colours taken from the surface ladder. Theming the native control and replacing it are different acts: theme it and keep the native drag target (`references/aesthetic/03-taste-checklist.md` row 4.11).
 
 ## 5. Light/dark with `light-dark()`
 
@@ -189,7 +191,7 @@ Change `--brand` once, the whole ramp regenerates. Chroma tapers at the extremes
 |---|---|
 | `light-dark()` only resolves color values | For images/shadows/opacity use `@media (prefers-color-scheme: dark) { ... }` or a `[data-theme="dark"]` wrapper |
 | Older Safari (<16.4) lacks support | Provide a sRGB fallback declaration before the `light-dark()` line |
-| Dark mode is not inversion | Invert L, dampen C ~10-20%. Use lighter accents on dark for legibility, never `filter: invert()` |
+| Dark mode is not inversion | Re-derive L for the dark ground rather than inverting it, and lower the accent's chroma by at most `0.03`, never under the `0.10` floor (Dark-mode surface craft below; `references/aesthetic/06-substance-floor.md` S2). Use lighter accents on dark for legibility, never `filter: invert()` |
 
 ### Dark-mode surface craft
 
@@ -238,6 +240,8 @@ const css = apcachToCss(accessibleAccent, "oklch");
 ```
 
 [apca-w3 on GitHub](https://github.com/Myndex/apca-w3) | [apcach on GitHub](https://github.com/antiflasher/apcach).
+
+**Secondary text on a coloured surface** takes that surface's hue, or the foreground one lightness step down, never a stock neutral grey: grey on colour reads washed out (taste row 1.4 measures the pair).
 
 ## 7. Display P3 fallbacks
 

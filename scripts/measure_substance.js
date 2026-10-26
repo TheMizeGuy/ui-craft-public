@@ -16,6 +16,11 @@
  * hairline-alpha trap), the focal-visual check, imagery per section and
  * text-only sections, and how many hierarchy channels the type system uses.
  *
+ * L14 is counted the way measure_density.js counts it: the longest run of
+ * consecutive sections with words and no non-text device, over the same device
+ * list. The ledger's textOnlySections number is measure_density's count; this
+ * report's textOnlySections lists the sections by label.
+ *
  * What it cannot see, stated so nobody trusts it further than it reaches
  * (references/review/06-measurement-traps.md): a box-shadow or an inset rim is
  * reported as PRESENT from computed style, and its rendered contrast needs a
@@ -399,12 +404,24 @@ function measureSubstance(options = {}) {
   const displayHeading = (el) => /^h[1-2]$/.test(el.tagName.toLowerCase()) && parseFloat(getComputedStyle(el).fontSize) >= 40;
   const firstViewportVisual = firstView.some((el) => el.matches(visualSel) || bigSvg(el) || displayHeading(el));
   const sections = [...content.querySelectorAll('section, article')].filter(visible);
+  const DEVICE_SEL =
+    'img, picture, svg, video, canvas, table, form, ul, ol, dl, button, figure, [role="list"], [role="img"], input, select';
+  const wordCount = (el) => ((el && el.textContent) || '').trim().split(/\s+/).filter(Boolean).length;
   const sectionRows = sections.map((s) => ({
     label: s.id || s.className || s.tagName.toLowerCase(),
     images: s.querySelectorAll(visualSel).length + [...s.querySelectorAll('svg')].filter(bigSvg).length,
-    nonText: s.querySelectorAll(`${visualSel}, svg, table, form, ul, ol, dl, button, [role="list"], input, select`).length,
+    nonText: s.querySelectorAll(DEVICE_SEL).length,
+    words: wordCount(s),
   }));
-  const textOnlySections = sectionRows.filter((r) => r.nonText === 0).map((r) => r.label);
+  // A section with zero words is a spacer, never a text-only finding.
+  const textOnly = (r) => r.nonText === 0 && r.words > 0;
+  const textOnlySections = sectionRows.filter(textOnly).map((r) => r.label);
+  let longestTextOnlyRun = 0;
+  let textRun = 0;
+  for (const r of sectionRows) {
+    textRun = textOnly(r) ? textRun + 1 : 0;
+    if (textRun > longestTextOnlyRun) longestTextOnlyRun = textRun;
+  }
   const totalImages = sectionRows.reduce((n, r) => n + r.images, 0) + (sections.length ? 0 : content.querySelectorAll(visualSel).length);
   const imagesPerSection = sections.length ? +(totalImages / sections.length).toFixed(2) : null;
   const entityRows = [...content.querySelectorAll('tbody tr, [role="row"], li')].filter(visible);
@@ -462,8 +479,8 @@ function measureSubstance(options = {}) {
   if (channels.length < 3) {
     findings.push({ severity: 'HIGH', check: 'S7', what: `Hierarchy carried by ${channels.length} channel(s): ${channels.join(', ') || 'none'} (weights ${weights.size}, sizes ${sizes.size}, hues ${hueCount})`, note: 'At least three of weight, size, colour, containment, iconography.' });
   }
-  if (textOnlySections.length >= 3) {
-    findings.push({ severity: 'MEDIUM', check: 'L14', what: `${textOnlySections.length} text-only section(s): ${textOnlySections.slice(0, 4).join(', ')}`, note: 'Every second section carries a non-text device.' });
+  if (longestTextOnlyRun >= 3) {
+    findings.push({ severity: 'MEDIUM', check: 'L14', what: `L14 text-only section run: ${longestTextOnlyRun} consecutive sections (${textOnlySections.length} text-only in total)`, note: 'Every second section carries a non-text device.' });
   }
 
   const report = {
@@ -487,6 +504,7 @@ function measureSubstance(options = {}) {
     firstViewportVisual,
     sections: sectionRows.slice(0, 12),
     textOnlySections,
+    longestTextOnlyRun,
     imagesPerSection,
     entityRows: { total: entityRows.length, withIcon: entityRowsWithIcon },
     hierarchyChannels: channels,

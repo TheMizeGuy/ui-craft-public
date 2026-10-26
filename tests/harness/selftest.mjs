@@ -214,6 +214,40 @@ check('--format json emits parseable json', [P, '--labels', LABELS, '--format', 
   } catch (e) { return `not json: ${e.message}`; }
 });
 
+// --- instances: a tell named again on a fixture that labels it once --------
+const withInstance = [...PERFECT, finding({ id: 'anti-ai-alpha-one-again', line: 19, title: 'Gradient text on the pricing heading too', evidence: 'a second bg-clip-text heading' })];
+check('a second finding naming a matched tell is an instance', [scratch('instance.json', withInstance), '--labels', LABELS], 0, out => {
+  const p = metric(out, 'precision');
+  if (p !== 1) return `precision ${p}, want 1 (the instance must leave the denominator)`;
+  return /^instances\s+1 /m.test(out) ? null : 'no instances line in the summary';
+});
+const INSTANCE_LABELS = scratch('instance-labels.json', {
+  fixtures: [{
+    file: 'gamma.html', source: 'selftest',
+    expected: [
+      { id: 'anti-ai-gamma-high', dimension: 'anti-ai', severity: 'HIGH', confidence: 'Hard defect', title: 'Text below the contrast bar on its surface', tellRef: 'X5' },
+      { id: 'anti-ai-gamma-low', dimension: 'anti-ai', severity: 'LOW', confidence: 'Hard defect', title: 'Text within a tenth of the contrast bar', tellRef: 'X5' }
+    ]
+  }]
+});
+const gamma = (over) => finding({ file: 'gamma.html', tellRef: 'X5', ...over });
+const twoClasses = [
+  gamma({ id: 'anti-ai-gamma-button', title: 'White label on the honey button fails contrast' }),
+  gamma({ id: 'anti-ai-gamma-tag', severity: 'LOW', title: 'Tag text just under the contrast bar' })
+];
+check('with two classes labelled, an instance follows its class', [scratch('two-classes.json', [...twoClasses, gamma({ id: 'anti-ai-gamma-meta', title: 'Card meta text fails contrast on navy' })]), '--labels', INSTANCE_LABELS], 0,
+  out => metric(out, 'precision') === 1 && /^instances\s+1 /m.test(out) ? null : `precision ${metric(out, 'precision')}, want 1 with one instance`);
+check('with two classes labelled, a third class is a false positive', [scratch('third-class.json', [...twoClasses, gamma({ id: 'anti-ai-gamma-meta', severity: 'MEDIUM', title: 'Card meta text fails contrast on navy' })]), '--labels', INSTANCE_LABELS], null,
+  out => metric(out, 'precision') < 1 && !/^instances/m.test(out) ? null : `precision ${metric(out, 'precision')}, want below 1 with no instance`);
+const cleanTwice = [...PERFECT,
+  finding({ id: 'anti-ai-clean-one', file: 'clean.html', title: 'Gradient text on the clean page heading' }),
+  finding({ id: 'anti-ai-clean-two', file: 'clean.html', line: 9, title: 'Gradient text on the clean page footer' })
+];
+check('an instance never folds on a clean control', [scratch('clean-twice.json', cleanTwice), '--labels', LABELS], 1,
+  out => out.includes('CLEAN-FAIL (2>1)') ? null : 'two findings on the clean control should fail it');
+check('a two-character token with a digit carries substance', [scratch('digit-token.json', [...PERFECT.slice(1), finding({ title: 'Heading jumps from h2 to h4' })]), '--labels', LABELS], 0,
+  out => metric(out, 'recall') === 1 ? null : `recall ${metric(out, 'recall')}, want 1 (h2 and h4 count as tokens)`);
+
 // --- corpus smoke checks: relations only, never absolute numbers ----------
 // These use the real corpus, so they must not assert a specific recall: the
 // corpus grows, and a growing corpus legitimately moves every score.

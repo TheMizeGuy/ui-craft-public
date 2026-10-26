@@ -21,9 +21,16 @@
 // Matching: by tellRef first (explicit finding.tellRef, or the label's tell code
 // mentioned in the finding's id/title/evidence), else by (fixture, dimension) with
 // fuzzy title overlap. Either way the finding must carry substance: a title with
-// at least MIN_TITLE_TOKENS meaningful tokens. Without that floor the gate is
-// satisfiable by naming catalogue codes and nothing else, which measures whether
-// the auditor memorized the codes rather than whether it located the defects.
+// at least MIN_TITLE_TOKENS meaningful tokens (a two-character token with a digit,
+// h2 or 4px, counts). Without that floor the gate is satisfiable by naming
+// catalogue codes and nothing else, which measures whether the auditor memorized
+// the codes rather than whether it located the defects.
+//
+// A label names a tell once per fixture and class, so a further finding that
+// names a tell already matched on the same fixture (at the same class, when the
+// fixture labels the tell more than once) is an instance of that detection: it
+// is reported, leaves the precision denominator, and never counts on a clean
+// control, which has no hit to fold into.
 //
 // Precision is gated, not just printed. Recall alone rewards spraying findings,
 // and over-flagging is exactly what the catalogue's presence-vs-concentration
@@ -148,8 +155,18 @@ function mentionsTell(f, tellRef) {
   return containsSeq(hay, needle) ? 'embedded' : false;
 }
 
+// A two-character token that carries a digit (h2, h4, 4px) locates something;
+// a bare two-letter word does not.
 function titleTokens(s) {
-  return canonTokens(s).filter(t => t.length >= 3 && !STOPWORDS.has(t));
+  return canonTokens(s).filter(t => (t.length >= 3 || (t.length === 2 && /\d/.test(t))) && !STOPWORDS.has(t));
+}
+
+function tellCanon(tellRef) {
+  return canonTokens(tellRef).join(' ');
+}
+
+function classOf(severity) {
+  return typeof severity === 'string' ? severity.trim().toUpperCase() : '';
 }
 
 // Does the finding say anything beyond naming a tell? The primary matcher is
@@ -203,8 +220,33 @@ function scoreFixture(labels, findings) {
     hits.push({ label: labels[c.li], finding: findings[c.fi], via: c.via, overlap: c.overlap });
   }
   const misses = labels.filter((_, i) => !labelTaken[i]);
-  const fps = findings.filter((_, i) => !findingTaken[i]);
-  return { hits, misses, fps };
+  const unmatched = findings.filter((_, i) => !findingTaken[i]);
+
+  // A label names a tell once per fixture and class (two P16 labels are the
+  // HIGH pair and the LOW pair, not two instances), so a further finding that
+  // names a tell already matched on this fixture is another instance of one
+  // detection, not a false positive. It leaves the precision denominator and
+  // is reported as an instance. A wrong instance of a real tell is what the
+  // clean-control twin exists to catch, and a clean control has no hits to
+  // fold into. When the fixture labels the tell more than once, the finding's
+  // class decides which label it instances, and no match leaves it a false
+  // positive.
+  const instances = [];
+  const fps = [];
+  for (const f of unmatched) {
+    const tell = typeof f.tellRef === 'string' ? tellCanon(f.tellRef) : '';
+    const sameTell = tell ? labels.filter(l => tellCanon(l.tellRef) === tell) : [];
+    let target = null;
+    if (sameTell.length === 1) target = sameTell[0];
+    else if (sameTell.length > 1) {
+      const sameClass = sameTell.filter(l => classOf(l.severity) === classOf(f.severity));
+      if (sameClass.length === 1) target = sameClass[0];
+    }
+    const hit = target && hasSubstance(f) ? hits.find(h => h.label === target) : null;
+    if (hit) instances.push({ finding: f, label: hit.label });
+    else fps.push(f);
+  }
+  return { hits, misses, fps, instances };
 }
 
 // ---- load inputs ----------------------------------------------------------
@@ -301,14 +343,14 @@ function main() {
   const knownFixtureNames = new Set(labelsDoc.fixtures.map(fx => basename(fx.file)));
 
   const rows = [];
-  let totalHits = 0, totalExpected = 0, totalMatchedFindings = 0, totalFindings = 0;
+  let totalHits = 0, totalExpected = 0, totalMatchedFindings = 0, totalFindings = 0, totalInstances = 0;
   const cleanFailures = [];
 
   for (const fx of fixtures) {
     const name = basename(fx.file);
     const expected = Array.isArray(fx.expected) ? fx.expected : [];
     const found = byFixture.get(name) || [];
-    const { hits, misses, fps } = scoreFixture(expected, found);
+    const { hits, misses, fps, instances } = scoreFixture(expected, found);
 
     const isClean = expected.length === 0;
     const tolerance = Number.isInteger(fx.maxIncidentalFindings) ? fx.maxIncidentalFindings : 0;
@@ -321,11 +363,12 @@ function main() {
     totalHits += hits.length;
     totalExpected += expected.length;
     totalMatchedFindings += hits.length;
-    totalFindings += found.length;
+    totalFindings += found.length - instances.length;
+    totalInstances += instances.length;
 
     rows.push({
       name, source: fx.source || '', isClean, tolerance,
-      expected: expected.length, hits, misses, fps, cleanOk
+      expected: expected.length, hits, misses, fps, instances, cleanOk
     });
   }
 
@@ -370,6 +413,7 @@ function main() {
     totalMisses: totalExpected - totalHits,
     totalFindings,
     totalFalsePositives: totalFindings - totalMatchedFindings,
+    instancesFolded: totalInstances,
     findingsBelowSubstanceFloor: thinFindings,
     cleanControlsPass,
     cleanControlFailures: cleanFailures,
@@ -394,7 +438,8 @@ function emitJson(rows, summary, unassigned) {
     expected: r.expected,
     hits: r.hits.map(h => ({ tellRef: h.label.tellRef, id: h.label.id, via: h.via, matchedFindingId: h.finding.id })),
     misses: r.misses.map(m => ({ tellRef: m.tellRef, id: m.id, title: m.title, severity: m.severity })),
-    falsePositives: r.fps.map(f => ({ id: f.id, dimension: f.dimension, title: f.title }))
+    falsePositives: r.fps.map(f => ({ id: f.id, dimension: f.dimension, title: f.title })),
+    instances: r.instances.map(i => ({ id: i.finding.id, tellRef: i.label.tellRef, ofLabel: i.label.id }))
   }));
   process.stdout.write(JSON.stringify({ summary, fixtures, unassigned: unassigned.map(u => ({ fixture: u.name, count: u.count })) }, null, 2) + '\n');
 }
@@ -430,6 +475,12 @@ function emitText(rows, summary, unassigned) {
 
   out.push(`recall     ${summary.recall}  (${summary.totalHits}/${summary.totalExpected}, threshold ${summary.minRecall})`);
   out.push(`precision  ${summary.precision}  (${summary.totalHits}/${summary.totalFindings} findings matched, threshold ${summary.minPrecision})`);
+  if (summary.instancesFolded > 0) {
+    out.push(
+      `instances  ${summary.instancesFolded} further finding(s) named a tell already matched on the same fixture and class; `
+      + 'counted as instances of that detection, not as false positives'
+    );
+  }
   out.push(`clean controls  ${summary.cleanControlsPass ? 'within tolerance' : 'FAILED: ' + summary.cleanControlFailures.map(c => `${c.name} (${c.incidental}>${c.tolerance})`).join(', ')}`);
   if (summary.findingsBelowSubstanceFloor > 0) {
     out.push(

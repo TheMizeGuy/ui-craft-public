@@ -155,6 +155,52 @@ Grouping rules -- collapsing repeated instances of the same finding within one d
 - Multiple components with the same anti-pattern -> one finding listing affected components
 - Multiple states missing the same treatment -> one finding listing missing states
 
+### Scanner merge (judgment first, detector second)
+
+1. **The scanner runs at the orchestrator, and its output waits.** The orchestrator runs
+   `${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs --format json --fail-on none --surface <surface type>`
+   over the files in scope, writes the output to `<run dir>/evidence/scan_tells.json`, and keeps
+   it out of every judgment reviewer's prompt (`ui-anti-slop-auditor`, `ui-visual-reviewer`)
+   until they return. Detector output anchors judgment even when it is right: an auditor that
+   starts from a regex list confirms the list instead of walking the catalogue.
+2. **The merge point.** On `improve-ui` it is the verifier, before deduplication. On `review-ui`
+   it is the coordinator's Step 7, which writes the four lines below on the report's Merge notes
+   line. On `design-ui` it is the Step 6 criterion-6 gate, which applies the same cases and
+   writes no Verification Notes lines.
+3. **The cases, keyed per (file, tellRef).**
+   - (a) Both found it: one finding, in the specialist's wording, evidence and remediation, with
+     `Scanner: <rule> at line N` appended to its Evidence line.
+   - (b) Scanner only, `heuristic: false`: kept in the scanner's shape after the merge point
+     reads the cited line. Its confidence comes from the rule and its severity is the class
+     catalogue section 18 gives its tellRef (the rule's own severity only where section 18 is
+     silent). A hit inside a comment, inside a string that never renders, or on a construct the
+     rule's own exemption should clear is a scanner false positive: removed and recorded.
+   - (c) Scanner only, `heuristic: true`: a candidate, kept when the merge point confirms it in
+     source or a specialist filed the same tell, and otherwise listed as not confirmed.
+   - (d) Specialist only: it stays.
+   - (e) The two disagree on one span (the specialist reads Inter as the primary face, the
+     scanner saw a system stack first): settled by reading the source, never by counting votes.
+   - (f) Lines the scanner skipped for an `anti-slop-allow` marker (`summary.suppressed`) are
+     stated decisions and go on the existing `Stated decisions honoured:` line.
+
+   The measurement scripts' severity-tagged `findings` arrays
+   (`${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js`,
+   `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js`) are held at the orchestrator the same way
+   and merge by the same rule. The specialists receive the reports' metric fields (the accent,
+   `surfaceLevels`, `imagesPerSection`, utilisation, `wordsBeforePrimary` and the rest) as
+   evidence, without `findings` or `verdict`, because a substance or placement finding has to
+   quote the numbers.
+4. **What the merge records.** Four Verification Notes lines, each `none` when empty:
+   `Scanner-confirmed: N` (case a), `Scanner-only kept: <rule> at <file:line>` (case b kept),
+   `Scanner false positive: <rule> at <file:line> -- <reason>` (case b removed) and
+   `Scanner candidate not confirmed: <rule> at <file:line>` (case c dropped).
+5. **What the corpus measures.** The auditor's blind run over the fixtures is the judgment
+   half; the pipeline number is that run merged with the scanner by
+   `tests/harness/merge-findings.mjs`. The tool applies (a), (b) without the source read, (c)
+   and (d), so its precision is a lower bound on what the verifier's merge produces.
+
+(after impeccable's critique method, Apache-2.0; README § Third-party material)
+
 ### Severity re-validation
 
 | Check | Action |
@@ -162,7 +208,7 @@ Grouping rules -- collapsing repeated instances of the same finding within one d
 | Taste comment at HIGH/CRITICAL | Downgrade to TASTE |
 | Accessibility blocker at MEDIUM/LOW | Upgrade to HIGH/CRITICAL |
 | Core task blocked at any width in the default matrix, or primary content scrolling horizontally at 320px, at MEDIUM/LOW | Upgrade to HIGH |
-| Pattern smell at CRITICAL | Downgrade to MEDIUM unless evidence supports objective failure |
+| Pattern smell at CRITICAL that catalogue section 18 does not class CRITICAL (a specialist escalation with no catalogue row behind it) | Downgrade to MEDIUM unless evidence supports objective failure. A catalogue tell at the class section 18 gives it keeps that class: section 18 is the severity source for the anti-ai dimension (`references/catalogue/01-ai-tells.md` § 18; `agents/ui-anti-slop-auditor.md` § 14), so T1, T2, T3, T13, S1-S5, C15, L1 and the other CRITICAL rows stay CRITICAL at the Pattern smell class. T2 keeps CRITICAL only for a chosen Roboto, Helvetica or Arial primary; a system stack at default weights is not T2 and is filed under S7 or V13 at its measured class |
 | Quality defect without user impact | Downgrade to LOW |
 | A substance or placement finding carrying a measurement from `references/aesthetic/06-substance-floor.md` or `references/design/12-copy-placement-and-volume.md` | Never downgraded to TASTE for lack of objectivity. It keeps the severity its measurement earns; the taste-comment row above applies only to a finding with no number attached. A stated decision does not downgrade it either -- it clears it under the stated-decision filter above, which is how `06-substance-floor.md` section 1 already scopes its severities to a check that fails `without a stated reason` |
 | A `Recommended change:` that removes a device and names no replacement | Return the finding as an open question for the owner rather than passing it through (`references/review/01-universal-rubric.md` section Finding format). Record it on the "Returned:" line in Verification Notes |
@@ -207,6 +253,8 @@ The verifier's output is a re-ranked, deduplicated findings list, not a raw pass
 - Merged: contrast findings from visual + accessibility into finding #3
 - Returned: "remove the coloured left border from every table row" returned as an open question -- the recommendation names no device that takes over the border's job (`references/review/01-universal-rubric.md` section Finding format; replacement devices: `references/aesthetic/06-substance-floor.md` section 6)
 - Widths viewed: 320 (evidence/320.png), 900 (evidence/900.png), 2560 (evidence/2560.png). 1440 captured, not opened
+- Scanner-confirmed: 6
+- Scanner false positive: lorem-ipsum at src/Empty.tsx:12 -- the match sits inside a code comment that never renders
 ```
 
 `Widths viewed:` is not the responsive verdict's widths-exercised line. Exercised
@@ -220,3 +268,61 @@ unearned verdict, and the derivation table's 1st-token row already requires driv
 or measured evidence: this line is the proof of it. With no widths viewed, the run
 is a static-evidence run for that dimension and takes the 2nd token with
 `(evidence: static, no screenshot opened)` appended.
+
+## Finish pass (after applied fixes)
+
+**When.** After an orchestrator applies the findings the user picked: `improve-ui` Step 6, and
+`review-ui` Step 11 when a rendered surface changed and a browser exists. Its four words are also
+the outcome vocabulary of `design-ui`'s Step 6 gate.
+
+**Who.** `ui-verifier` in FINISH MODE, dispatched with a fresh context and no forked history.
+`review-ui`, which has no verifier in its standard pass, dispatches `ui-craft:ui-verifier` in
+FINISH MODE for this pass only. The session that applied the fixes never scores its own work, so
+everything the pass needs travels in its packet: the applied findings (id, recommended change,
+files touched), the before evidence (the prior ledger findings and `measurements`, the before
+captures), the after evidence (recaptured at the same widths and states, written to
+`<run dir>/evidence/after/` under the before set's file names, with `measure_substance.js` and
+`measure_density.js` re-run at 1920) and the diff.
+
+**The first line is `disposition: <recapture|fix|rebuild|ship>`, exactly one of four words.** A
+`recapture` return is that line plus a recapture list naming each file and what a valid capture of
+it shows; every other return goes on to the verdict table below.
+
+| Disposition | When | What the orchestrator does |
+|---|---|---|
+| `recapture` | The after evidence is invalid: a blank or wrong-state capture, a frame caught mid-animation, an overlay or consent banner over the content, a width the before set lacks, numbers measured at a different width (`references/review/02-evidence-pipeline.md` § Capture validity) | Nothing the pass reviewed binds. Recapture, then run the pass again |
+| `rebuild` | The fix approach cannot reach the finding: the concept is wrong, not the patch | On `design-ui`, one architect re-dispatch naming the failure. On `review-ui` and `improve-ui`, an open question to the owner that the finding needs a redesign |
+| `fix` | At least one applied fix scored partial or unresolved, or the batch introduced a regression | One more batch inside the two-round fix cap |
+| `ship` | Every applied fix resolved and no regression found | Present the scored list |
+
+**Then the verdict table.** Each applied finding is scored `resolved`, `partial` or
+`unresolved`, tied to what the after evidence shows. A claimed fix the evidence does not show is
+unresolved. A fix that moved positions while the quality the finding named is still absent is
+partial. A fix that removed a device without its named replacement, or moved a substance or
+placement number the wrong way, is a regression. After the table come `regressions` (at most
+three, judged by the same rubric) and `remaining` (or `clear`). The pass does not hunt: a finding
+it was not given is outside its scope.
+
+**The word is derived, never softened.** `ship` needs every row resolved, and it covers the
+scored fixes, not the surface. The orchestrator reports the word verbatim. A partial or
+unresolved row still open after the second round becomes an `evidence.open_findings` entry when
+the CI artifact is written (Report usage above). The loop stops the moment a round resolves
+nothing.
+
+**Without a browser** the after evidence is the diff, the re-run scanner, the TypeScript gate
+and lint. The pass says so on the line after the disposition and scores code-level fixes only; a
+render-only claim is `unresolved [unverified: runtime measurement needed]`, not resolved.
+
+```
+disposition: fix
+verdict
+| Finding | Score | After evidence |
+|---|---|---|
+| #2 submit button has no accessible name | resolved | accessible name "Place order" in the after snapshot |
+| #5 one surface level across the page | partial | measure_substance: surfaceLevels 2 (was 1), the floor asks for 3 |
+| #7 hero headline clamp | unresolved | evidence/after/1920.png shows the old size |
+regressions: none
+remaining: #5, #7
+```
+
+(after impeccable's finish reviewer and its verdict pass, Apache-2.0; README § Third-party material)

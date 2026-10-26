@@ -1,40 +1,51 @@
 #!/usr/bin/env node
 /**
  * dogfood.mjs -- run the plugin's own tools over the plugin's own shipped
- * markdown, and fail when a per-file count moves.
+ * markdown, and fail when a rule fires on prose.
  *
- * WHY THE EXPECTED COUNTS ARE NOT ZERO. This repo's job is to describe AI tells,
- * so its reference files quote them verbatim: `references/catalogue/01-ai-tells.md`
- * names the banned hexes, the shadcn class run, the Tailwind hero triplet and the
- * generic microcopy, and `references/aesthetic/01-point-of-view.md` writes
- * doctrine lines about removing devices. A scanner that reported zero on those
- * files would be broken. The gate is therefore a PIN, not a floor: the numbers
- * below are what the tools report today, and any movement -- up or down -- is a
- * failure that names the file, because it means either the prose changed or a
- * rule changed, and both want a human to look.
+ * WHAT IS CHECKED. This repo's job is to describe AI tells, so its references
+ * quote them: the catalogue names the banned hexes, the shadcn class run and the
+ * generic microcopy. A scanner that reported nothing on those files would be
+ * broken, so the scan_tells half is a precision rule, not a count. Every
+ * occurrence a finding reports must sit in example context:
  *
- * WHAT MOVEMENT MEANS, in order of likelihood:
+ *   - inside a fenced block (``` or ~~~), or
+ *   - on a line carrying the escape hatch (`anti-slop-allow`, `unslop-ignore`), or
+ *   - inside a backtick span or a double-quoted string (straight or curly, two
+ *     or more characters inside) on its line.
  *
- *   - a reference file gained or lost a quoted example    -> update the count
- *   - a rule in `scripts/scan_tells.mjs` widened or narrowed -> check the corpus
- *     selftest first (`tests/harness/scan-tells.selftest.mjs`), then update
- *   - a rule started firing on the plugin's own PROSE rather than on a quoted
- *     example -> that is a precision defect in the rule, and the rule is what
- *     gets fixed, never this table
+ * A finding's `occurrences` array ({ line, column, match }) is checked when the
+ * scanner provides it; the match must start inside the span. Without it, the
+ * finding's own line is checked and the span may sit anywhere on that line. A
+ * table row is not excused for being a table row: a doctrine table that names a
+ * tell puts the name in backticks or quotes.
+ *
+ * An occurrence outside example context is a precision defect in the rule (it
+ * fired on the plugin's own prose), and the rule is what gets fixed. The only
+ * exceptions are KNOWN_PROSE_DEFECTS, each a named rule defect waiting on its
+ * fix; an entry that no longer occurs also fails, so the list only shrinks.
+ *
+ * The audit_doctrine half keeps a ceiling per file: a count above its ceiling,
+ * or a file that is not in the table, fails; a count below prints a note to
+ * lower the ceiling.
+ *
+ * WHY NOT PINS. Until 0.7.0 every per-file count was pinned, up and down. The
+ * pins failed on every doctrine edit that added or removed a quoted example,
+ * while the failure the gate exists for (a rule firing on prose) needed no pin.
  *
  * Usage: node tests/harness/dogfood.mjs [--list]
- *   --list  print the current counts in table form and exit 0, for updating the
- *           table after a deliberate content change.
+ *   --list  print every finding's occurrences with their context, and the
+ *           doctrine counts against their ceilings, then exit 0.
  *
- * Exit 0 when every count matches, 1 on any drift, 2 on a usage error.
+ * Exit 0 clean, 1 on a precision defect or a ceiling exceeded, 2 on a usage error.
  */
 
-import { readdirSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname, resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { scanFile } from '../../scripts/scan_tells.mjs';
+import { scanFile, ESCAPE_HATCH } from '../../scripts/scan_tells.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
@@ -44,32 +55,12 @@ const REPO = resolve(HERE, '..', '..');
 const SHIPPED_DIRS = ['agents', 'skills', 'references'];
 const SHIPPED_FILES = ['README.md', 'ARCHITECTURE.md', 'USAGE.md'];
 
-// --- the committed table -------------------------------------------------------
-// Per shipped file, the number of findings each tool reports. A file absent from
-// a table reports zero. Captured 2026-09-22 against the 0.6.0 tree.
+// Rule defects that fire on prose today, by file and tellRef.
+const KNOWN_PROSE_DEFECTS = {};
 
-const EXPECTED_SCAN = {
-  'agents/ui-anti-slop-auditor.md': 4,               // S1, W1, C3, S12
-  'agents/ui-craft-architect.md': 3,                 // W1, C3, W9
-  'agents/ui-visual-reviewer.md': 2,                 // W1, W5
-  'references/accessibility/04-screen-reader.md': 1, // WCAG 1.1.1
-  'references/aesthetic/03-taste-checklist.md': 5,   // W1, W2, W5, W9, W10
-  'references/architecture/03-styling-architecture.md': 1, // L13
-  'references/catalogue/01-ai-tells.md': 19,         // the catalogue quotes its own tells
-  'references/design/02-typography.md': 3,           // T1, cream-serif-sage, W5
-  'references/design/05-tailwind-v4.md': 1,          // WCAG 1.1.1
-  'references/design/06-shadcn-customization.md': 1, // cream-serif-sage
-  'references/design/08-ux-writing.md': 3,           // W1, W2, W5
-  'references/design/11-image-to-code-replication.md': 2, // W1, S12
-  'references/performance/01-core-web-vitals.md': 3, // WCAG 1.1.1, T1, W5
-  'references/performance/04-bundle-loading.md': 2,  // WCAG 1.1.1, T1
-  'references/review/01-universal-rubric.md': 1,     // W1
-  'references/review/07-surgical-visual-upgrade.md': 3, // C3, W5
-  'references/typescript/04-branded-primitives.md': 1,  // WCAG 1.1.1
-  'skills/design-ui/SKILL.md': 0,                    // W1, W9
-};
-
-const EXPECTED_DOCTRINE = {
+// audit_doctrine findings per shipped file. Lower a ceiling when its file sheds
+// findings; raise one only with a reason in the commit that does it.
+const DOCTRINE_CEILINGS = {
   'references/aesthetic/01-point-of-view.md': 8,
   'references/aesthetic/02-distinctive-systems.md': 2,
   'references/aesthetic/06-substance-floor.md': 2,
@@ -106,17 +97,70 @@ function isShipped(relPath) {
   return SHIPPED_DIRS.some((d) => relPath.startsWith(`${d}/`)) || SHIPPED_FILES.includes(relPath);
 }
 
+// --- example context ----------------------------------------------------------------
+
+const SPAN_RES = [/`[^`]+`/g, /"[^"]{2,}"/g, /“[^”]{2,}”/g];
+
+function spansOf(line) {
+  const spans = [];
+  for (const re of SPAN_RES) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(line)) !== null) spans.push([m.index, m.index + m[0].length]);
+  }
+  return spans;
+}
+
+function fenceMap(lines) {
+  const inFence = new Array(lines.length).fill(false);
+  let open = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^\s*(```|~~~)/.test(lines[i])) { inFence[i] = true; open = !open; continue; }
+    inFence[i] = open;
+  }
+  return inFence;
+}
+
+// The index the match starts at, from a 1-based column (a 0-based one is
+// tolerated), or by searching the line; null when the match cannot be placed.
+function matchStart(line, occ) {
+  if (typeof occ.match !== 'string' || !occ.match) return null;
+  if (Number.isInteger(occ.column)) {
+    for (const at of [occ.column - 1, occ.column]) {
+      if (at >= 0 && line.startsWith(occ.match, at)) return at;
+    }
+  }
+  const at = line.indexOf(occ.match);
+  return at >= 0 ? at : null;
+}
+
+function context(lines, inFence, occ) {
+  const i = occ.line - 1;
+  const line = lines[i] ?? '';
+  if (inFence[i]) return 'fence';
+  if (ESCAPE_HATCH.test(line)) return 'hatch';
+  const spans = spansOf(line);
+  const start = matchStart(line, occ);
+  if (start === null) return spans.length ? 'span on line' : null;
+  return spans.some(([a, b]) => start >= a && start < b) ? 'span' : null;
+}
+
 function collectScan() {
-  const counts = {};
-  const detail = {};
+  const rows = [];
   for (const file of shipped) {
     const rel = posix(relative(REPO, file));
     const { findings } = scanFile(file);
     if (!findings.length) continue;
-    counts[rel] = findings.length;
-    detail[rel] = findings.map((f) => `${f.tellRef}@${f.line}`);
+    const lines = readFileSync(file, 'utf8').split('\n');
+    const inFence = fenceMap(lines);
+    for (const f of findings) {
+      const occurrences = Array.isArray(f.occurrences) && f.occurrences.length ? f.occurrences : [{ line: f.line }];
+      for (const occ of occurrences) {
+        rows.push({ file: rel, tellRef: f.tellRef, id: f.id, line: occ.line, match: occ.match ?? null, ctx: context(lines, inFence, occ), text: (lines[occ.line - 1] ?? '').trim() });
+      }
+    }
   }
-  return { counts, detail };
+  return rows;
 }
 
 function collectDoctrine() {
@@ -137,7 +181,7 @@ function collectDoctrine() {
     process.exit(2);
   }
   if (parsed.summary.truncated) {
-    process.stderr.write('audit_doctrine.mjs truncated its findings; raise --max before pinning\n');
+    process.stderr.write('audit_doctrine.mjs truncated its findings; raise --max before checking\n');
     process.exit(2);
   }
   const counts = {};
@@ -151,86 +195,75 @@ function collectDoctrine() {
   return { counts, detail };
 }
 
-// --- comparison ---------------------------------------------------------------------
-
-function compare(label, expected, actual, detail) {
-  const files = [...new Set([...Object.keys(expected), ...Object.keys(actual)])].sort();
-  const rows = [];
-  for (const file of files) {
-    const want = expected[file] || 0;
-    const got = actual[file] || 0;
-    if (want !== got) rows.push({ label, file, want, got, detail: (detail[file] || []).join(', ') });
-  }
-  return rows;
-}
-
-function printTable(title, counts, detail) {
-  process.stdout.write(`${title}\n`);
-  const files = Object.keys(counts).sort();
-  if (!files.length) {
-    process.stdout.write('  (none)\n');
-    return;
-  }
-  const width = Math.max(...files.map((f) => f.length));
-  for (const file of files) {
-    process.stdout.write(
-      `  ${file.padEnd(width)}  ${String(counts[file]).padStart(3)}   ${(detail[file] || []).join(', ')}\n`,
-    );
-  }
-  process.stdout.write(
-    `  total ${Object.values(counts).reduce((a, b) => a + b, 0)} over ${files.length} file(s)\n`,
-  );
-}
-
 // --- main --------------------------------------------------------------------------
 
 const argv = process.argv.slice(2);
 const listOnly = argv.includes('--list');
 for (const a of argv) {
   if (a !== '--list') {
-    process.stderr.write(`Usage: node tests/harness/dogfood.mjs [--list]\n`);
+    process.stderr.write('Usage: node tests/harness/dogfood.mjs [--list]\n');
     process.exit(2);
   }
 }
 
-const scan = collectScan();
+const occurrences = collectScan();
 const doctrine = collectDoctrine();
 
+const prose = occurrences.filter((o) => o.ctx === null);
+const known = prose.filter((o) => (KNOWN_PROSE_DEFECTS[o.file] || []).includes(o.tellRef));
+const defects = prose.filter((o) => !known.includes(o));
+const fixedKnown = Object.entries(KNOWN_PROSE_DEFECTS).flatMap(([file, tells]) =>
+  tells.filter((t) => !known.some((o) => o.file === file && o.tellRef === t)).map((t) => `${file} ${t}`));
+
+const ceilingRows = [...new Set([...Object.keys(DOCTRINE_CEILINGS), ...Object.keys(doctrine.counts)])].sort().map((file) => ({
+  file,
+  got: doctrine.counts[file] || 0,
+  ceiling: Object.hasOwn(DOCTRINE_CEILINGS, file) ? DOCTRINE_CEILINGS[file] : null,
+  detail: (doctrine.detail[file] || []).join(', '),
+}));
+const over = ceilingRows.filter((r) => (r.ceiling === null ? r.got > 0 : r.got > r.ceiling));
+const under = ceilingRows.filter((r) => r.ceiling !== null && r.got < r.ceiling);
+
+const findingCount = new Set(occurrences.map((o) => `${o.file}|${o.id}`)).size;
+const fileCount = new Set(occurrences.map((o) => o.file)).size;
+const doctrineTotal = Object.values(doctrine.counts).reduce((a, b) => a + b, 0);
+
 if (listOnly) {
-  printTable('scan_tells.mjs', scan.counts, scan.detail);
-  printTable('audit_doctrine.mjs', doctrine.counts, doctrine.detail);
-  process.exit(0);
+  process.stdout.write('scan_tells occurrences (context: fence, hatch, span, span on line, or PROSE)\n');
+  for (const o of occurrences) {
+    process.stdout.write(`  ${(o.ctx || 'PROSE').padEnd(12)} ${o.file}:${o.line} ${o.tellRef}${o.match ? ` "${o.match}"` : ''}\n`);
+  }
+  process.stdout.write('audit_doctrine findings against their ceilings\n');
+  for (const r of ceilingRows) {
+    process.stdout.write(`  ${String(r.got).padStart(3)}/${r.ceiling === null ? '-' : r.ceiling}  ${r.file}  ${r.detail}\n`);
+  }
 }
 
-const drift = [
-  ...compare('scan_tells', EXPECTED_SCAN, scan.counts, scan.detail),
-  ...compare('audit_doctrine', EXPECTED_DOCTRINE, doctrine.counts, doctrine.detail),
-];
+const problems = [];
+for (const o of defects) problems.push(`  prose  ${o.file}:${o.line} ${o.tellRef} (${o.id})${o.match ? ` "${o.match}"` : ''}: ${o.text.slice(0, 120)}`);
+for (const k of fixedKnown) problems.push(`  fixed  ${k}: the known defect no longer occurs; remove its KNOWN_PROSE_DEFECTS entry`);
+for (const r of over) problems.push(`  doctrine  ${r.file}: ${r.got} finding(s), ceiling ${r.ceiling === null ? 'none (file not in the table)' : r.ceiling}  [${r.detail}]`);
 
-if (drift.length) {
-  process.stdout.write('DOGFOOD DRIFT -- a per-file count moved:\n');
-  for (const row of drift) {
-    process.stdout.write(
-      `  ${row.label}  ${row.file}: expected ${row.want}, got ${row.got}` +
-      (row.detail ? `  [${row.detail}]` : '') + '\n',
-    );
-  }
-  process.stdout.write('\ncurrent state:\n');
-  printTable('scan_tells.mjs', scan.counts, scan.detail);
-  printTable('audit_doctrine.mjs', doctrine.counts, doctrine.detail);
+const summary =
+  `dogfood: ${shipped.length} shipped markdown file(s); scan_tells ${findingCount} finding(s), ` +
+  `${occurrences.length} occurrence(s) over ${fileCount} file(s), ${occurrences.length - prose.length} in example context, ` +
+  `${known.length} known prose defect(s); audit_doctrine ${doctrineTotal} finding(s) within ceilings`;
+
+if (problems.length && !listOnly) {
+  process.stdout.write('DOGFOOD FAILED\n');
+  process.stdout.write(`${problems.join('\n')}\n\n`);
   process.stdout.write(
-    `\n${drift.length} file(s) moved. Fix the rule if it started firing on prose; ` +
-    'otherwise update the table in this file (node tests/harness/dogfood.mjs --list).\n',
+    'A rule that fires on prose is a rule precision defect: narrow the rule, or, where the line names the tell ' +
+    'as an example, put the name in backticks or double quotes.\n',
   );
   process.exit(1);
 }
-
-const scanTotal = Object.values(scan.counts).reduce((a, b) => a + b, 0);
-const doctrineTotal = Object.values(doctrine.counts).reduce((a, b) => a + b, 0);
-process.stdout.write(
-  `dogfood: ${shipped.length} shipped markdown file(s); ` +
-  `scan_tells ${scanTotal} finding(s) over ${Object.keys(scan.counts).length} file(s), ` +
-  `audit_doctrine ${doctrineTotal} finding(s) over ${Object.keys(doctrine.counts).length} file(s); ` +
-  'all counts match the committed table\n',
-);
+for (const r of under) {
+  process.stdout.write(`note: ${r.file} has ${r.got} doctrine finding(s), under its ceiling of ${r.ceiling}; lower the ceiling\n`);
+}
+if (problems.length) {
+  process.stdout.write(`${problems.join('\n')}\n`);
+  process.exit(0);
+}
+process.stdout.write(`${summary}\n`);
 process.exit(0);

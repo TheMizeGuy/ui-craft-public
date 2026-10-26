@@ -10,7 +10,7 @@ allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent, Artifact
 
 Coordinate a UI quality review: determine scope, map the flows in scope, gather context, dispatch specialists, and present a merged report.
 
-**Read-only by default.** The review itself never modifies the reviewed project. The only files this skill writes unasked are the review ledger (Step 8) and, on a browser run, the evidence captures under `.claude/ui-craft/runs/<timestamp>/evidence/` (Step 6). Fixes are applied in Step 11 and only after the user explicitly picks findings. The `Edit`/`Write` grant in the frontmatter exists so that step and the ledger write are executable; it is not licence to edit during review.
+**Read-only by default.** The review itself never modifies the reviewed project. The only files this skill writes unasked are the review ledger (Step 8) and the run evidence under `.claude/ui-craft/runs/<timestamp>/evidence/` (Step 6: the scanner output on every run, the captures on a browser run). Fixes are applied in Step 11 and only after the user explicitly picks findings. The `Edit`/`Write` grant in the frontmatter exists so that step and the ledger write are executable; it is not licence to edit during review.
 
 ## Execution mode
 
@@ -62,6 +62,7 @@ FLOWS IN SCOPE:
   Entry: <route / screen / URL>
   Steps: 1. <step> (<file>) -> 2. <step> (<file>) -> 3. <step> (<file>)
   Success: <what the user sees when it works>
+  Surface: <control | content | marketing | article> (${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md § 3; classify the screen, not the product)
 - Task: ...
 (or "single component, no multi-step flow in scope")
 ```
@@ -83,6 +84,8 @@ FLOWS IN SCOPE:
 - `build.gradle`: min SDK, Material version
 - `themes.xml` / `colors.xml`: design system
 - Compose vs XML split
+
+**Product context (every platform):** PRODUCT.md and DESIGN.md when present, read per `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Product context files; pass the excerpt to every specialist under a PRODUCT CONTEXT heading.
 
 ### Step 3a: Establish the evidence level (do not guess it)
 
@@ -124,7 +127,8 @@ Standing decisions about this product that a remediation must not land on. Even 
 
 1. the reviewed repo's `design/POV.md`, its `## Banned (concrete)` and `## Must be present` lists;
 2. the UI section of its `CLAUDE.md` or `AGENTS.md`;
-3. `.claude/ui-craft/vetoes.md`, if present.
+3. DESIGN.md's Do's and Don'ts and named rules, and PRODUCT.md's brand commitments, quoted;
+4. `.claude/ui-craft/vetoes.md`, if present.
 
 Phrase the block for specialists as standing and non-negotiable, never as taste:
 
@@ -177,9 +181,9 @@ Each agent gets a self-contained prompt with:
 - Platform identification
 - The `FLOWS IN SCOPE` block from Step 2.5, verbatim
 - The `DOCTRINE CONSTRAINTS` block from Step 3b and the `OWNER VETOES` block from Step 3c, both verbatim and under their own headings. A specialist that never sees them proposes a fix the repo's CI will revert, or a device the owner has already rejected
-- Project context (framework, tokens, config, tsconfig snapshot for the TS engineer)
+- Project context (framework, tokens, config, tsconfig snapshot for the TS engineer), and the PRODUCT CONTEXT block from Step 3 when it found one
 - Instruction to read their plugin references BEFORE reviewing
-- The evidence level from Step 3a, plus the paths of any pre-captured browser evidence and the `measureDensity()` / `measureSubstance()` numbers at 1920 and at the widest width (Step 6)
+- The evidence level from Step 3a, plus the paths of any pre-captured browser evidence and the metric fields of the `measureDensity()` / `measureSubstance()` reports at 1920 and at the widest width, without their `findings` arrays (Step 6)
 - Output in the finding format from `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md`, including the `id` / `dimension` / `file` / `line` machine fields
 
 Include these ACCEPTANCE CRITERIA in every specialist prompt, and check them on each returned report before merging:
@@ -193,28 +197,13 @@ A report failing any criterion gets ONE re-dispatch naming the failed item; a se
 
 ## Step 6: Capture browser evidence once, then dispatch in parallel
 
-**Deterministic pre-pass.** Before dispatching, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none` (files only; pipe a list for a large scope) and pass its `findings` array to `ui-craft:ui-anti-slop-auditor` as a `SCANNER FINDINGS` block. The auditor confirms, dedupes and extends them with the structural tells no regex can see; it never re-derives what the scanner already found, and a suppressed hit (an `anti-slop-allow` reason on the line) is a stated decision listed under Scope, never a finding. The scanner's `heuristic: true` candidates (T15 single-word accents, W11, I8, V13) are pointers for the auditor to verify, not findings in their own right.
+**Deterministic pre-pass, held until the merge.** Before dispatching, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none --surface <the class from Step 2.5>` (files only; one run per class when the scope mixes them) and write the output to `.claude/ui-craft/runs/<ISO timestamp>/evidence/scan_tells.json`. Keep it out of every specialist prompt: the auditor and the visual reviewer form their read first, because detector output anchors judgment even when it is right. Step 7 merges it. A screen with no class stated is run as content by both tools (`--surface content` and `measureDensity({ surface: 'content' })`), and the run header says `surface: assumed content`.
 
 **Browser evidence has exactly one owner per run: you.** Specialists share a single Playwright browser, and several of them resize the viewport. If they run concurrently, one agent's 320px resize silently invalidates another's geometry measurement, and every spatial finding then trips the unverified-evidence cap.
 
 1. If a browser tool and a URL are both available, capture the matrix yourself BEFORE dispatching: for the default capture set in `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md` (320, 390, 900, 1440, 1920, 2560, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), one screenshot plus one geometry dump (bounding boxes and computed styles for the primary content), written under `.claude/ui-craft/runs/<ISO timestamp>/evidence/`. **1920 is pinned in the set**: the density thresholds are calibrated at that width, so it stays in even when 2560 is open. Pass those absolute paths into every specialist prompt as read-only evidence, and instruct specialists not to drive the browser themselves.
-2. Having captured, measure at 1920 and again at the widest width you opened: evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` in the browser and call `measureDensity()` and `measureSubstance()` (usage in each header; `measureDensity()` takes a `surface` option so its copy budgets match the surface type). Write both outputs beside the captures and pass the numbers into every specialist prompt as evidence. They are what a substance or density finding quotes, and without them those findings sit at TASTE.
-3. Dispatch all chosen specialists in parallel:
-
-```
-Agent({ subagent_type: "ui-craft:ui-visual-reviewer",
-  prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
-  description: "Visual quality review" })
-
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer",
-  prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
-  description: "Accessibility review" })
-
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer",
-  prompt: "<scope, platform, FLOWS IN SCOPE, context, evidence level, evidence paths>",
-  description: "Responsive review" })
-```
-
+2. Having captured, measure at 1920 and again at the widest width you opened: evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` in the browser and call `measureDensity({ surface: '<class>' })` with the same class the scanner ran with, and `measureSubstance()` (usage in each header). Write both outputs beside the captures. Pass the metric fields (`accent`, `surfaceLevels`, `imagesPerSection`, `utilisation`, `wordsBeforePrimary` and the rest of each report) into every specialist prompt as evidence, and hold each report's severity-tagged `findings` array and `verdict` line with the scanner output for Step 7, for the same anchoring reason. The numbers are what a substance or density finding quotes, and without them those findings sit at TASTE.
+3. Dispatch all chosen specialists in parallel, in one message (one Agent call each, subagent_type `ui-craft:<agent>`, the Step 5 prompt, a short description).
 4. If a specialist genuinely needs live interaction the pre-captured matrix cannot supply (motion timing, focus-order traversal, a multi-step flow walk), dispatch it in a SECOND, serial wave with sole browser access after the parallel wave returns. Truly concurrent browsers need one isolated browser per agent, which is outside this plugin's scope.
 
 ## Step 7: Merge and present report
@@ -222,6 +211,7 @@ Agent({ subagent_type: "ui-craft:ui-responsive-reviewer",
 Standard mode has no dedicated verifier agent, so the coordinator applies the verifier's rules during the merge:
 
 1. Collect findings from all agents.
+1a. Merge the scanner's findings from `evidence/scan_tells.json` with the specialists' by `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Scanner merge, and put its four lines on the report's Merge notes line. The measurement scripts' `findings` arrays held back in Step 6 merge by the same rule.
 2. Deduplicate and group using the deduplication and grouping rules in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` (same element + same issue = keep the more specific finding; cross-dimension contrast/clipping/reduced-motion overlaps merge into one).
 3. Validate severities against the severity-validation table in the same file (taste never at HIGH/CRITICAL; accessibility blockers never below HIGH; a finding that blocks a core task at any width in the default matrix, or scrolls primary content horizontally at 320px, never below HIGH).
 4. Enforce the geometry evidence rule (`${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md`, "Geometry evidence rule"): any spatial claim without geometry evidence keeps its canonical confidence class, gains the `[unverified: geometry measurement needed]` modifier on its Evidence line, and is capped at MEDIUM. Never rewrite its confidence class.
@@ -263,7 +253,10 @@ A prior entry that is absent from this run only because the run did not cover it
 **Specialists:** <which were dispatched>
 **Dimensions not reviewed:** <undispatched specialists and why, or "none">
 **Evidence level:** <code + browser / code-only / screenshot-only>
+**Product context:** <PRODUCT.md, DESIGN.md read | none found>
 **Widths viewed:** <the renders a reviewer actually opened and examined, each with its width | "none: code-only">
+**Not exercised:** <input methods and states this run did not drive (touch drag, keyboard-only path, 200% zoom, reduced motion, offline) | none> (`${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Evidence rules for findings)
+**Surface:** <the class of each screen from Step 2.5 | `surface: assumed content`>
 **Flows reviewed:** <task names from Step 2.5 | "single component, no flow" | "not assessed (screenshot-only): task flow, navigation and error recovery cannot be judged from static frames">
 **Substance:** <one line from the measured numbers: accent chroma, surface levels, focal visual, image count | "NOT ASSESSED: code-only run">
 
@@ -307,6 +300,8 @@ the UI, and the owner decides each one.
 | Coverage disclosure | Dimensions NOT reviewed named in the header, and flow traversal stated (which tasks were walked, or that none were in scope) |
 | Replacement named | Every Recommended change that removes a device names the device that takes over its job; a removal with no replacement appears as an open question, not as a recommendation |
 | Widths viewed on a browser run | `**Widths viewed:**` is non-empty whenever the evidence level is `code + browser`. Captures nobody opened do not count as viewed |
+| Not exercised | The header names the inputs and states the run did not drive, or says none |
+| Scanner merge | Every scanner finding is merged, kept after a source check, or named on the Merge notes line as a false positive or an unconfirmed candidate |
 
 Fix formatting failures during the merge; if a finding's substance is unverifiable, drop it and record the drop under a "Merge notes" line in the report.
 
@@ -351,7 +346,8 @@ Three limits on what you apply:
 - **Never apply a device the `OWNER VETOES` block bans**, even when the report proposed it. Substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave it.
 
 After applying:
-- Offer a re-review on the same scope.
+- Re-run `scan_tells.mjs` on the touched files and compare it with `evidence/scan_tells.json`: findings the applied change introduced or grew are triaged by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8; findings that were already there stay in the report as filed and are not fixed unasked.
+- When the applied set touches a rendered surface and a browser is available, recapture the before set's widths and states into `<run dir>/evidence/after/` under the before set's file names, then run the finish pass by dispatching `ui-craft:ui-verifier` in FINISH MODE (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass) and report its disposition word; otherwise offer a re-review on the same scope.
 - Offer to run `optimize-ui` if performance wasn't in this pass, or `improve-ui` for the full team treatment.
 - If the review surfaced non-obvious patterns, write them to the goodmem Learnings space, if goodmem is configured in this session.
 

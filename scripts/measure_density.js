@@ -312,8 +312,10 @@ function measureDensity(options = {}) {
     .filter((p) => p.reasons.length > 0);
 
   // --- text-only section runs (L14) -----------------------------------------
+  // The same non-text device list measure_substance.js uses, so both scripts
+  // report the same run on the same page.
   const DEVICE_SEL =
-    'img, picture, svg, video, canvas, table, form, ul, ol, dl, button, figure, [role="list"]';
+    'img, picture, svg, video, canvas, table, form, ul, ol, dl, button, figure, [role="list"], [role="img"], input, select';
   const sectionRows = sectionEls.map((s) => ({
     label:
       s.id || (typeof s.className === 'string' && s.className) || s.tagName.toLowerCase(),

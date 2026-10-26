@@ -1,5 +1,219 @@
 # Changelog
 
+## 0.7.0 — 2026-10-26
+
+Measured against the 0.6.8 release. Impeccable's 450 antipattern fixture pairs: the scanner alone hits 228 (68 before) across 22 of its rules (6 before). The corpus grows from 41 fixtures and 48 labels to 71 fixtures, a DESIGN.md and 69 labels; the scanner alone scores 0.928 / 0.970 on it (0.896 / 0.915 before). Blind auditor alone 0.884 / 0.984 (0.870 / 0.779 before the scorer learned to count a further instance of a matched tell as an instance rather than a false positive), the pipeline the release gates 0.957 / 0.943, and the judgment-only labels 2 of 4, reported and not gated. On Limerino's 39 HTML pages the scanner reports 72 findings where 0.6.8 reported 62: three new findings that anti-slop 2.5 also files, the admin index's missing imagery, ten W11 findings on release-notes pages the old scanner masked (an `<ol>` named inside a CSS comment counted as the page's primary element; they are silent under `--surface article`), and three narrowings. The scanner selftest grows from 120 to 337 cases, the design-hook selftest from 50 to 54.
+
+0.7.0 takes what transfers from impeccable (Paul Bakaus, Apache-2.0, studied at
+commit 3671d50f0) and re-expresses it in this plugin's words, thresholds and
+code: judgment before the detector, a finish pass after applied fixes, fix plans
+by drift class and triage tier, an opt-in design hook, and doctrine where the
+references had a gap. The constraint was deeper, not bigger: no new skill, no
+new agent, no new reference file, one new hook. README § Third-party material
+maps each item to its impeccable source.
+
+- **Judgment before the detector.** Scanner output is no longer handed to the
+  anti-slop auditor. `review-ui` writes it to the run's
+  `evidence/scan_tells.json` and merges it at Step 7; `improve-ui`'s team lead
+  hands it to the verifier, which merges it; the auditor walks the catalogue
+  unanchored. The measurement scripts' findings arrays are held the same way,
+  and the specialists get the numbers. The merge rule is stated once in
+  `references/review/04-verdicts-and-verification.md` § Scanner merge: a
+  scanner-only finding is priced at its catalogue section-18 class, a hit in a
+  comment or a string that never renders is removed and recorded, and four
+  Verification Notes lines record the merge. The 2026-09-22 blind baseline
+  contained all 47 of the scanner's findings, its four false positives
+  included: the anchored auditor confirmed the list rather than walking the
+  catalogue.
+- **The re-baseline.** The corpus is re-measured with the auditor unanchored,
+  over a comment-stripped copy of every fixture (`tests/harness/blind-copy.mjs`;
+  several fixtures explained their own answers in comments) and a prompt that
+  names every file type. Three numbers replace one, each re-runnable from
+  `tests/harness/README.md`: auditor alone 0.884 / 0.984, the pipeline
+  (the auditor merged with the scanner by `tests/harness/merge-findings.mjs`,
+  the number the release gates) 0.957 / 0.943, and the judgment-only
+  labels 2 of 4 at precision 1, reported and not gated while the subset is
+  small. Two scorer rules came out of that run's pairing failures and five
+  selftest cases pin them: a further finding naming a tell already matched on
+  the same fixture and class is an instance, not a false positive (the
+  unanchored auditor files one finding per side stripe, emoji shape and type
+  floor where the corpus labels each tell once), and a two-character title
+  token with a digit counts toward the substance floor; before them the same
+  run read 0.870 / 0.779 alone and 0.942 / 0.765 merged. The scanner alone scored 0.896 / 0.915 before this release's scanner
+  work and 0.926 / 0.969 after it (63 of 68 labels, 63 of 65 findings). The 2026-09-22 run scored
+  0.958 / 0.920 with the scanner inside it and is kept as history; the two runs
+  are not like for like.
+- **Scanner: one detection module with anti-slop.** `scripts/lib/design-detect.mjs`
+  is anti-slop 2.5.0's detection module (commit 5ed2be4), vendored byte for byte
+  below a one-line header; the scan-tells selftest pins the hash of its body, and
+  the release script compares it with anti-slop's copy. Every rule now reads the
+  file with its comments blanked (and, in markup, the contents of `<code>` and
+  `<pre>`), so a commented-out declaration is not on the page. Class fingerprints
+  read one element's class set, through `cn()`, `clsx` and multi-line attributes,
+  once per element. `.astro`, `.scss` and `.less` are scanned; a path that cannot
+  be scanned is listed under `skipped` and the rest of the list still runs; a
+  `coverage` list names the rules that did not run on a file's surface; every
+  finding lists its `occurrences` (line, column, match); and
+  `anti-slop-allow: <rule or code> -- <reason>` waives only the rules it names,
+  the same syntax anti-slop reads.
+- **Scanner: the rules declared CSS can decide.** P16 text under the AA contrast
+  bar on the surface it is declared on (HIGH, and LOW within 0.3 of the bar,
+  placeholder text measured), the V3 coloured side stripe (MEDIUM, user-banned,
+  any syntax), the T12 floors (MEDIUM), the four T16 reading mechanics (tight
+  body leading, wide tracking on mixed-case running text, justified narrow
+  columns, crushed tracking; MEDIUM), the M2 bounce candidate (MEDIUM,
+  `heuristic: true`; springs that settle stay clean), the V11 pulsing dot
+  (HIGH), the M4 marquee with no pause control (HIGH), V9 dot, grid and stripe
+  background patterns (LOW), C11's radial halo on a dark page (LOW), C7's
+  neutral grey text on a chromatic surface (MEDIUM), the P9 skipped heading on
+  full documents (HIGH), the 2.4.0 pair anti-slop already had, P4 zoom lock
+  (CRITICAL, read inside the viewport meta tag) and P12 positive tabindex
+  (HIGH, `data-tabindex` excluded), and U4 for a `focus:` ring with no
+  `focus-visible:` variant (MEDIUM), which no longer files as U3. Where the
+  project carries a `DESIGN.md`, a purple it declares is read as the palette,
+  per match, and a face outside its typography is a section-14 candidate; a
+  DESIGN.md above a test, fixture or story tree does not describe it. The new
+  rules follow impeccable's `low-contrast`, `side-tab`, `tiny-text`,
+  `undersized-ui-text`, `tight-leading`, `wide-tracking`, `justified-text`,
+  `extreme-negative-tracking`, `bounce-easing`, `pulsing-dot`, `marquee`,
+  `codex-grid-background`, `repeating-stripes-gradient`, `radial-halo`,
+  `gray-on-color`, `skipped-heading` and `design-system-font`. Over impeccable's
+  labelled antipattern fixtures the ui-craft scanner alone hits 68 of 450 pairs
+  at 0.6.8 and 228 now (confirmed pairs 68 to 227 of 385), and impeccable rules
+  with any hit rise from 6 to 22; anti-slop 2.5.0 alone hits 213.
+- **Scanner: narrower rules.** Purple counts only at rest and in one class set
+  (no hover or focus variant, no `/10` tint, gradient stops beside a gradient);
+  C3's hex half skips an unread scale-named token and counts a semantic role
+  token where it is declared; neon glow is a coloured halo a viewer can see;
+  token drift reads spacing declarations, not token definitions or JS
+  neighbours (`grid-gap` still counts); the primary-face rules read the first
+  non-generic family and the `font` shorthand, permit a reflex face on a control
+  beside a content face, and never fire on a system stack; D1 is one non-zero
+  radius three or more times; the cream combination counts distinct legs, the
+  warm clay only beside a serif display; W2 and W5 need two phrases and read
+  only text a user sees; W11, T15 and the copy rules skip text that never
+  renders (a template, a no-script fallback, a script or JSON-LD); U13, V12 and
+  T15 run on component files; the Tailwind forms of U3 and P3 fire; the control
+  lede budget is 25 words; a raster under an opacity below 0.1 is not imagery;
+  and Strongest-10 #1 reads framed cards written in CSS under the same
+  repetition gate as the class form.
+- **Corpus.** The anti-slop 2.5.0 rule pairs and the 2.4.0 accessibility pair are
+  copied byte for byte, each positive with its clean partner, and the U4 pair is
+  ui-craft's own; the shared fixtures anti-slop corrected for contrast and for
+  the control-face doctrine are re-copied, three ui-craft-only fixtures are
+  corrected (`reduced-motion-opt-in.html` 4.07:1 to 4.52:1,
+  `icon-only-button.html` 4.32:1 to 4.58:1, `icon-cards-no-imagery.html` 3.63:1
+  to 4.58:1), and `cream-serif-sage.html` carries the T1 label its corrected
+  Inter now plants. Fixtures 41 to 69 and labels 48 to 68, every new clean
+  control at tolerance 0. anti-slop's `design-system/` pair is not copied yet:
+  it needs a subdirectory the blind copy does not read, and probes pin the
+  DESIGN.md readings until it lands. Scored against the 2026-09-22 auditor run,
+  the pipeline reads 0.956 / 0.956 (65 of 68 labels) and the auditor alone
+  0.691, because that run predates every new label; the corpus README states the
+  pair and exemption-twin rules.
+- **Catalogue.** P16 contrast and T16 reading mechanics are new rows; T12 gains
+  its 12px and 11px floors and T8 its defect floor; V3, V11, M2, M4, U3, U4 and C7
+  gain the detection cues the scanner reads, V9 and C11 name their CSS forms,
+  Strongest-10 #1 its CSS signature, and section 14 the DESIGN.md readings;
+  section 18 classes every tell (W7, W8, M4 and U6 HIGH; D8's remedy no longer
+  prescribes a tooltip) and hands S12 back to LOW explicitly; P9 joins the
+  hard-defect list and C7's gray-on-colour leg fires on one instance; the cream
+  text, the W11 control budget and the system-stack line agree with the scanner.
+- **Finish pass.** After applied fixes, `ui-verifier` in FINISH MODE, with a
+  fresh context, scores each applied finding resolved, partial or unresolved
+  against after evidence recaptured in `evidence/after/`, and its return opens
+  with `disposition: recapture`, `fix`, `rebuild` or `ship` (review/04
+  § Finish pass). `improve-ui` Step 6, `review-ui` Step 11 and `design-ui`
+  Step 6 use the same words. The session that applied the fixes no longer
+  scores its own work, and a round that resolves nothing ends the loop.
+- **Fix plans by drift class and triage tier.** Each defect is classed missing
+  token, one-off implementation, conceptual mismatch or local defect before its
+  cure is prescribed, fixed at the narrowest level that removes the cause, and
+  applied in triage-tier order, broken tasks and missing states first
+  (review/07 § 2 and § 5). Improvement plans carry the apply order and a drift
+  class on every line.
+- **Design hook, opt-in.** `hooks/hooks.json` and `scripts/design_hook.mjs`:
+  off until `.claude/ui-craft/hook.json` sets `enabled` to true, and a project
+  without that file never starts node. A per-edit pass over eleven mechanical
+  scanner rules (`outline-none` among them once the scanner files a replaced
+  ring under U4 rather than U3), and a Stop deep pass that marks findings new, grew or
+  attribution unknown against a pre-session baseline the hook verifies; it never
+  blocks, honours `anti-slop-allow`, and keeps each message to about 1,000
+  characters per edit and 2,500 at Stop, six finding lines each. State lives in
+  the plugin data directory; `UI_CRAFT_HOOK=off` silences it. Selftest
+  `tests/harness/design-hook.selftest.mjs`, 54 checks; per-edit
+  time on a 125 KB generated page 49 to 57 ms including the node start. The
+  two-tier shape, session attribution and noise budget are re-expressed from
+  impeccable. README, USAGE and ARCHITECTURE document the keys, the messages and
+  the config contract, and review/07 § 8 is the triage rule an agent applies to
+  a hook or scanner finding on code it wrote.
+- **Doctrine.** Browser-drawn surfaces themed from the palette (taste 4.11,
+  design/01), the 6rem display ceiling (design/02 § 3), secondary text on a
+  coloured surface (design/01 § 6), and the craft floor and the substance floor
+  reconciled (aesthetic/06 § 7). Evidence names what produced it and what stayed
+  untested, with a gesture row, capture validity before judging a capture, and a
+  `Not exercised` header line (review/02). Gestures survive interruption
+  (usability/04 § 5b), and the responsive and accessibility reviewers check it.
+  The removal test, the squint and skeleton pair and the neighbour swap (taste
+  9.9, 9.13, 9.14), reported by the auditor and the visual reviewer. PRODUCT.md
+  and DESIGN.md are read when present, never written (review/02 § Product
+  context files), by `design-ui`, `review-ui`, `improve-ui` and the team lead.
+  Each screen's surface is classified, not the product, and passed to the
+  scanner and to `measureDensity` (content when unstated, reported as
+  `surface: assumed content`); the control-surface lede budget is 25 words
+  everywhere (design/12). Every control ships the states it can enter (review/01).
+  Controls name the outcome, messages are whole sentences, and errors claim only
+  what the system knows (design/08). Text inside a product screenshot or drawn
+  mockup is incidental under WCAG 1.4.3, and a contrast ratio prints to two
+  decimals and is never rounded up to its threshold (accessibility/01). Visual
+  reviewer lens 12 checks decorative motion opted in under
+  `prefers-reduced-motion: no-preference`. After applying fixes, the touched
+  files are re-scanned and only the findings the change introduced or grew are
+  triaged. Dispatch steps state the parallel call in one sentence.
+- **Doctrine repairs.** The verifier no longer downgrades a catalogue
+  section-18 CRITICAL Pattern smell to MEDIUM. T2 covers a chosen Roboto,
+  Helvetica or Arial primary only; the system stack at default weights is a
+  flatness signal under S7 or V13 at its measured class, never a face tell
+  (design/02, aesthetic/01, the auditor). Tracking: `-0.04em` is the tightest
+  the T8 ladder prescribes and `-0.07em` (`-0.09em` at 40px and up) the defect
+  floor (design/02, design/10, taste 2.4). The warm-clay accent counts as a
+  cream leg only beside a serif display face (aesthetic/01). The AI purple
+  window is hue 255-325 at chroma 0.15 or more in every reference (design/01,
+  design/05, design/06; `250-285` is gone). Dark-mode accent chroma drops by at
+  most 0.03, never under the 0.10 floor (design/01). Motion duration ceilings
+  are stated once: micro-interactions under 200ms, component and page
+  transitions under 400ms (design/04). Unhandled plurals are MEDIUM (taste
+  6.4). L14 is counted one way: `measure_substance.js` fires on a run of three
+  consecutive text-only sections, as `measure_density.js` does, over one device
+  list (checked in headless Chrome on the corpus fixtures and on a page with
+  three non-adjacent text-only sections, where the substance script used to
+  fire alone).
+- **Gates.** The answer key gains the `mono-readouts.ts` T13 row and is held at
+  exactly 1.000 / 1.000 (47 of 48 labels before, 48 of 48 now,
+  68 of 68 after the new labels). The dogfood gate is a precision
+  rule over every occurrence (inside a fence, a backtick span, a quoted string,
+  or a line carrying the escape hatch; table rows no longer excused) with
+  doctrine ceilings in place of per-file pins; every occurrence on the shipped
+  markdown is in example context except the known W5 defect on
+  `references/performance/01-core-web-vitals.md`
+  (`node tests/harness/dogfood.mjs --list`). The freedom gate pools the five
+  review-side steering files under one budget of 133 (the sum of their 0.6.8
+  ceilings) and keeps the architect at 37 and design-ui at 26 with its 12
+  criteria; at release the pool reads 132 of 133
+  (`node tests/harness/freedom.mjs --list`). The release script checks
+  reference-map parity (the tree, ARCHITECTURE.md's names and README's
+  per-domain counts) instead of a pinned total, gates the pipeline number
+  against a named baseline file, adds the hook, merge and blind-copy selftests,
+  validates `plugin.json` with its hooks, compares the vendored detection module
+  with its anti-slop tag, checks that the mirror's README keeps the third-party
+  section, and fails on an unfilled measurement placeholder. Reference, fixture
+  and selftest totals leave the README, ARCHITECTURE, the CI guide and both
+  manifests; the per-domain counts stay because the release gate checks them.
+  The reference library stays at 60 files.
+- **Third-party material.** README § Third-party material carries the
+  Apache-2.0 attribution for every re-expressed item; the public mirror carries
+  it unchanged.
+
 ## 0.6.8 — 2026-10-10
 
 Serena was retired on 2026-10-09, and the plugin no longer names it.

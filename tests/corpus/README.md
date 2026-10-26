@@ -3,14 +3,15 @@
 Labeled UI fixtures for scoring ui-craft's tell detection. Ground truth is
 `labels.json`; the scorer and runbook are in `../harness/`.
 
-- `fixtures/` -- 41 small (mostly `< 60` line) fixtures, each with deliberately
-  planted AI-tells or responsive defects or, for the thirteen clean controls, none. Tell IDs live only in
+- `fixtures/` -- small (mostly `< 60` line) fixtures, each with deliberately
+  planted AI-tells, responsive or accessibility defects or, for the clean controls, none. Tell IDs live only in
   `labels.json`, never in the fixture markup, so a reviewer never sees the answer.
   **Not every fixture is HTML.** Since the 2026-09-22 port the corpus also holds four
   raw stylesheets (`bootstrap-unthemed.css`, `legacy-theme.css`, `chosen-border-gray.css`,
-  `tokens-clean.css`) and one TSX component (`media-control-glyph.tsx`), because several
-  catalogue rows target raw CSS and component source rather than markup. A run that globs
-  `fixtures/*.html` silently scores five fixtures fewer than it reports.
+  `tokens-clean.css`), one TSX component (`media-control-glyph.tsx`) and one CSS-in-TS module
+  (`mono-readouts.ts`), because several catalogue rows target raw CSS and component source
+  rather than markup. A run that globs `fixtures/*.html` silently scores every non-HTML
+  fixture as missed.
 - `labels.json` -- expected findings per fixture in the canonical shape, each citing
   a `tellRef` from `references/catalogue/01-ai-tells.md`. Its `meta` block documents
   per-tell translation notes and the deliberately dropped tells.
@@ -21,9 +22,9 @@ Labeled UI fixtures for scoring ui-craft's tell detection. Ground truth is
 
 ## Provenance
 
-Nineteen fixtures are **copied verbatim** from anti-slop's design corpus
-(`anti-slop/anti-slop/scripts/test/corpus/design/`), same owner (TheMizeGuy), MIT
-licensed. Five came with the first release:
+Fixtures whose `labels.json` source reads `copied` are **copied verbatim** from anti-slop's
+design corpus (`anti-slop/anti-slop/scripts/test/corpus/design/`), same owner (TheMizeGuy),
+MIT licensed. Five came with the first release:
 
 | Fixture | Labels today (ui-craft IDs) |
 |---|---|
@@ -47,7 +48,7 @@ Five fixtures are **new**, authored for ui-craft to cover gaps the copied set le
 | Fixture | Targets |
 |---|---|
 | `presence-single.html` | exactly one presence-flaggable fingerprint (V5), otherwise clean |
-| `cream-serif-sage.html` | the full cream + serif + sage tasteful-default combination |
+| `cream-serif-sage.html` | the full cream + serif + sage tasteful-default combination, and since the 2.5.0 correction Inter on the hero line beside the serif display (T1) |
 | `token-drift.html` | hardcoded values bypassing an in-file design-token system (section 14) |
 | `missing-states.html` | data UI with no empty/loading/error states + a dead control (sections 12, 15) |
 | `clean-intentional.html` | second clean control, distinctive non-shadcn POV (0 expected) |
@@ -140,6 +141,39 @@ four, and the two additions follow the same principle as the 2026-09-01 label sp
 truth enumerates what a fixture contains, and a correct finding that scores as a false
 positive only because no label exists yet is a gap in the labels, not in the run.
 
+In 0.7.0 the anti-slop 2.5.0 rule pairs arrived the same way, byte for byte, each positive
+with its clean partner one step from it, and the labels re-derived against section 18:
+
+| Fixture | Targets (label tellRefs) | Clean partner |
+|---|---|---|
+| `contrast-pairs.html` | text under the AA bar on its declared surface, and one pair within 0.3 of it (P16 at HIGH and LOW) | `contrast-clean.html` |
+| `contrast-ground.html` | the page ground as the only painted surface (P16) | `contrast-ground-clean.html` |
+| `side-stripe-cards.html` | a coloured side stripe in five syntaxes (V3) | `side-stripe-clean.html` |
+| `type-floors.html` | running text under 12px and functional text under 11px (T12) | `type-floors-clean.html` |
+| `reading-mechanics.html` | tight body leading, wide tracking, a justified narrow column, crushed tracking (T16 x4) | `reading-mechanics-clean.html` |
+| `motion-bounce.html` | keyword bounce, an anticipate-and-overshoot curve, `animate-bounce` (M2) | `motion-spring-clean.html` |
+| `live-dot.html` | a small round dot pulsing forever (V11) | `live-dot-clean.html` |
+| `zoom-lock-tabindex.html` | a viewport meta that blocks zoom, positive tabindex values (P4, P12) | `viewport-clean.html` |
+| `marquee-logos.html` | a logo row carried sideways forever with no pause control (M4) | `marquee-clean.html` |
+| `pattern-backgrounds.html` | a hairline grid, a dot field and repeating stripes behind content (V9) | `pattern-backgrounds-clean.html` |
+| `radial-halo.html` | a saturated radial halo behind the hero of a dark page (C11) | `radial-halo-clean.html` |
+| `gray-on-color.html` | neutral mid-grey text on a blue surface, in classes and in CSS (C7) | `gray-on-color-clean.html` |
+| `skipped-heading.html` | an h4 straight after an h2 in the main content (P9) | `skipped-heading-clean.html` |
+
+anti-slop's `design-system/` pair (a `DESIGN.md` with `palette-declared.html` and `drift.css`) is not
+copied yet: the DESIGN.md reader walks up from each file, so the pair needs its own subdirectory,
+which the blind copy does not read yet. The scanner's DESIGN.md readings are pinned by probes in
+`../harness/scan-tells.selftest.mjs` until it lands.
+
+One pair is ui-craft's own, because anti-slop stays silent on the pattern: `focus-ring-on-focus.html`
+(a `focus:` ring with no `focus-visible:` variant, U4) with `focus-visible-clean.html`. The shared
+fixtures anti-slop corrected in 2.5.0 (contrast failures in clean controls and positives, and the
+control-face doctrine on `cream-serif-sage.html` and `legacy-marketing-page.html`) were re-copied
+in the same release, and the ui-craft-only fixtures that carried a real contrast failure
+(`reduced-motion-opt-in.html`, `icon-only-button.html`, `icon-cards-no-imagery.html`) were
+corrected here; each note in
+`labels.json` records the change with its measured before and after values.
+
 Three of the tell fixtures carry more than one label because their notes
 describe more than one defect; the labels were split on 2026-09-01 so ground
 truth enumerates what the fixtures really contain (see `../harness/README.md`,
@@ -147,5 +181,21 @@ truth enumerates what the fixtures really contain (see `../harness/README.md`,
 same reason: the fixture plants two placement tells, each at its own stated
 threshold. `legacy-theme.css` carries three for the third: L13's row names four
 constructs and the stylesheet has three of them.
+
+## Pairs, twins and corrections
+
+Every new rule ships with a positive and a clean partner in the same change. Every exemption a
+rule carries ships with a should-flag twin the exemption must not swallow, as a probe in
+`../harness/scan-tells.selftest.mjs` or as a construct in a fixture: an exemption written without
+one fails open, and the first sign is a whole class of real findings gone quiet. A rule cut from
+a release has its construct removed from the shared positive in the same commit, or its label kept
+and its note naming it a known scanner false negative, so a shared positive never carries an
+unlabelled construct. (anti-slop keeps such a label with no severity; ui-craft keeps the section-18
+severity, because `../harness/label-contract.mjs` checks every label, and because the auditor is
+still expected to find the tell.)
+
+A fixture is corrected, never relabelled, when a new rule proves it carries a real defect: a clean
+control gets the computed fix, and a positive planting another tell is tuned so it plants only its
+own.
 
 See `../harness/README.md` for how to produce a findings file and score it.

@@ -18,7 +18,7 @@ The spring `linear()` palette and the three-curve maximum (§3), the stagger sys
 | Principle | What to look for |
 |---|---|
 | Purposeful | Motion communicates state change, spatial relationship, or feedback — not decoration |
-| Fast enough | Hover and press feedback: 50-120ms. Component state and micro-interactions: 100-200ms. Component enter and exit: 200-400ms. Page transitions: 200-400ms (150-300ms is the sweet spot for route changes); over 400ms reads as sluggish and is catalogue M3. The 360ms cap in section 10 is the ceiling for UI micro-interactions |
+| Fast enough | Hover and press feedback: 50-120ms. Component state and micro-interactions: 100-200ms. Component enter and exit: 200-400ms. Page transitions: 200-400ms (150-300ms is the sweet spot for route changes); over 400ms reads as sluggish and is catalogue M3. Section 10's duration row applies these ceilings: micro-interactions under 200ms, component enter and exit and page transitions under 400ms. With a spring the ceilings apply to its settle time |
 | Natural curves | Spring physics > cubic-bezier for interactive elements. Ease-out for enter, ease-in for exit |
 | Interruptible | User input can cancel or reverse in-flight motion |
 | Non-blocking | UI remains usable during transitions; content accessible before animation completes |
@@ -473,7 +473,7 @@ Two lanes, one budget. The 30-50ms increment above is the **web product-UI lane*
 | Decorative-only animations | Slower, distracting, no information communicated | MEDIUM; HIGH when it delays access to content | Animate state changes only; static content stays static |
 | Parallax or scroll effects that fight the task / break scroll prediction | Distracts from content, vestibular triggers, fights browser scroll | MEDIUM; HIGH when unguarded by reduced-motion | Subtle (max 10-20% offset), wrap in reduced-motion guard |
 | Bouncy spring on destructive confirm | Trivializes serious action; content flashes past edges | MEDIUM | Linear or ease for confirms; springs on celebratory moments only |
-| Transitions > 500ms (800ms+) for micro-interactions | Feels sluggish, delays task completion | MEDIUM | Cap UI duration at 360ms; reserve longer for narrative motion |
+| Transitions > 500ms (800ms+) for micro-interactions | Feels sluggish, delays task completion | MEDIUM | Micro-interactions under 200ms, component and page transitions under 400ms (section 1, catalogue M3); reserve longer for narrative motion |
 | Entrance animations on every page load | Repetitive, annoying on repeat visits | MEDIUM | Play once per session, or gate behind first-visit state |
 | Animating *everything* | Decoration overload — nothing reads as important | MEDIUM | Animate state changes only; static content stays static |
 | Autoplay video without gesture | Bandwidth waste, accessibility violation | MEDIUM | Click-to-play or `<video preload="none" muted>` with intent |

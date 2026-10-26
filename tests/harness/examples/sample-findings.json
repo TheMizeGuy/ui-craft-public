@@ -129,6 +129,17 @@
     "evidence": "#faf8f5 + Instrument Serif + #15573a sage"
   },
   {
+    "id": "anti-ai-inter-on-content-copy",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/cream-serif-sage.html",
+    "line": 16,
+    "title": "Inter on content copy beside a declared serif display",
+    "tellRef": "T1",
+    "evidence": ".lede sets Inter on the hero line while body declares Instrument Serif; a control-only Inter would be the permitted label fallback"
+  },
+  {
     "id": "anti-ai-hardcoded-color-bypasses-token",
     "dimension": "anti-ai",
     "severity": "HIGH",
@@ -511,5 +522,236 @@
     "title": "Framework theme layer shipped entirely unmodified",
     "tellRef": "section 14",
     "evidence": "the compiled primary, both hover darkens and the framework #dee2e6 borders, with no tuned border, radius, shadow or transition"
+  },
+  {
+    "id": "anti-ai-monospace-on-human-readable-readouts",
+    "dimension": "anti-ai",
+    "severity": "CRITICAL",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/mono-readouts.ts",
+    "line": 13,
+    "title": "Monospace on human-readable readouts that already carry tabular-nums",
+    "tellRef": "T13",
+    "evidence": "six font-family:var(--font-mono) declarations on readouts (level value, presets, tree points, points spent, node rank, numeric cells); the textarea and readonly share link are exempt payloads"
+  },
+  {
+    "id": "accessibility-low-contrast",
+    "dimension": "accessibility",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/contrast-pairs.html",
+    "line": 11,
+    "title": "Text below WCAG AA contrast on its declared surface",
+    "tellRef": "P16",
+    "evidence": ".btn white on #ca8a10 at 2.9:1 (block), .btn:hover at 2.3:1 (hover state), .card .meta #64748b on #0f172a at 3.8:1 (ancestor)"
+  },
+  {
+    "id": "accessibility-low-contrast-near-bar",
+    "dimension": "accessibility",
+    "severity": "LOW",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/contrast-pairs.html",
+    "line": 13,
+    "title": "Text within 0.3 of the AA contrast bar",
+    "tellRef": "P16",
+    "evidence": ".tag #6b7280 on #f1f5f9 at 4.4:1, under 4.5:1 by less than 0.3"
+  },
+  {
+    "id": "accessibility-low-contrast",
+    "dimension": "accessibility",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/contrast-ground.html",
+    "line": 11,
+    "title": "Text below WCAG AA contrast on its declared surface",
+    "tellRef": "P16",
+    "evidence": ".note #8a8a8a on the white page ground at 3.5:1"
+  },
+  {
+    "id": "anti-ai-side-stripe-accent",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/side-stripe-cards.html",
+    "line": 11,
+    "title": "Coloured accent stripe on one side of a card",
+    "tellRef": "V3",
+    "evidence": "4px border-left on a rounded .tip card, a 3px inline-start border, a ::before bar, an inset side shadow and border-l-4 border-teal-600"
+  },
+  {
+    "id": "accessibility-text-size-floor",
+    "dimension": "accessibility",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/type-floors.html",
+    "line": 10,
+    "title": "Text below the 12px running / 11px functional floor",
+    "tellRef": "T12",
+    "evidence": ".article p at 11px (running floor 12px), a 10px price note and 10px footer links (functional floor 11px)"
+  },
+  {
+    "id": "visual-tight-leading",
+    "dimension": "visual",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/reading-mechanics.html",
+    "line": 11,
+    "title": "Body leading under 1.3",
+    "tellRef": "T16",
+    "evidence": ".article p: line-height 1.15 at 16px over a long paragraph"
+  },
+  {
+    "id": "visual-wide-tracking",
+    "dimension": "visual",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/reading-mechanics.html",
+    "line": 12,
+    "title": "Running text tracked wider than 0.05em",
+    "tellRef": "T16",
+    "evidence": ".note p: letter-spacing 0.12em on mixed-case running text"
+  },
+  {
+    "id": "visual-justified-narrow-column",
+    "dimension": "visual",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/reading-mechanics.html",
+    "line": 13,
+    "title": "Justified text in a column under 45 characters",
+    "tellRef": "T16",
+    "evidence": ".sidebar-note justified at 22ch with no hyphens"
+  },
+  {
+    "id": "visual-crushed-tracking",
+    "dimension": "visual",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/reading-mechanics.html",
+    "line": 10,
+    "title": "Letter-spacing tight enough that glyphs collide",
+    "tellRef": "T16",
+    "evidence": ".hero h1: letter-spacing -0.1em at 32px"
+  },
+  {
+    "id": "motion-bounce-easing",
+    "dimension": "motion",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/motion-bounce.html",
+    "line": 15,
+    "title": "Bounce or elastic easing",
+    "tellRef": "M2",
+    "evidence": "bounce-in keyframes that reverse twice, cubic-bezier(0.68, -0.55, 0.265, 1.55), animate-bounce"
+  },
+  {
+    "id": "anti-ai-pulsing-dot",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/live-dot.html",
+    "line": 13,
+    "title": "Pulsing status dot",
+    "tellRef": "V11",
+    "evidence": "8px .live-dot pulsing forever beside Live, and an h-2 w-2 rounded-full animate-ping span"
+  },
+  {
+    "id": "accessibility-viewport-zoom-lock",
+    "dimension": "accessibility",
+    "severity": "CRITICAL",
+    "confidence": "Hard defect",
+    "file": "tests/corpus/fixtures/zoom-lock-tabindex.html",
+    "line": 5,
+    "title": "Viewport meta blocks pinch zoom",
+    "tellRef": "P4",
+    "evidence": "viewport meta with maximum-scale=1 and user-scalable=no"
+  },
+  {
+    "id": "accessibility-positive-tabindex",
+    "dimension": "accessibility",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/zoom-lock-tabindex.html",
+    "line": 18,
+    "title": "Positive tabindex overrides the natural focus order",
+    "tellRef": "P12",
+    "evidence": "tabindex 3, 1, 2 and 4 on the four search-form controls"
+  },
+  {
+    "id": "anti-ai-focus-ring-not-visible",
+    "dimension": "anti-ai",
+    "severity": "MEDIUM",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/focus-ring-on-focus.html",
+    "line": 31,
+    "title": "Focus ring on :focus with no :focus-visible variant",
+    "tellRef": "U4",
+    "evidence": "focus:outline-none focus:ring-2 on both buttons, with no focus-visible: variant in either class set"
+  },
+  {
+    "id": "anti-ai-marquee",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/marquee-logos.html",
+    "line": 12,
+    "title": "Marquee that scrolls forever with no pause control",
+    "tellRef": "M4",
+    "evidence": ".track runs an infinite 30s linear loop that carries the logo row 50% sideways, with no pause control"
+  },
+  {
+    "id": "anti-ai-background-pattern",
+    "dimension": "anti-ai",
+    "severity": "LOW",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/pattern-backgrounds.html",
+    "line": 13,
+    "title": "Dot, grid or stripe background pattern behind content",
+    "tellRef": "V9",
+    "evidence": "a hairline grid on a 24px tile behind the page, a 1px dot field on a 16px tile behind the hero, repeating 45deg stripes behind the promo"
+  },
+  {
+    "id": "anti-ai-radial-halo",
+    "dimension": "anti-ai",
+    "severity": "LOW",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/radial-halo.html",
+    "line": 10,
+    "title": "Saturated radial halo behind a section of a dark page",
+    "tellRef": "C11",
+    "evidence": ".hero sits on a cyan radial gradient from 0.8 alpha to transparent on a #0b0b10 page"
+  },
+  {
+    "id": "visual-gray-on-color",
+    "dimension": "visual",
+    "severity": "MEDIUM",
+    "confidence": "Pattern smell",
+    "file": "tests/corpus/fixtures/gray-on-color.html",
+    "line": 10,
+    "title": "Neutral mid-grey text on a chromatic surface",
+    "tellRef": "C7",
+    "evidence": ".promo #d1d5db on #1e40af, and text-gray-300 on bg-blue-800 in one class set"
+  },
+  {
+    "id": "accessibility-skipped-heading",
+    "dimension": "accessibility",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/skipped-heading.html",
+    "line": 18,
+    "title": "Heading level skipped for size",
+    "tellRef": "P9",
+    "evidence": "h1, h2, then h4 Refund timing in the main content"
+  },
+  {
+    "id": "anti-ai-design-system-font",
+    "dimension": "anti-ai",
+    "severity": "HIGH",
+    "confidence": "Quality defect",
+    "file": "tests/corpus/fixtures/design-system/drift.css",
+    "line": 13,
+    "title": "Face set outside the typography DESIGN.md declares",
+    "tellRef": "section 14",
+    "evidence": ".hero sets Lobster; DESIGN.md declares Söhne"
   }
 ]

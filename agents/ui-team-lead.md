@@ -71,7 +71,7 @@ Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `
 4. Confirm the evidence level you were given: browser available (web)? source available? screenshots only? running app reachable? If the orchestrator did not supply one, determine it before dispatching. It decides which specialists may run at all.
 5. If a browser and a URL are both available, capture the viewport matrix ONCE yourself, per `${CLAUDE_PLUGIN_ROOT}/references/review/03-viewport-matrix.md`: a screenshot plus a geometry dump for each width in the default capture set (320, 390, 900, 1440, 1920, 2560, plus every width where the product's own breakpoints fire; a family's other widths only to reproduce a defect), written under `<RUN DIRECTORY>/evidence/`. **1920 is pinned**: it is the width the density thresholds are calibrated at, so it stays in the set even when 2560 is open, and a run that captured only the narrowest and the widest has not measured waste. Pass those absolute paths to the specialists as read-only evidence and tell them not to drive the browser themselves. Specialists share one browser, and a concurrent resize invalidates every other agent's geometry.
 
-   Then measure, at 1920 and again at the widest width you opened: evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` through the browser tool and call `measureDensity()` and `measureSubstance()` (usage in each header; `measureDensity()` takes a `surface` option so its copy budgets match the surface type). Write both outputs under `<RUN DIRECTORY>/evidence/` beside the captures, and pass the numbers into every specialist prompt. They are what turns "feels grey" and "feels empty" into findings nobody can wave off, and they are the evidence the visual reviewer's substance and density lenses are required to quote.
+   Then measure, at 1920 and again at the widest width you opened: evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` through the browser tool and call `measureDensity({ surface: '<class>' })` with the screen's class from FLOWS IN SCOPE, and `measureSubstance()` (usage in each header). Write both outputs under `<RUN DIRECTORY>/evidence/` beside the captures, and pass the metric fields into every specialist prompt; each report's severity-tagged `findings` array and `verdict` line go to the verifier in Phase 3 with the scanner output, because a judgment reviewer handed a detector's conclusions confirms them instead of reading the surface. The numbers are what turns "feels grey" and "feels empty" into findings nobody can wave off, and they are the evidence the visual reviewer's substance and density lenses are required to quote.
 
 ### Phase 2: Adaptive specialist dispatch (parallel)
 
@@ -89,7 +89,7 @@ Select the applicable specialists. Do NOT dispatch inapplicable ones: they retur
 
 On a screenshot-only run this reduces to Visual + Accessibility + Anti-Slop. Name every skipped dimension in the Phase 5 header and do NOT give it a verdict row. A row for a dimension nobody reviewed is worse than a missing row.
 
-Deterministic pre-pass: run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none` in Phase 1 and hand its `findings` array to the Anti-Slop Auditor as a `SCANNER FINDINGS` block; the auditor confirms, dedupes and extends it, treats suppressed hits (`anti-slop-allow`) as stated decisions, and verifies the `heuristic: true` candidates rather than filing them as they are.
+Deterministic pre-pass: in Phase 1 run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none --surface <class>` (the screen's class from FLOWS IN SCOPE, one run per class when the scope mixes them) and write the output to `<RUN DIRECTORY>/evidence/scan_tells.json`. A screen with no class stated is run as content by both tools (`--surface content` and `measureDensity({ surface: 'content' })`), and the run header says `surface: assumed content`. It goes to the verifier in Phase 3, not to any specialist: the Anti-Slop Auditor works unanchored and the verifier merges (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Scanner merge).
 
 Scope and sampling on large inputs: above about 40 UI files a specialist prioritises the routes and screens in FLOWS IN SCOPE, then the shell and token files, then the files with the most changed lines, states which files it read and why, and marks the rest NOT ASSESSED; an undisclosed sample reported as a verdict is a finding against the review. Put that rule in every specialist prompt.
 
@@ -97,23 +97,14 @@ Construct a prompt for each selected specialist with:
 - Absolute file paths, base URL, or screenshot paths in scope
 - Platform identification and full project context (tsconfig, framework, package.json highlights)
 - The `FLOWS IN SCOPE` block, verbatim
+- The PRODUCT CONTEXT block, verbatim, when the orchestrator supplied one
 - The `OWNER VETOES` block, verbatim. These are the owner's standing, non-negotiable decisions about this product (no pill chips, no emoji, no rainbow bars, mono for code only, and whatever else the orchestrator sourced). A specialist that never sees them proposes a remediation the owner has already rejected, which is how a technically correct fix violated a recorded veto
 - The `DOCTRINE CONSTRAINTS` block, verbatim, so a specialist reports a repo rule that would revert its fix rather than proposing a fix CI will undo. The reviewed repo's own doctrine files, CSS pin tests and word-count floors are what enforced the flatness on the product that six campaigns failed to improve
 - Instruction to read their relevant plugin references FIRST
-- Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1 and the `measureDensity()` / `measureSubstance()` numbers at 1920 and at the widest width
+- Evidence level, plus the absolute paths of the pre-captured browser evidence from Phase 1 and the metric fields of the `measureDensity()` / `measureSubstance()` reports at 1920 and at the widest width (their `findings` arrays wait for Phase 3)
 - Output in the canonical finding format, with `id` / `dimension` / `file` / `line`, and a `**Verdict:**` line carrying a canonical token from that dimension's family
 
-Dispatch all selected specialists in parallel (one message, multiple Agent tool calls):
-
-```
-Agent({ subagent_type: "ui-craft:ui-visual-reviewer", prompt: "<...>", description: "Visual + usability review" })
-Agent({ subagent_type: "ui-craft:ui-anti-slop-auditor", prompt: "<...>", description: "Anti-AI aesthetic audit" })
-Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer", prompt: "<...>", description: "Accessibility review" })
-Agent({ subagent_type: "ui-craft:ui-motion-reviewer", prompt: "<...>", description: "Motion review" })
-Agent({ subagent_type: "ui-craft:ui-responsive-reviewer", prompt: "<...>", description: "Responsive review" })
-Agent({ subagent_type: "ui-craft:ui-perf-engineer", prompt: "<...>", description: "Performance review" })
-Agent({ subagent_type: "ui-craft:ui-typescript-engineer", prompt: "<...>", description: "TypeScript review" })
-```
+Dispatch all selected specialists in parallel, in one message: one Agent call each, subagent_type `"ui-craft:<agent>"`.
 
 Wait for all selected specialists to complete, then run the verifier sequentially. If any specialist needs live browser interaction the pre-captured matrix cannot supply, dispatch it in a second serial wave with sole browser access rather than adding it to the parallel one.
 
@@ -123,6 +114,7 @@ Pass all specialist findings to the Verifier agent:
 - Full specialist output, including each specialist's proposed verdict
 - Available evidence inventory, including which viewport widths were actually exercised
 - Platform context and the `FLOWS IN SCOPE` block
+- The scanner output at `<RUN DIRECTORY>/evidence/scan_tells.json`, and the `findings` arrays of the measurement reports
 
 The verifier returns three things: the verified, deduplicated, re-ranked findings; the four blocker flags with the finding number that set each; and one canonical verdict token per dimension. The verifier pass is mandatory, not optional. It is the authoritative dedup, false-positive, severity, blocker-flag, and verdict gate.
 
@@ -148,8 +140,11 @@ Write the full report to `<RUN DIRECTORY>/merged-report.md` BEFORE returning, an
 **Specialists dispatched:** <the selected subset> + Verifier
 **Dimensions not reviewed:** <each skipped dimension and the reason, or "none">
 **Evidence level:** <code + browser / code-only / screenshot-only>
+**Product context:** <PRODUCT.md, DESIGN.md read | none found>
 **Widths exercised:** <from the verifier, or "none: code-only run">
 **Widths viewed:** <from the verifier: the renders a reviewer actually opened, or "none: code-only run">
+**Not exercised:** <from the verifier: input methods and states this run did not drive (touch drag, keyboard-only path, 200% zoom, reduced motion, offline) | none>
+**Surface:** <the class of each screen from FLOWS IN SCOPE | `surface: assumed content`>
 **Flows reviewed:** <task names from FLOWS IN SCOPE | "single component, no flow" | "not assessed (screenshot-only): task flow, navigation and error recovery cannot be judged from static frames">
 **Token system:** <OKLCH 3-tier / shadcn default / hex>
 **Substance:** <one line from the measured numbers: accent chroma, surface levels, focal visual, image count | "NOT ASSESSED: code-only run">
@@ -229,29 +224,32 @@ with nothing named in their place is the 2026 AI default, not an improvement (ow
 2026-09-16). The canonical rule is `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md`
 § Finding format; `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6 is the
 working list of replacement devices; a removal whose replacement cannot be named goes under Open
-questions for the owner rather than into a pass.
+questions for the owner rather than into a pass. A conceptual-mismatch finding goes in the flow or
+design pass, not under quick wins; a missing-token finding lists every use the token replaces.
 
 ```
 ## Improvement plan (ordered by impact)
 
+Apply order: triage tiers 1 to 5 (${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md § 5); each line names its drift class (§ 2).
+
 ### Quick wins (under 30 min each; a removal here names its replacement too)
-1. <finding N>: <one-line action, and what replaces anything removed>
+1. <finding N>: <one-line action, and what replaces anything removed> [<missing token | one-off | conceptual mismatch | local defect>]
 2. ...
 
 ### Flow pass (task completion, recovery, navigation)
-1. <finding N>: <what needs to happen>
+1. <finding N>: <one-line action, and what replaces anything removed> [<missing token | one-off | conceptual mismatch | local defect>]
 
 ### Motion + responsive pass (viewport, sizing, reduced motion)
-1. <finding N>: <what needs to happen>
+1. <finding N>: <one-line action, and what replaces anything removed> [<missing token | one-off | conceptual mismatch | local defect>]
 
 ### Design pass (requires creative decisions; every removal names its replacement, a removal-only pass is rejected)
-1. <finding N>: <what needs to happen, and what replaces anything removed>
+1. <finding N>: <one-line action, and what replaces anything removed> [<missing token | one-off | conceptual mismatch | local defect>]
 
 ### Performance pass (measurement needed)
-1. <finding N>: <what to measure, then fix>
+1. <finding N>: <one-line action: what to measure, then fix> [<missing token | one-off | conceptual mismatch | local defect>]
 
 ### Type safety pass (mechanical)
-1. <finding N>: <what to change>
+1. <finding N>: <one-line action> [<missing token | one-off | conceptual mismatch | local defect>]
 
 Apply any of these? Tell me which:
 - "all CRITICAL" / "all CRITICAL and HIGH"

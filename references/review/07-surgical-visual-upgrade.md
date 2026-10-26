@@ -50,9 +50,22 @@ Read every file first. Per file, record: sacred elements, slop elements, and a r
 
 Extract the current values across seven layers -- tokens, typography, spacing, color usage, components, atmosphere, motion -- as the "before" sheet. The gap between that sheet and the target is the whole work order, and it keeps the upgrade honest: every change traces to a named defect.
 
+**Classify each defect before prescribing its cure.** The class says where the fix lands:
+
+| Drift class | What it is | Where the fix lands |
+|---|---|---|
+| Missing token | The system needs a reusable value it lacks (a third surface level, a focus colour, a radius) | The token layer (section 3), then every use reads it |
+| One-off implementation | A shared component or pattern exists and this element reinvented it | Swap to the shared component; class values only on a high-risk file |
+| Conceptual mismatch | The flow, information architecture or hierarchy differs from comparable areas of the same product | Not an override fix. The finding goes to the flow or design pass and to the owner, because restyling it is a redesign smuggled into an upgrade; say so instead of patching it |
+| Local defect | The element is incomplete or inconsistent with itself | In place, in the override stylesheet |
+
+Fix at the narrowest level that removes the cause. A value becomes a token when it recurs three or more times with the same intent (the concentration bar D1 uses); one local exception stays local. Upgrade is refinement: when the concept itself is wrong, the report says so and recommends the design pass.
+
+(after impeccable's polish method, Apache-2.0)
+
 ## 3. Prescription: tokens first
 
-For every recorded defect, prescribe the replacement BEFORE editing, as a token system (this library's token discipline: `design/09-token-drift-and-retints.md`; palette construction: `design/01-color-oklch.md`). Tokens are the highest-leverage change -- every component referencing them upgrades at once. Prescription rules:
+For every recorded defect, prescribe the replacement BEFORE editing, as a token system (this library's token discipline: `design/09-token-drift-and-retints.md`; palette construction: `design/01-color-oklch.md`). Tokens are the change with the widest reach: every component referencing them upgrades at once. Prescription rules:
 
 - Internal consistency: warm background with warm near-black text and warm borders -- never mixed temperatures.
 - The accent is chosen from brand context, never another framework default (swapping Bootstrap blue for Tailwind indigo resets the clock, per `catalogue/01-ai-tells.md`).
@@ -74,6 +87,10 @@ Framework variants of the same move:
 ## 5. Surgical order and rules
 
 Apply in layers, testing between each: tokens -> typography -> color -> spacing -> components -> atmosphere -> motion.
+
+**Apply order across findings.** Triage tiers first, layers within a tier: (1) broken or blocked tasks, data loss, misleading state, inaccessible paths; (2) missing loading, empty, error, success, disabled and permission states; (3) flow, hierarchy, responsive and design-system drift; (4) visual and motion inconsistency; (5) code and asset cleanup. Inside a tier the layer order above holds. A pass that perfects one corner while a tier-1 defect stays open elsewhere on the path is out of order. Tiers 1 and 2 are functional fixes: they may change markup and logic, each verified by its own test or flow walk, and sit outside section 3's class-values-only rule, which governs tiers 3 to 5.
+
+(after impeccable's polish method, Apache-2.0)
 
 | Rule | Why |
 |---|---|
@@ -112,6 +129,12 @@ The recurring generic-default defects and their cures (framework-default example
 | Icon-cards standing in for imagery | The real subject: screenshots, product shots, photography, commissioned illustration, the domain's own entity icons. One real image or figure per two sections |
 | A hairline at 0.10 alpha or less as the only boundary on dark | Raise the alpha until the edge measures 1.3:1 against both surfaces, or replace it with a one-sided rim light plus a tint step that measures 1.15:1 |
 | A prose blob above the tool | The product first: H1, identity block, one lede inside the surface's budget, one action. The explanation moves below the primary content into a headed section, or behind a `details` whose summary names what is inside |
+
+## 8. Scanner and hook findings on code you just wrote
+
+A scanner or hook finding is defect evidence, not proof of quality, and a clean scan is not a design review. Triage each finding on code you wrote. A real problem is fixed in the same pass, with the remediation the finding names and inside the remediation floor. A confident false positive, or a device the brief, the visual reference or a recorded owner decision names, takes the one waiver you may add yourself: `anti-slop-allow: <who decided: evidence>` on that line or the line above, disclosed in your reply, with `user confirmed` in a reason only when the user did. Anything wider (an `ignore` entry in `.claude/ui-craft/hook.json`, turning the hook off, a waiver whose reason you would have to invent) is the user's decision. When you cannot tell which case you are in, leave the line and ask the user in one line. A waiver never stands in for a fix you could make.
+
+(after impeccable's hook triage policy, Apache-2.0)
 
 ## See also
 

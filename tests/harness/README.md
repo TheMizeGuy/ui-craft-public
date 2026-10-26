@@ -5,8 +5,14 @@ review's known tells ui-craft actually catches. It turns "the catalogue looks
 good" into two numbers: recall and precision against ground truth, both gated at
 `>= 0.8`.
 
-- Corpus: `../corpus/fixtures/*` (HTML, CSS and TSX fixtures) + `../corpus/labels.json` (ground truth).
+- Corpus: `../corpus/fixtures/*` (HTML, CSS, TS and TSX fixtures) + `../corpus/labels.json` (ground truth).
 - Scorer: `score-review.mjs` (node >= 18, stdlib only, no installs).
+- Blind copy: `blind-copy.mjs` writes every fixture outside the repo with its comments
+  removed, so a dispatched auditor reads code, not the fixtures' own explanations
+  (`node tests/harness/blind-copy.mjs --selftest` checks it).
+- Merge: `merge-findings.mjs` merges an auditor run with the scanner's output into the
+  pipeline's findings, and derives the judgment-only view
+  (`node tests/harness/merge-findings.mjs --selftest` checks it).
 - Worked example of a findings file: `examples/sample-findings.json`.
 - Degenerate input the gate must reject: `examples/tellref-stubs.json`.
 - The scorer's own tests: `selftest.mjs` (`node tests/harness/selftest.mjs`).
@@ -55,11 +61,18 @@ rules exist to prevent.
 Run a ui-craft review over the corpus and capture its findings as a JSON array.
 Two ways:
 
-- **Dispatch the auditor directly** (fastest, single-dimension). Dispatch
-  `ui-anti-slop-auditor` (a `general-purpose` agent with the auditor body inlined)
-  and point it at `tests/corpus/fixtures/`. Instruct it, verbatim:
+- **Dispatch the auditor directly** (fastest, single-dimension). First write the
+  blind copy to a scratch directory outside the repository:
 
-  > Audit every file in `tests/corpus/fixtures/` (HTML, CSS and TSX) against the internal
+  ```bash
+  node tests/harness/blind-copy.mjs "$(mktemp -d)/fixtures"
+  ```
+
+  Then dispatch `ui-anti-slop-auditor` (a `general-purpose` agent with the auditor
+  body inlined) and point it at that directory. Instruct it, verbatim, with `<dir>`
+  replaced by the directory:
+
+  > Audit every file in `<dir>` (HTML, CSS, TS and TSX) against the internal
   > catalogue (`references/catalogue/01-ai-tells.md`). Emit a single JSON array of
   > findings and nothing else. Each finding object uses the canonical shape:
   > `{ "id": "<dimension>-<kebab-slug>", "dimension": "anti-ai", "severity": "...",
@@ -67,6 +80,15 @@ Two ways:
   > "evidence": "...", "tellRef": "<catalogue code, e.g. V5, L6, section 12>" }`.
   > Set `file` to the fixture's filename and `tellRef` to the catalogue code the
   > finding maps to. Do not read `labels.json`.
+
+  Since 0.7.0 the auditor no longer runs `scripts/scan_tells.mjs` itself: the
+  orchestrator holds the scanner's output and merges it after the specialists return
+  (`references/review/04-verdicts-and-verification.md` § Scanner merge). A dispatched
+  run therefore measures judgment alone, and the pipeline number below adds the
+  scanner back. The copy keeps file names, because the scorer buckets findings by
+  fixture basename, and it keeps any comment that carries an `anti-slop-allow` or
+  `unslop-ignore` marker, because a marker is a stated decision the auditor is meant
+  to honour. Line numbers shift in the copy; the scorer never reads `line`.
 
 - **Run the skill** `/ui-craft:review-ui` against `tests/corpus/fixtures/` and have
   the run write its merged findings array to a file in the same canonical shape.
@@ -117,17 +139,66 @@ Try it now against the shipped example:
 node tests/harness/score-review.mjs tests/harness/examples/sample-findings.json
 ```
 
+The answer key is held to exactly 1.000 recall and 1.000 precision at release
+(`--min-recall 1 --min-precision 1`): it is written against the labels, so anything
+below 1.000 means a label was added without its row, never a detection result.
+
+### The pipeline number
+
+The number a release gates on is the auditor's blind run merged with the scanner,
+which is what a review actually delivers:
+
+```bash
+T="$(mktemp -d)"
+node scripts/scan_tells.mjs $(find tests/corpus/fixtures -type f ! -name 'DESIGN.md' | sort) --format json --fail-on none > "$T/scan.json"
+node tests/harness/merge-findings.mjs tests/corpus/<baseline file> "$T/scan.json" > "$T/merged.json"
+node tests/harness/score-review.mjs "$T/merged.json"
+```
+
+`merge-findings.mjs` applies the merge mechanically: per fixture and normalised
+tellRef, a finding both halves made counts once, a scanner finding the auditor did
+not make is added unless it is a heuristic candidate, and the auditor's own findings
+stay. It skips the verifier's reading of each scanner-only line (the step that
+removes a hit inside a comment or a string that never renders), so its precision is
+a lower bound on the merge a real review performs. The scanner alone is the third
+reading, from the same `scan.json`: `node tests/harness/score-review.mjs "$T/scan.json"`.
+
+Two accounting rules apply to every reading. A label names a tell once per
+fixture and class, so a further finding that names a tell already matched on the
+same fixture (at the same class, when the fixture labels the tell more than once)
+is an instance of that detection: reported on its own `instances` line, left out
+of the precision denominator, and never folded on a clean control, which has no
+hit to fold into. And a title needs three meaningful tokens to count as a located
+defect, where a two-character token with a digit (`h2`, `4px`) is meaningful.
+
+### The judgment-only number
+
+The labels the scanner cannot see are the ones only judgment can find:
+
+```bash
+node tests/harness/merge-findings.mjs judgment tests/corpus/<baseline file> "$T/j"
+node tests/harness/score-review.mjs "$T/j/findings.json" --labels "$T/j/labels.json"
+```
+
+The view drops every label and finding whose tellRef `scan_tells.mjs` covers
+(`COVERED_TELLS`), gives a former positive left with no label a tolerance of 99 so
+only real clean controls keep theirs, and writes both files to the directory named;
+`labels.json` itself is never edited. This number is reported, not gated, while the
+subset is small: one miss among a handful of labels moves it by a quarter. It gates
+at `>= 0.8` once the subset holds ten or more labels.
+
 ### Which number is the baseline
 
-Five findings files ship. Two of them are live -- the answer key and the current
-blind baseline -- and they measure different things, so neither on its own is "the"
-recall of the plugin. The other three are frozen history and gate nothing. Do not
-conflate them.
+Several findings files ship. Two of them are live, the answer key and the current
+blind baseline, and they measure different things, so neither on its own is "the"
+recall of the plugin. The rest are frozen history and gate nothing. Do not conflate
+them.
 
 | File | What it is |
 |---|---|
-| `examples/sample-findings.json` | The **answer-key ceiling**: a hand-authored findings file written against `labels.json`. It is the best score the labels permit, and its misses are label-granularity artifacts, not detection failures. No agent produced it, so it is not evidence of detection. |
-| `../corpus/baseline-2026-09-22.json` | The **current committed blind baseline**: a real run of the `ui-anti-slop-auditor` body over every fixture in the 0.6.0 corpus with every answer key kept out of context. This is the measured number, and the one a detection regression is judged against. It clears both thresholds and fails one clean control, on purpose: that failure is a live over-fire report against a detection rule, not a corpus defect. Its score and readings are in the dated section below. |
+| `examples/sample-findings.json` | The **answer-key ceiling**: a hand-authored findings file written against `labels.json`, one row per label. It is the best score the labels permit, held at exactly 1.000 / 1.000. No agent produced it, so it is not evidence of detection. |
+| `../corpus/baseline-2026-10-26.json` (0.7.0) | The **current committed blind baseline**: the 0.7.0 `ui-anti-slop-auditor` body, which no longer runs the scanner, over the blind copy of every fixture. On its own it is the judgment half; the release gates the pipeline number, this file merged with the scanner (above). Its readings are in the dated section below. |
+| `../corpus/baseline-2026-09-22.json` | **Superseded, kept as history.** The 0.6.0 blind run, which scored recall 0.958 / precision 0.92 against the 48-label corpus of 0.6.8. It measured an auditor that ran the scanner itself as its first pass, over fixtures whose comments name their answers, so it is a pipeline reading taken with the answer partly in view and is not like for like with the 0.7.0 run. Do not gate on it. |
 | `../corpus/baseline-2026-09-01.json` | **Superseded, kept as history.** The 0.5.0 blind run over 21 fixtures, which scored recall 0.828 / precision 0.960 against the 29-label corpus of its day. It predates everything added in 0.6.0, so against the current 46-label corpus it reads 0.500 / 0.920. That drop is the corpus growing, not detection getting worse. Do not gate on it. |
 | `../corpus/baseline-2026-07-27.json` | **Superseded, kept as history.** The 0.3.0 blind run over 15 fixtures. It scored recall 0.917 / precision 0.957 against the 24-label corpus after the 2026-09-01 label split (0.900 / 0.783 before it) and predates every fixture added since, so against the current corpus it reads 0.457 / 0.913. Do not gate on it. |
 | `../corpus/baseline-0.1.2.json` | **Superseded, kept as history.** The 0.1.2 blind run, captured against an 18-label corpus. It reads 0.304 / 0.933 against the current corpus, well below threshold, only because it predates thirty fixtures, the 2026-09-01 label split and everything added in 0.6.0. Do not read that as a regression and do not gate on it. |
@@ -158,7 +229,54 @@ findings from the baseline" under the 2026-09-01 label split). The answer key is
 the exception: it is regenerated against the current labels, so it is the one
 file that is kept at precision 1.
 
-#### Blind baseline, 2026-09-22 (0.6.0 corpus, 40 fixtures)
+#### Blind baseline, 0.7.0 (blind copy, unanchored auditor)
+
+The first run of the auditor without the scanner in its prompt, over a copy of the
+fixtures with every comment removed (`blind-copy.mjs`), dispatched with the prompt
+above, which names every file type. Three changes separate it from the 2026-09-22
+run, so the two are not like for like: the auditor no longer starts from the
+scanner's findings, the fixtures no longer explain their own answers in comments,
+and the prompt no longer omits the TS fixture, which the earlier run had to score by
+a second dispatch. Each reading below comes from the commands under "The pipeline
+number" and "The judgment-only number".
+
+| Reading | Recall | Precision | Status |
+|---|---|---|---|
+| Auditor alone (the baseline file) | 0.884 | 0.984 | reported |
+| Pipeline: auditor merged with `scan_tells.mjs` | 0.957 | 0.943 | **gated** at `>= 0.8` / `>= 0.8` by the release script |
+| Scanner alone | 0.928 | 0.970 | reported |
+| Judgment-only labels | 0.500 (2 of 4) | 1.000 | reported until the subset holds ten labels |
+
+`../corpus/baseline-2026-10-26.json` is that run: 77 findings from one dispatch
+(model class opus) on 2026-10-26 over the 72-file blind copy of the 0.7.0 corpus
+(71 fixtures and the `design-system/` DESIGN.md). Two scorer rules came out of
+this run's pairing failures, both stated under "The pipeline number" and pinned
+by the selftest: a further finding that names a tell already matched on the same
+fixture and class is an instance, not a false positive (the auditor filed one
+finding per side stripe, emoji shape and type floor where the corpus labels each
+tell once; 15 instances here), and a two-character title token with a digit
+counts toward the substance floor (`Heading jumps from h2 to h4` had been
+excluded as a stub, which cost the P9 hit). Before those two rules the same
+findings read 0.870 / 0.779 alone and 0.942 / 0.765 merged. Nothing in the
+auditor, the labels or the scanner was edited against the run.
+
+Reading the eight misses of the auditor alone: five are one finding covering two
+labels (gradient-hero's C5 named inside its V5 finding, shadcn-card-kit's
+Strongest-10 #1 inside its S3 finding, Inter on content copy named inside the
+cream findings on legacy-marketing-page and cream-serif-sage, and
+legacy-theme.css's three defects in one finding), misses by design under
+one-finding-one-label; two are real, orphan-paragraphs' L14 and motion-rhythm's
+M6, where the auditor filed nothing; one was the P9 substance exclusion, now
+paired. The one false positive is presence-single's GT Sectra beside a
+terracotta accent, read as the serif-plus-clay pair; the scanner's serif leg
+counts the reflex faces the tell names and stays silent there, and the catalogue
+text is left as it is rather than changed against a run. The pipeline's three
+misses are L14, M6 and legacy-theme's second L13; its four unmatched findings
+are that pair, the auditor's indigo-to-violet CTA gradient on marketing-defaults
+(the scanner's own C3 finding had taken the label) and the scanner's two known
+extras on gallery-unlabelled and hero-scroll-poster.
+
+#### Blind baseline, 2026-09-22 (0.6.0 corpus, 40 fixtures, superseded)
 
 > 0.6.2 added a 41st fixture, `mono-readouts.ts` (T13), after this run. It was scored
 > by a separate blind dispatch of the auditor the same day (one finding, T13 at
@@ -194,24 +312,27 @@ enumerated labels) and M6 on `motion-rhythm.html`, a genuine miss of an absence
 (decorative transitions with no `prefers-reduced-motion` handling in either
 direction) worth watching at the next run.
 
-**The four unmatched findings, all correct.** T1 on `cream-serif-sage.html`
-(the fixture declares Inter as its only sans face; the copied label set never
-enumerated it); alternative text on `gallery-unlabelled.html` (a real defect the
-auditor files under `accessibility` with WCAG 1.1.1, which no catalogue row
-names, so no label can cite it); D1 on `legacy-theme.css` (repeated literal
-radii with no radius identity; the port dropped that label because the literals
-are 6px and 12px rather than the row's 8px and 10px example, and the auditor read
-the row by its rule, not its example); and the same-span fold's other half. None
-is noise: a finding a label cannot cite lowers precision without lowering the
-review's value, which is why the selftest holds the blind baseline to the gate
-threshold rather than to 1.
+**The four unmatched findings.** T1 on `cream-serif-sage.html` is not a correct
+reading under the label contract: the fixture sets Inter only on its `.btn` control
+while the content face is the declared serif, and catalogue T1's UI-label fallback
+permits a reflex face on a control label when the page declares another primary face
+for content, which is why the fixture's label note lists it as an accepted
+incidental. The other three are correct readings the labels cannot cite: alternative
+text on `gallery-unlabelled.html` (a real defect the auditor files under
+`accessibility` with WCAG 1.1.1, which no catalogue row names, so no label can cite
+it); D1 on `legacy-theme.css` (repeated literal radii with no radius identity; the
+port dropped that label because the literals are 6px and 12px rather than the row's
+8px and 10px example, and the auditor read the row by its rule, not its example); and
+the same-span fold's other half. None of those three is noise: a finding a label
+cannot cite lowers precision without lowering the review's value, which is why the
+selftest holds the blind baseline to the gate threshold rather than to 1.
 
 
 ### Verify the scorer itself
 
 ```bash
 node tests/harness/selftest.mjs
-# -> 23 passed, 0 failed (exit 0)
+# -> N passed, 0 failed (exit 0)
 ```
 
 `selftest.mjs` tests the **scorer**, not the corpus. Every deterministic case
@@ -387,10 +508,10 @@ has ever scored is an assertion, not ground truth.
 *clean control* is clean against that corpus's rules, not against this catalogue, so
 every ported control has to be re-read against the larger rule set before it is given
 a tolerance; `../corpus/labels.json` records the measurement behind each one.
-Second, the ported files are not all HTML: four are raw stylesheets and one is a TSX
-component, so any run that globs `fixtures/*.html` scores five fixtures fewer than it
-reports. The dispatch instruction in "The two-step loop" above still says `.html` and
-should be read as "every file in `tests/corpus/fixtures/`".
+Second, the ported files are not all HTML: some are raw stylesheets, one is a TSX
+component and one is a TS module, so any run that globs `fixtures/*.html` scores
+fewer fixtures than it reports. The dispatch instruction in "The two-step loop" above
+names every type for that reason.
 
 Five anti-slop tells are deliberately dropped for having no ui-craft home, and
 `labels.json` `meta.droppedTells` states each one: `z-index-escalation` (the catalogue
@@ -543,7 +664,7 @@ Stated plainly so nobody reads a green run as broader assurance than it is:
   since gained responsive labels. Accessibility, motion, visual, performance,
   typescript and usability still have little or no mechanical regression
   coverage, so a green run says nothing about them.
-- **One page at a time.** Every fixture is a single static HTML file, so nothing
+- **One page at a time.** Every fixture is a single static file, so nothing
   in the corpus can exert pressure on flow, task completion, or navigation. A
   usability regression is invisible here by construction.
 - **No unattended runner.** Producing a findings file requires a Claude agent

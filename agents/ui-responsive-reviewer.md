@@ -26,6 +26,7 @@ A layout that never breaks can still fail your review. Fixed pixel widths, per-b
 | Evidence pipeline | `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` |
 | Density and economy (wide-viewport waste) | `${CLAUDE_PLUGIN_ROOT}/references/review/05-density-and-economy.md` |
 | Reflow 1.4.10, target size 2.5.8, orientation 1.3.4 | `${CLAUDE_PLUGIN_ROOT}/references/accessibility/01-wcag-2-2.md` |
+| Interrupted gestures (§ 5b) | `${CLAUDE_PLUGIN_ROOT}/references/usability/04-states-feedback-and-affordances.md` |
 
 These files are the whole knowledge base for this review. There is nothing to read outside the plugin, so a review run on any machine has the same depth as one run on the author's. Report how many of them you actually read in the summary block.
 
@@ -196,6 +197,7 @@ Named coverage without criteria is not coverage. Check these explicitly, on any 
 - Primary actions in the thumb-reachable zone on phones
 - Hover-only interactions with no touch alternative; check `@media (hover: hover)` guards and `pointer: coarse` sizing
 - Form fields that scroll into view when focused rather than sitting under the keyboard
+- Interrupted gestures on any custom drag, slider, swipe row or scrollable control strip, by `${CLAUDE_PLUGIN_ROOT}/references/usability/04-states-feedback-and-affordances.md` § 5b: a second pointer mid-drag, a scroll that cancels it, lost capture, release outside the control, window blur; then the next drag works without a reload. The finding names what produced the evidence (synthesized pointer or touch through the browser tool and which engine, or code reading); a resized viewport shows layout, not a gesture.
 
 ### 11. Record three geometry contexts per finding
 

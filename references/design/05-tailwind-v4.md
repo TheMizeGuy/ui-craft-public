@@ -37,8 +37,9 @@ Replaces `tailwind.config.ts`. Every CSS variable in `@theme` becomes both a run
 @theme {
   /* Color tokens: generate bg-brand, text-brand, border-brand, etc.
      The hue is a project decision; 95 here is a worked example chosen outside
-     the 250-285 indigo/purple and ~180 teal bands that read as unconsidered
-     defaults (references/aesthetic/03-taste-checklist.md item 1.3). */
+     the AI purple window (hue 255-325 at chroma 0.15 or more, catalogue C3) and
+     the ~182 teal band that read as unconsidered defaults
+     (references/aesthetic/03-taste-checklist.md item 1.3). */
   --color-brand:       oklch(0.58 0.20 95);
   --color-brand-50:    oklch(0.97 0.02 95);
   --color-brand-500:   oklch(0.58 0.20 95);

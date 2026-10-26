@@ -33,7 +33,7 @@ Verify the kit works before adopting it:
 
 ```bash
 bash ci/selftest.sh
-# -> 40 passed, 0 failed (exit 0)
+# -> N passed, 0 failed (exit 0)
 ```
 
 ## Which sha the artifact names

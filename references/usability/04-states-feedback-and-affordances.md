@@ -158,6 +158,33 @@ or that is clickable but never receives focus, is a finding
 }).map((el) => ({ tag: el.tagName, cls: el.className, text: el.textContent.trim().slice(0, 40) }));
 ```
 
+## 5b. Gestures survive interruption
+
+Custom drag surfaces, sliders, swipe rows, carousels and scrollable control
+strips fail in moments a happy-path test never produces. Each survives the
+interruptions below, and the next tap or drag works without a reload.
+
+| Interruption | Correct behaviour | Code tell when it fails |
+|---|---|---|
+| A second finger or pointer lands mid-drag | The first drag keeps its own pointer id or ends cleanly; it never jumps to the new pointer | Handlers read `clientX` without checking `pointerId` |
+| The browser takes the gesture to scroll (`pointercancel`) | Drag state clears and capture is released | No `pointercancel` handler; no `touch-action` on the drag surface |
+| Capture lost (`lostpointercapture`) or release outside the control | Drag state clears and capture is released | No `setPointerCapture`, or `pointerup` bound on the element only |
+| The window loses focus mid-drag (`blur`, `visibilitychange`) | Drag state clears and capture is released | Nothing listens on `window` |
+| Mouse-only input | Pointer events, a single-pointer non-drag alternative (WCAG 2.5.7) and a keyboard path (WCAG 2.1.1) for every drag | `mousedown` and `mousemove` only |
+
+**Evidence.** A rendered viewport or a screenshot shows layout, never a
+gesture. Exercise the gesture with a driven input, and say which input produced
+the evidence and which interruptions stayed untested
+(`references/review/02-evidence-pipeline.md` § Evidence rules for findings).
+
+**Severity.** A drag that stays stuck until reload after any row is HIGH when a
+driven input shows it; a finding from the code-tell column alone carries
+`[unverified: runtime measurement needed]` at MEDIUM
+(`references/review/02-evidence-pipeline.md` § Evidence status). On a path
+named in FLOWS IN SCOPE a driven-input HIGH sets `core_task_blocker`.
+
+(after impeccable's harden reference, Apache-2.0)
+
 ## 6. Disabled state anti-patterns
 
 Disabled is overused because it looks like safety. It is usually a way of
@@ -245,6 +272,7 @@ state without a test harness.
 | Conflict | Open the same record in two tabs, save in both |
 | Partial failure | Return a mixed-result payload from the interceptor |
 | Extreme content | One item, 10,000 items, a 300-character name, an emoji-only name, an RTL string, a 3-digit and a 12-digit number |
+| Interrupted gesture | Start a drag, then land a synthesized second pointer, scroll across the control, release outside it and blur the window; after each one, drag again (section 5b) |
 
 ```js
 // Force failures without a proxy: patch fetch for the tab
@@ -265,7 +293,7 @@ screenshot of.
 | Severity | State, feedback and affordance defects |
 |---|---|
 | CRITICAL | An error state that loses the user's work with no recovery; an infinite loading state with no timeout on the primary path; an interactive element with no signifier at all on a required action; a permission or error screen that is a dead end on the primary path |
-| HIGH | Missing empty state on a surface that starts empty; missing error state on an operation that can fail; a control with no feedback within 100ms of a press; unlabelled loading on a full-screen wait; disabled submit with no explanation; clickable elements that are not focusable (CRITICAL for a `div`-with-onClick on a required action, `references/catalogue/01-ai-tells.md` P8); optimistic update that fails silently; partial failure rendered as success; hover-only affordance for a primary action |
+| HIGH | Missing empty state on a surface that starts empty; missing error state on an operation that can fail; a control with no feedback within 100ms of a press; unlabelled loading on a full-screen wait; disabled submit with no explanation; clickable elements that are not focusable (CRITICAL for a `div`-with-onClick on a required action, `references/catalogue/01-ai-tells.md` P8); optimistic update that fails silently; partial failure rendered as success; hover-only affordance for a primary action; a drag that stays stuck until reload after an interruption, shown with a driven input (section 5b) |
 | MEDIUM | First-run empty copy shown for zero results; a single loader flashing on a sub-300ms load (systemic absence of a delay wrapper is HIGH, `references/performance/06-perceived-performance.md`); skeleton shape unrelated to the content; a 1 to 10 second operation with no step naming; refresh replacing existing content with a skeleton; disabled state with unreadable contrast; selection conveyed by color alone; a counting total displayed as final |
 | LOW | Spinner style inconsistent between surfaces; `aria-busy` missing where the visual state is already clear; empty state without an illustration where the product elsewhere uses them; undo toast timing slightly short |
 | TASTE | Illustration style in empty states; wording alternatives that are equally actionable |
@@ -285,4 +313,5 @@ screenshot of.
 | `useOptimistic` and cache rollback | `references/performance/02-react-19-perf.md`, `references/architecture/02-state-architecture.md` |
 | Live regions, `aria-busy`, announcement of state change | `references/accessibility/04-screen-reader.md` |
 | Focus visibility and keyboard reachability of affordances | `references/accessibility/02-keyboard-focus.md` |
+| Drag alternatives (2.5.7) and keyboard paths (2.1.1) for gestures | `references/accessibility/01-wcag-2-2.md` |
 | Reduced-motion handling for loaders and transitions | `references/accessibility/03-motion-reduce.md` |

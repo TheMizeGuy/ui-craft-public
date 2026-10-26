@@ -93,10 +93,12 @@ function read(path, kind) {
 // ---- section 18 -----------------------------------------------------------
 // Returns Map<code, Set<class>>. A code can legitimately land in two classes:
 // section 18 rates U3 CRITICAL as `outline: none` with no `:focus-visible`
-// replacement and MEDIUM as an untouched browser-default ring, and it names
-// S12 and L10 in the HIGH row's stats-row scoping clause while rating S12 LOW
-// in its own row. Both readings are real, so the contract accepts either and
-// prints the code as ambiguous rather than resolving it silently in labels.json.
+// replacement and MEDIUM as an untouched browser-default ring, and P16 HIGH
+// below the AA bar and LOW within 0.3 of it (decision D3). Both readings are
+// real, so the contract accepts either and prints the code as ambiguous rather
+// than resolving it silently in labels.json. S12 is LOW: the HIGH row's
+// stats-row clause scopes it the way section 11 does, one demo value LOW and
+// the whole composition HIGH under L10.
 function parseSeverityTable(markdown, cataloguePath) {
   const start = markdown.indexOf('## 18. Severity Classification');
   if (start === -1) die(`'${cataloguePath}' has no '## 18. Severity Classification' heading`, 2);

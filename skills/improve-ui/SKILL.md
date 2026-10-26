@@ -36,7 +36,7 @@ Check for the prior ledger as § Run setup describes, before gathering context. 
 
 ## Step 2: Pre-flight context
 
-This is the full treatment. Detect the platform (web, iOS, Android, or screenshot-only), then gather everything the Step 3 `PROJECT CONTEXT` block asks for: framework and versions with all relevant deps, every tsconfig strictness flag, the full token system, the linter, font, icon and image usage, perf tooling, the component and route inventory, the workspace root, and the short commit sha, which the Step 5 CI artifact requires.
+This is the full treatment. Detect the platform (web, iOS, Android, or screenshot-only), then gather everything the Step 3 `PROJECT CONTEXT` block asks for: framework and versions with all relevant deps, every tsconfig strictness flag, the full token system, the linter, font, icon and image usage, perf tooling, the component and route inventory, the workspace root, and the short commit sha, which the Step 5 CI artifact requires. Product context: PRODUCT.md and DESIGN.md per `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Product context files.
 
 ### Step 2a: Establish the evidence level (do not guess it)
 
@@ -52,6 +52,7 @@ FLOWS IN SCOPE:
   Entry: <route / screen / URL>
   Steps: 1. <step> (<file>) -> 2. <step> (<file>) -> 3. <step> (<file>)
   Success: <what the user sees when it works>
+  Surface: <control | content | marketing | article> (${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md § 3; classify the screen, not the product)
 (or "single component, no multi-step flow in scope")
 ```
 
@@ -79,7 +80,7 @@ DOCTRINE CONSTRAINTS:
 (or "none found")
 ```
 
-**Owner vetoes.** Standing decisions about this product that no remediation may land on. Source them in this order, taking the first that exists and merging in anything a later source adds: the reviewed repo's `design/POV.md` (`## Banned (concrete)` and `## Must be present`), the UI section of its `CLAUDE.md` or `AGENTS.md`, then `.claude/ui-craft/vetoes.md` if present.
+**Owner vetoes.** Standing decisions about this product that no remediation may land on. Source them in this order, taking the first that exists and merging in anything a later source adds: the reviewed repo's `design/POV.md` (`## Banned (concrete)` and `## Must be present`), the UI section of its `CLAUDE.md` or `AGENTS.md`, then DESIGN.md's Do's and Don'ts and named rules and PRODUCT.md's brand commitments, quoted, then `.claude/ui-craft/vetoes.md` if present.
 
 ```
 OWNER VETOES (standing decisions, not taste; a finding does not re-litigate them):
@@ -94,7 +95,7 @@ conflict. Never propose a vetoed device with a justification attached.
 
 ## Step 3: Construct the team lead prompt
 
-**Deterministic pre-pass.** The team lead runs `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the UI files in scope> --format json --fail-on none` (files only; pipe a list for a large scope) in Phase 1 and passes its `findings` array to `ui-craft:ui-anti-slop-auditor` as a `SCANNER FINDINGS` block. The auditor confirms, dedupes and extends them with the structural tells no regex can see; it never re-derives what the scanner already found, and a suppressed hit (an `anti-slop-allow` reason on the line) is a stated decision listed under Scope, never a finding. The scanner's `heuristic: true` candidates (T15 single-word accents, W11, I8, V13) are pointers for the auditor to verify, not findings in their own right.
+**Deterministic pre-pass, merged at the verifier.** The team lead runs `scan_tells.mjs` in Phase 1 (`--format json --fail-on none --surface <class>`, files only, one run per class from FLOWS IN SCOPE), writes the output to `<RUN DIRECTORY>/evidence/scan_tells.json`, and hands it to `ui-verifier` with the specialist reports in Phase 3. The specialists, the anti-slop auditor included, review without it; the verifier merges the two by `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Scanner merge. The measurement scripts' `findings` arrays travel the same way: specialists get the numbers, the verifier gets the findings.
 
 **Scope and sampling on large inputs.** A 200-file scope does not get 200 equally shallow reviews. Above about 40 UI files, prioritise in this order: the routes and screens named in FLOWS IN SCOPE, then the shell and token files, then files with the most changed lines, then the rest; say which files were read and why, and mark everything unread NOT ASSESSED in the summary block. An undisclosed sample reported as a verdict is itself a finding against the review. The team lead carries the rule into every specialist prompt.
 
@@ -135,6 +136,8 @@ PROJECT CONTEXT:
 - Page/route count: <N>
 - Perf tooling: <web-vitals / vercel-analytics / lighthouse-ci / none>
 
+PRODUCT CONTEXT: <PRODUCT.md and DESIGN.md excerpts | none found>
+
 USER GOAL: <user's words verbatim, e.g. "make this god tier", "improve for launch", "thorough audit">
 
 PRIOR LEDGER: <findings from `.claude/ui-craft/last-review.json` if one was loaded in Step 1, else "none">
@@ -155,15 +158,18 @@ TASK:
 3. If a browser and a URL are both available, capture the default viewport set ONCE yourself
    (1920 is pinned in it: the density thresholds are calibrated there), then evaluate
    ${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js and
-   ${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js and call measureDensity() and
-   measureSubstance() at 1920 AND at the widest width you opened. Write both outputs under
-   <RUN DIRECTORY>/evidence/ and pass the numbers into every specialist prompt. Without them,
+   ${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js and call measureDensity({ surface: '<class>' })
+   and measureSubstance() at 1920 AND at the widest width you opened. Write both outputs under
+   <RUN DIRECTORY>/evidence/ and pass their metric fields into every specialist prompt; hold
+   each report's `findings` array and `verdict` line for the verifier. Without the numbers,
    every substance and density finding sits at TASTE.
-4. Each specialist gets the full PROJECT CONTEXT, FLOWS IN SCOPE, DOCTRINE CONSTRAINTS and
-   OWNER VETOES above, plus the measured numbers from step 3.
+4. Each specialist gets the full PROJECT CONTEXT, PRODUCT CONTEXT, FLOWS IN SCOPE, DOCTRINE
+   CONSTRAINTS and OWNER VETOES above, plus the measured numbers from step 3.
 5. Wait for all specialists.
-6. Run ui-verifier LAST on the merged findings. It returns the verified findings, the four
-   blocker flags, and one canonical verdict token per dimension.
+6. Run ui-verifier LAST on the merged findings and the scanner output at
+   <RUN DIRECTORY>/evidence/scan_tells.json (with the measurement reports' findings arrays). It
+   returns the verified findings, the four blocker flags, and one canonical verdict token per
+   dimension.
 7. Merge: deduplicate, re-rank by impact, number sequentially.
 8. Present the unified report with per-dimension verdicts, copying the verifier's verdict
    tokens rather than deriving your own. Its header carries `Widths viewed` (the renders a
@@ -221,6 +227,8 @@ ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 10. No Recommended change in the merged report lands on a device the OWNER VETOES block bans.
    One that does is replaced from the same tell's replacement column, or carried as an open
    question naming the conflict.
+11. Verification Notes carry the scanner merge: the Scanner-confirmed, Scanner-only kept,
+   Scanner false positive and Scanner candidate not confirmed lines (each "none" when empty).
 ```
 
 ## Step 4: Dispatch the team lead
@@ -260,7 +268,7 @@ Run the team lead in the foreground when the user is waiting on the report.
    - "everything in <filename>"
    - "skip"
    ```
-5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement; never turn the report into a "remove the slop" sweep, never apply a removal whose replacement the user has not seen, and never apply a device the OWNER VETOES block bans, even when the report proposed it -- substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave the finding open. **The doctrine gate:** before applying a finding, check its rework against the Step 2c doctrine constraints (re-run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` if the tree changed). If an open constraint would revert the rework (a pin test on the literal the fix changes, a word-count floor the cut copy would trip, a doctrine line that bans the device the fix adds), apply the fix and the constraint's retirement in the same change with the user's say-so on the retirement, or hold the fix and say which constraint blocks it. Never apply a fix that CI or the repo's own rules will undo.
+5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, in the triage-tier order of review/07 § 5 (tier 1 broken tasks, data loss and inaccessible paths before tier 4 visual consistency), fixing each at the level its drift class names, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement; never turn the report into a "remove the slop" sweep, never apply a removal whose replacement the user has not seen, and never apply a device the OWNER VETOES block bans, even when the report proposed it -- substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave the finding open. **The doctrine gate:** before applying a finding, check its rework against the Step 2c doctrine constraints (re-run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` if the tree changed). If an open constraint would revert the rework (a pin test on the literal the fix changes, a word-count floor the cut copy would trip, a doctrine line that bans the device the fix adds), apply the fix and the constraint's retirement in the same change with the user's say-so on the retirement, or hold the fix and say which constraint blocks it. Never apply a fix that CI or the repo's own rules will undo. After applying, re-run `scan_tells.mjs` on the touched files and compare it with `<RUN DIRECTORY>/evidence/scan_tells.json`: findings the applied change introduced or grew are triaged by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8; findings that were already there stay in the report as filed and are not fixed unasked.
 6. If the harness provides an Artifact tool, offer to render the merged report (verdict table + numbered findings) as a shareable HTML artifact. If no Artifact tool is available, skip this offer silently and don't mention its absence.
 7. Refresh the ledger: write (or overwrite) `.claude/ui-craft/last-review.json` in the reviewed repo.
 
@@ -308,9 +316,9 @@ After applying any fixes, run `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgic
 1. If TypeScript: run the TypeScript 7 gate to verify compilation, resolved as `${CLAUDE_PLUGIN_ROOT}/references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck gate describes (compiler chosen by version and invoked by path, exit code read from a log).
 2. Run the project's lint command.
 3. If Tailwind: check that `@theme` tokens are valid.
-4. If a browser is available: re-run `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` at 1920 and report the before/after numbers side by side -- accent chroma, surface levels and their boundary ratios, focal visual, image count, viewport utilisation, `wordsBeforePrimary`. A fix that was supposed to add substance and moved no number did not land, and a fix that removed a device without its replacement shows up here as a number going the wrong way.
-5. Report any breakage with the fix, and offer to iterate.
-6. Offer to re-run the full pass to verify the fixes while the change is inside its two fix rounds (Step 5 item 8, the fix-round cap), or an individual skill (`review-ui`, `optimize-ui`) on a specific area. Write a learning to the goodmem Learnings space, if goodmem is configured in this session, when a non-obvious pattern came up.
+4. If a browser is available: recapture the before set's widths and states into `<RUN DIRECTORY>/evidence/after/` under the before set's file names, re-run `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` at 1920 into the same directory, and report the before/after numbers side by side -- accent chroma, surface levels and their boundary ratios, focal visual, image count, viewport utilisation, `wordsBeforePrimary`. A fix that was supposed to add substance and moved no number did not land, and a fix that removed a device without its replacement shows up here as a number going the wrong way.
+5. Finish pass. Dispatch `ui-craft:ui-verifier` in FINISH MODE with a fresh context (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass): the applied findings, the before ledger and measurements, the after recaptures in `<RUN DIRECTORY>/evidence/after/` at the same widths and states, under the before set's file names, and the diff. Report its disposition word verbatim and act on it: `recapture` recaptures and runs the pass again; `fix` applies one more batch inside the two-round cap (Step 5 item 8); `rebuild` goes to the owner as an open question naming the finding whose fix needs a redesign; `ship` presents the scored list, which covers the applied fixes and not the whole surface. A round that resolves nothing ends the loop.
+6. Report any breakage with its fix; offer `review-ui` or `optimize-ui` on a specific area; write a learning to the goodmem Learnings space, if goodmem is configured in this session, when a non-obvious pattern came up.
 
 ## Anti-patterns
 

@@ -224,6 +224,8 @@ questions for the owner.
 | The anti-slop auditor | A device that passes S1 to S7 is never filed as a tell on presence; the concentration rule applies. The full flat-terminal signature is V13 |
 | The verifier | A recommendation that reads "remove X" with no replacement is incomplete and is returned as an open question, not passed through; an elevation or boundary claim without a pixel measurement carries `[unverified: geometry measurement needed]` |
 
+Two floors run side by side and neither replaces the other. The mechanical craft checks hold the mechanics: browser-drawn surfaces themed from the palette (`references/aesthetic/03-taste-checklist.md` row 4.11), the display ceiling (`references/design/02-typography.md` § 3), the prose measure (`references/design/12-copy-placement-and-volume.md` § 1), contrast (taste row 1.4) and heading rhythm (`references/design/03-spacing-rhythm.md` § 9). This floor holds what the surface has to have. Neither one picks the direction: with both green, the remaining work goes into the committed point of view.
+
 ## 8. Cross-references
 
 | Need | File |

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ledger - export a statement</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --ink: oklch(0.22 0.02 60); --paper: oklch(0.97 0.004 85); }
+    body { background: var(--paper); color: var(--ink); font-family: ui-sans-serif, system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <main class="mx-auto max-w-2xl px-6 py-16">
+    <h1 class="text-3xl font-semibold tracking-tight">Export a statement</h1>
+    <p class="mt-4 max-w-prose">
+      Statements close at midnight in the account's own time zone. An export taken before then
+      shows the day so far.
+    </p>
+
+    <form class="mt-10 grid gap-6" action="/exports" method="post">
+      <label class="grid gap-2">
+        <span>Account</span>
+        <select name="account" class="border px-3 py-2">
+          <option>8841 - card settlement</option>
+          <option>8842 - card refunds</option>
+        </select>
+      </label>
+
+      <div class="flex gap-3">
+        <button type="submit" class="rounded bg-teal-800 px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
+          Export as CSV
+        </button>
+        <button type="button" class="rounded border px-5 py-3 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
+          Preview the first page
+        </button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

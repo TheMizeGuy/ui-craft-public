@@ -20,6 +20,8 @@ Words appear in an interface for one reason: to make it easier to understand, an
 | Specific beats clever | "Deleted 3 files" | "Poof! All gone" |
 | Sentence case, plain verbs, no filler | "Invite your team" | Title Case Everywhere, "Simply click...", "Please note that..." |
 | One job per element | A label labels; an example demonstrates; a placeholder shows format | Placeholder doing the label's job (it vanishes on focus) |
+| A control names the outcome, not the gesture | "Archive conversation" | "Swipe left", "Click here", "Tap to continue" |
+| Messages are whole sentences with structured variables | `t('deleted_files', { count })` with plural rules | `"Deleted " + n + " file(s)"` built by concatenation |
 
 Cohesion is how people learn their way around: the interface's vocabulary is signposting, and every synonym is a small betrayal of it. Keep one term per concept across nav, buttons, toasts, empty states, and docs.
 
@@ -34,6 +36,7 @@ Cohesion is how people learn their way around: the interface's vocabulary is sig
 - **Partial failure names the survivors and the casualties.** "Sent 7 of 9
   invitations. mara@ is already a member; jo@ is not a valid address." Never
   "Some invitations could not be sent."
+- **Errors claim only what the system knows.** No guessed cause and no promised fix: "Could not reach the server" when the request timed out, not "Your connection is down". An internal code is a detail under the message, never the message.
 - **Destructive flows say what is destroyed.** "Delete 'Q3 Report'? This can't be undone." The confirm button repeats the verb ("Delete report"), never "Yes"/"OK".
 
 ## 2b. Destructive Actions: the Copy Is Downstream of a Structural Decision
@@ -142,7 +145,7 @@ Run over any surface that ships prose (the content-quality dimension of `referen
 - Errors name the cause and the fix, inline, with input preserved. Every error string ends with something the reader can do.
 - Empty states invite the starting action; loading states name what is loading when it takes more than a beat. First-run empty and zero-results empty carry different copy: one offers creation, the other offers relaxing the query.
 - Every destructive control has the pattern its reversibility calls for (undo toast, confirm, or typed confirm), and the copy contract for that pattern: object named, count stated, consequence stated, verb repeated on the button (section 2b).
-- No lorem ipsum, no marketing filler inside product chrome, no label that needs a tooltip to be understood.
+- No `lorem ipsum`, no marketing filler inside product chrome, no label that needs a tooltip to be understood.
 - Sentence case throughout unless the POV explicitly commits otherwise; small caps for overlines via `font-feature-settings`, not shouting uppercase body text.
 - Copy tone matches the POV brief's stated register, including in errors: a tactical product does not suddenly get whimsical at failure.
 - **No visible paragraph in a control surface runs past 30 words** (section 4b). Count them on the RENDERED page with disclosure bodies excluded, rather than reading for a general impression of wordiness. The impression test is what passed a page carrying a 121-word hint.

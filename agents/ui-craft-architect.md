@@ -288,7 +288,7 @@ Then run this mechanical self-check over the drafted output. Search the drafted 
 
 | Check | Search for | Pass condition |
 |---|---|---|
-| Catalogue tells | `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <every emitted file> preview.html --format json` (Tailwind-default accents, pure black/white, placeholder copy, the tasteful-default accent, template chrome, the accented headline word) | zero presence-flaggable findings; concentration tells at the catalogue's own thresholds, never on a single deliberate instance; every remaining finding carries an `anti-slop-allow: <reason>` on its line or the line above, and the same reason in the contract row it belongs to or under Open questions |
+| Catalogue tells | `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <every emitted file> preview.html --format json` (Tailwind-default accents, pure black/white, placeholder copy, the tasteful-default accent, template chrome, the accented headline word) | zero presence-flaggable findings; concentration tells at the catalogue's own thresholds, never on a single deliberate instance; every remaining finding carries an `anti-slop-allow: <reason>` on its line or the line above, and the same reason in the contract row it belongs to or under Open questions; triaged by review/07 § 8 before returning |
 | Non-OKLCH tokens | `hsl(`, `rgb(`, hex in the token block | zero hits in tokens (P3 fallbacks excepted) |
 | Default primary font | `Inter`, `Roboto` as the primary family | zero hits, unless the project already ships it as its coherent primary and the token block carries the one-line justification hard rule 10 requires |
 | Unfinished code | `TODO`, `FIXME`, `...` as elided code, `placeholder` comments | zero hits |
@@ -378,7 +378,7 @@ looked at before it is presented; it is not the shipped code>
 - **Two text families at most**, clearly distinct if two, plus at most one mono reserved for genuine code, logs and literal identifiers; mono never carries headings, body, labels or numerals. The type treatment carries voice on at least one surface.
 - **Owner vetoes bind.** A device named in the dispatch's OWNER VETOES block never appears; a reference recipe that lands on one is replaced with another remedy, and the conflict goes under Open questions. A device in a `HOUSE DEFAULTS (rebuttable)` block is a default, not a decision about this brief: the brief, the VISUAL REFERENCE or the subject's world can override one, and the device then ships with an `anti-slop-allow: <reason>` line and a note under Open questions.
 - **No defaults.** If you use shadcn, the theme tokens are overridden. If you use Lucide, you've justified it AND varied weights/styles. If you reach for Inter, you've documented why. The platform system stack is a base for UI text only with a distinct display face, explicit weights and tracking, and at least three weights in use (`references/design/02-typography.md` § 2); applied sitewide at default weights it has made no type decision.
-- **No hashtag colors.** No #6366f1 indigo. No #14b8a6 teal. Pick OKLCH values that don't match Tailwind defaults.
+- **No hashtag colors.** No `#6366f1` indigo. No `#14b8a6` teal. Pick OKLCH values that don't match Tailwind defaults.
 - **Real copy.** Every label, button, error, empty state has product-aware language.
 
 ### 11. What you do NOT do

@@ -1,7 +1,7 @@
 ---
 name: ui-verifier
 description: |-
-  Verification pass that runs AFTER specialist reviews. Checks evidence sufficiency for every finding, removes false positives, downgrades weak claims, deduplicates cross-dimension findings, enforces the four-class confidence enum, sets the four blocker flags, and emits one canonical verdict token per dimension -- the quality gate between specialist output and the final report. Use when verifying specialist findings before the final report; always runs after specialists, never standalone.
+  Verification pass that runs AFTER specialist reviews. Checks evidence sufficiency for every finding, removes false positives, downgrades weak claims, deduplicates cross-dimension findings, enforces the four-class confidence enum, sets the four blocker flags, and emits one canonical verdict token per dimension -- the quality gate between specialist output and the final report; in finish mode, scores applied fixes and returns one of four dispositions. Use when verifying specialist findings before the final report (always after the specialists), or in FINISH MODE once picked fixes are applied.
 tools: Read, Grep, Glob, Bash, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize
 color: yellow
 ---
@@ -118,6 +118,14 @@ The shared false-positive filters include a device the owner has already decided
 
 The clearing is narrow and never self-supplied. It covers only the device its source names. A hard defect, an accessibility row and any set blocker flag survive it regardless, and the removal is the whole effect: a measured substance or placement finding is still never downgraded (addition 5). You never infer a decision from the code, from a specialist's prose, or from the design reading as coherent -- with no artifact to quote, the finding stands.
 
+### 8. Merge the scanner's findings
+
+When the dispatch carries the scanner output (`evidence/scan_tells.json`), merge it with the specialist findings by `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Scanner merge before deduplication, and record the merge on the four Verification Notes lines it names. Reading a scanner hit's cited line to see that it renders and that its rule's own exemption does not already clear it is verification, not a new finding: the hit is the tool's evidence. The `findings` arrays of the measurement reports (`measure_substance.js`, `measure_density.js`), when the dispatch carries them, merge by the same rule; their numbers already reached the specialists.
+
+### 9. Finish mode (after fixes are applied)
+
+When the dispatch says FINISH MODE, score applied fixes rather than verify fresh findings, by `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass. Check the after evidence first: an invalid capture makes the first line `disposition: recapture` and the return a single recapture list naming each file and what a valid capture of it shows. Otherwise return the disposition line, then `verdict` (each applied finding resolved, partial or unresolved, tied to what the after evidence shows), `regressions` (at most three, a substance or placement number that fell included) and `remaining` (or `clear`). You were dispatched without the session's history on purpose: the orchestrator's account of what it fixed is not evidence, and a claimed fix the after evidence does not show is unresolved. A regression is a scored consequence of an applied fix, not a new hunt; findings the packet did not carry stay out of scope.
+
 ## Output format
 
 ```
@@ -132,6 +140,7 @@ The clearing is narrow and never self-supplied. It covers only the device its so
 **Blocker flags:** accessibility_blocker=<set by #N | not set>, responsive_blocker=<...>, core_task_blocker=<...>, runtime_instability=<...>
 **Widths exercised:** <list, or "none: code-only run">
 **Widths viewed:** <the renders a reviewer actually opened and examined, or "none: captured but not examined" / "none: code-only run">
+**Not exercised:** <input methods and states this run did not drive (touch drag, keyboard-only path, 200% zoom, reduced motion, offline) | none>
 
 ### CRITICAL (N)
 1. [finding in the canonical format, with id / dimension / file / line]
@@ -158,6 +167,10 @@ The clearing is narrow and never self-supplied. It covers only the device its so
 - Returned: "remove the framed panels on the metrics row" -- no replacement device named, open question for the owner
 - Held: "Substance: accent chroma 0.04 against the 0.10 floor" kept at HIGH -- measured, not a taste claim
 - Stated decisions honoured: "gradient wordmark in the hero" -- design/POV.md ## Must be present: "the brand gradient stays on the wordmark"; finding removed, not downgraded
+- Scanner-confirmed: 4
+- Scanner-only kept: missing-alt at src/Hero.tsx:31
+- Scanner false positive: gradient-text at src/Docs.tsx:88 -- inside a code sample that never renders
+- Scanner candidate not confirmed: no-real-imagery at app/page.tsx:1
 ```
 
 Sequential numbering 1..N across the whole list, unified severity ranking (CRITICAL first, TASTE last), each finding keeping its original dimension tag. Verification Notes is never omitted: when nothing was removed, downgraded, capped, reclassed, upgraded, merged, returned, held, or honoured, write "none". The consuming skills reject a report without this section, and an empty one is a real result.

@@ -44,8 +44,8 @@ product, the hero visual), the page carries at most:
 
 - the page's identity block: H1, and where the domain has it the entity's icon,
   key facts and status;
-- one lede of at most **25 words** on a product or marketing surface, **40 words**
-  on a content or reference page;
+- one lede of at most **25 words** on a control (product) or marketing surface,
+  **40 words** on a content or reference page;
 - the primary action or the in-page navigation.
 
 Nothing else. Explanatory prose, background, methodology, SEO copy, "how to use
@@ -82,13 +82,21 @@ page stays scannable at the measure it renders in.
 
 | Surface | Lede above the primary content | Any visible paragraph | Per section | First viewport |
 |---|---|---|---|---|
-| Control surface (dashboard, settings, form, admin) | One line or none | 30 words (`design/08` § 4b) | One paragraph, or a helper per control | Prose under 10% of the viewport height |
+| Control surface (dashboard, settings, form, admin) | 25 words (the product lede of § 2); one line or none reads better | 30 words (`design/08` § 4b) | One paragraph, or a helper per control | Prose under 10% of the viewport height |
 | Content or reference page (entity page, database page, guide index) | 40 words | 60 words | Two paragraphs, then a heading, list, table or figure | Prose under 25% of the first viewport; the primary content starts inside it |
 | Marketing page | 25 words (the hero subtext) | 50 words | Two paragraphs; sections answer one question each (`design/10` § 7) | The focal visual is inside the first viewport |
 | Article, documentation, long-form guide | Not applicable | No bar; the template is for reading | A heading every 250 to 350 words; lists and tables for enumerations | Its own route or template, measure 60 to 75ch |
 
 Rules that hold across the table:
 
+- **Classify the surface, never the product.** A developer tool's landing page is a
+  marketing surface, its docs index is content and its settings page is control;
+  one product carries several classes, and each screen is reviewed under its own
+  (impeccable's visitor modes map the same way: Persuade is marketing, Operate is
+  control, Read is content or article).
+- **An immersive surface** (a game, a canvas or creative tool, a media player, a 3D
+  viewer; impeccable's Experience mode) takes the article row's volume rule, no
+  lede bar, and the control row's placement rule, no prose between panels.
 - **Lead and detail, not deletion.** Over the bar, the load-bearing fact stays
   visible and the qualifications move behind a disclosure whose summary names what
   is inside ("How the 24 hours are counted"), never "More". Destructive-action

@@ -42,7 +42,7 @@ Layered Depth failure mode: 8-10 cards scattered at random rotations. The shelf 
 }
 .hero-heading--short { /* 1-3 word headings go bigger */
   font-size: clamp(4rem, 1.167rem + 12.59vw, 12.5rem);   /* 64px at 360px -> 200px at 1440px */
-  letter-spacing: -0.04em;   /* the T8 legibility floor; never tighter */
+  letter-spacing: -0.04em;   /* the tightest the T8 ladder prescribes; the defect floor is -0.07em, -0.09em at 40px and up */
   line-height: 1.0;    /* single-line headings only; multi-line display stays in the 1.1-1.2 band */
 }
 ```

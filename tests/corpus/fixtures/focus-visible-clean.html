@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ledger - close the month</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --ink: oklch(0.22 0.02 60); --paper: oklch(0.97 0.004 85); }
+    body { background: var(--paper); color: var(--ink); font-family: ui-sans-serif, system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <main class="mx-auto max-w-2xl px-6 py-16">
+    <h1 class="text-3xl font-semibold tracking-tight">Close October</h1>
+    <p class="mt-4 max-w-prose">
+      Closing locks every posting dated in October. Corrections after that go into November
+      as adjusting entries, with the reason recorded.
+    </p>
+
+    <form class="mt-10 grid gap-6" action="/periods/2026-10/close" method="post">
+      <label class="grid gap-2">
+        <span>Reason for any open item</span>
+        <textarea name="note" rows="3" class="border px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"></textarea>
+      </label>
+
+      <div class="flex gap-3">
+        <button type="submit" class="rounded bg-teal-800 px-5 py-3 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
+          Close the month
+        </button>
+        <a href="/periods/2026-10" class="px-5 py-3 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+          Review open items first
+        </a>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

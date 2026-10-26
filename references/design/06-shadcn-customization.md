@@ -158,7 +158,7 @@ Two rules follow from part 3, and they are why the primitive ramp below also liv
 }
 ```
 
-**On the brand hue.** `--brand-hue: 95` is a worked example, not a recommendation: it sits outside the 250-285 indigo/purple band and away from the ~180 teal band that `references/aesthetic/03-taste-checklist.md` flags as unconsidered defaults. Derive the real number from the POV brief. Changing that one line re-hues the entire ramp, both schemes, because every stop reads it.
+**On the brand hue.** `--brand-hue: 95` is a worked example, not a recommendation: it sits outside the AI purple window (OKLCH hue 255-325 at chroma 0.15 or more, catalogue C3) and away from the ~182 teal band that `references/aesthetic/03-taste-checklist.md` flags as unconsidered defaults. Derive the real number from the POV brief. Changing that one line re-hues the entire ramp, both schemes, because every stop reads it.
 
 **On `light-dark()` here.** Do not use it in a shadcn recipe. `light-dark()` follows `color-scheme`, not the class. With next-themes at its default (`enableColorScheme: true`, which writes `style="color-scheme: dark"` on `<html>`) the two happen to agree; a toggle that only adds `.dark`, next-themes with `enableColorScheme={false}`, or a forced theme on a subtree moves the `dark:` variant and leaves every `light-dark()` token behind. Pick one mechanism and state it. If you want `light-dark()`, you are also giving up class-based toggling and the `dark:` variant, and you should say so in the project's design notes.
 
@@ -187,7 +187,7 @@ The one thing that turns this from "left at the default" into a decision is that
 Pairing rules (`--font-mono` exists for code blocks and log panes only -- it never styles headers, labels, or data cells):
 | Goal | Pair |
 |---|---|
-| Editorial product | Instrument Serif (display) + Söhne or DM Sans (body) + Berkeley Mono (code blocks only) |
+| Editorial product | `Instrument Serif` (display) + Söhne or DM Sans (body) + Berkeley Mono (code blocks only) |
 | Tactical / data app | Söhne or Söhne Schmal throughout -- weight range (500-650) for functional headers, `tabular-nums` on data tables; mono only inside literal code cells |
 | Friendly SaaS | GT Walsheim (display + body) + Commit Mono (code) |
 | Technical platform | IBM Plex Sans (body) + IBM Plex Mono (code) + Migra (display) |
@@ -461,7 +461,7 @@ Run this list before shipping. Each line that's true = one AI-tell to fix. The e
 | 6 weights of Inter loaded | One variable font family; remove all Inter usage if other typefaces ship |
 | Default border-radius applied uniformly to every primitive | Pick one radius (often 0 or `0.125rem` or `1rem`) and commit, OR vary deliberately by primitive class |
 | Generic hero -> CTA -> 3-feature grid -> testimonials -> footer landing | Lead with the product surface (an actual screenshot or live demo). Skip the rote feature grid |
-| Newsreader + JetBrains Mono pairing | Specifically rejected as too common in AI output. Pick a sans-led pairing instead: Instrument Serif + Söhne, Author + Switzer, or one variable family carrying both roles. Mono stays inside code blocks, never in the brand pairing |
+| Newsreader + JetBrains Mono pairing | Specifically rejected as too common in AI output. Pick a sans-led pairing instead: `Instrument Serif` + Söhne, Author + Switzer, or one variable family carrying both roles. Mono stays inside code blocks, never in the brand pairing |
 | Rounded cards left at the kit's default radius | Commit a radius and mean it: `0` architectural, `2px` precise, `6-8px` friendly -- then pair it with a committed border weight and a committed elevation step so the shape belongs to a system. The uncommitted `rounded-md` is the tell; roundness is not, and flattening a committed 6px radius to `0` to look less AI-generated only trades one unexamined default for another |
 | Colored-left-border sections (`border-l-4 border-blue-500 pl-4`) | Replace with typographic hierarchy or a true sidebar. The colored left border is a 2023 Notion clone tell |
 | Emoji indicators in product UI (status, callouts, headers) | Use icons from your chosen set, or color/typographic differentiation. No emojis in the product surface |

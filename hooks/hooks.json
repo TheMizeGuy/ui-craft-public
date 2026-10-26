@@ -1,0 +1,30 @@
+{
+  "description": "ui-craft design hook: opt-in per project through .claude/ui-craft/hook.json; never blocks",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PROJECT_DIR:-.}/.claude/ui-craft/hook.json\" || exit 0; node \"${CLAUDE_PLUGIN_ROOT}/scripts/design_hook.mjs\" post-tool-use || true",
+            "timeout": 5,
+            "statusMessage": "ui-craft: checking the edited UI file"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PROJECT_DIR:-.}/.claude/ui-craft/hook.json\" || exit 0; node \"${CLAUDE_PLUGIN_ROOT}/scripts/design_hook.mjs\" stop || true",
+            "timeout": 30,
+            "statusMessage": "ui-craft: design deep pass"
+          }
+        ]
+      }
+    ]
+  }
+}
