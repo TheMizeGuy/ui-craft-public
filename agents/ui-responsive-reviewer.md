@@ -265,9 +265,9 @@ Open with the summary block:
 **Blocker flags:** <responsive_blocker set | clear>
 **Verdict:** <ROBUST | ADEQUATE | FRAGILE | BROKEN>
 **Summary:** <one line; the verdict line above is a bare token because the report table and the CI gate consume it mechanically>
+```
 
 Machine fields on every finding: `id` is `responsive-<kebab-slug>`, `dimension` is `responsive`, `file` and `line` come from `Location:`; the `<Dimension>` slot in the header is `Responsive quality`.
-```
 
 Verdict rubric, applied in order (the first matching row wins):
 

@@ -198,6 +198,7 @@ them.
 |---|---|
 | `examples/sample-findings.json` | The **answer-key ceiling**: a hand-authored findings file written against `labels.json`, one row per label. It is the best score the labels permit, held at exactly 1.000 / 1.000. No agent produced it, so it is not evidence of detection. |
 | `../corpus/baseline-2026-10-26.json` (0.7.0) | The **current committed blind baseline**: the 0.7.0 `ui-anti-slop-auditor` body, which no longer runs the scanner, over the blind copy of every fixture. On its own it is the judgment half; the release gates the pipeline number, this file merged with the scanner (above). Its readings are in the dated section below. |
+| `../corpus/blind-2026-11-09-run1.json` to `run4.json` | **Measurements, not a baseline.** Four dispatches of the auditor on 2026-11-09 across two model classes, three at 0.7.0 and one at 0.7.1. They gate nothing and the selftest does not read them; their readings are in the dated section below. |
 | `../corpus/baseline-2026-09-22.json` | **Superseded, kept as history.** The 0.6.0 blind run, which scored recall 0.958 / precision 0.92 against the 48-label corpus of 0.6.8. It measured an auditor that ran the scanner itself as its first pass, over fixtures whose comments name their answers, so it is a pipeline reading taken with the answer partly in view and is not like for like with the 0.7.0 run. Do not gate on it. |
 | `../corpus/baseline-2026-09-01.json` | **Superseded, kept as history.** The 0.5.0 blind run over 21 fixtures, which scored recall 0.828 / precision 0.960 against the 29-label corpus of its day. It predates everything added in 0.6.0, so against the current 46-label corpus it reads 0.500 / 0.920. That drop is the corpus growing, not detection getting worse. Do not gate on it. |
 | `../corpus/baseline-2026-07-27.json` | **Superseded, kept as history.** The 0.3.0 blind run over 15 fixtures. It scored recall 0.917 / precision 0.957 against the 24-label corpus after the 2026-09-01 label split (0.900 / 0.783 before it) and predates every fixture added since, so against the current corpus it reads 0.457 / 0.913. Do not gate on it. |
@@ -275,6 +276,60 @@ misses are L14, M6 and legacy-theme's second L13; its four unmatched findings
 are that pair, the auditor's indigo-to-violet CTA gradient on marketing-defaults
 (the scanner's own C3 finding had taken the label) and the scanner's two known
 extras on gallery-unlabelled and hero-scroll-poster.
+
+#### Blind runs, 2026-11-09 (two model classes, 0.7.0 and 0.7.1)
+
+Four dispatches of `ui-anti-slop-auditor` over the 72-file blind copy and its 69
+labels, with the prompt above plus one sentence asking for the JSON array as the
+final message. They were made because the model class that runs the agent can
+differ from the one the baseline was taken on, and they are measurements: the
+committed baseline stays `baseline-2026-10-26.json`. Each reading comes from the
+commands under "The pipeline number" and "The judgment-only number"; the scanner
+alone reads 0.928 / 0.970 as before.
+
+| Run (file) | Tree | Model class | Findings | Auditor alone | Pipeline (gated reading) | Judgment-only |
+|---|---|---|---|---|---|---|
+| `blind-2026-11-09-run1.json` | 0.7.0 | fable | 55 | 0.783 / 0.982 | 0.855 / 0.937 | 3 of 4, precision 1.000 |
+| `blind-2026-11-09-run2.json` | 0.7.0 | fable | 55 | 0.797 / 1.000 | 0.855 / 0.952 | 3 of 4, precision 1.000 |
+| `blind-2026-11-09-run3.json` | 0.7.0 | opus | 55 | 0.797 / 1.000 | 0.870 / 0.952 | 3 of 4, precision 1.000 |
+| `blind-2026-11-09-run4.json` | 0.7.1 | fable | 64 | 0.855 / 0.967 | 0.913 / 0.926 | 3 of 4, precision 0.750 |
+
+Every run passes the gated reading, every clean control is within tolerance in
+every run, and no run filed a finding of its own on a clean control (the one
+clean-control finding in each pipeline is the scanner's scroll-hint row on
+`hero-scroll-poster.html`, within its tolerance of one). Runs 1 to 3 were
+dispatched as the plugin's agent type, in parallel from one session; run 4 came
+from a session that loaded the 0.7.1 tree, alone.
+
+Reading them:
+
+- The two model classes differ by one LOW label at 0.7.0 (contrast-pairs' P16
+  near-bar row, which run 3 filed separately and runs 1 and 2 named inside their
+  P16 finding), no more than runs 1 and 2 differ from each other. One run on
+  the opus class does not separate that from run-to-run variation.
+- Runs 1 to 3 sit below the baseline's 0.957 pipeline recall on both model
+  classes, and below the scanner alone. Each filed one finding per fixture and
+  tell (55 findings over 54 or 55 pairs, where the baseline filed 77), and where
+  a fixture labels one tell more than once a single finding pairs with one label.
+  The merge then counts the scanner's separate hits on that fixture and tell as
+  confirmed by that one finding, so labels the scanner alone catches go
+  unpaired: eight of the ten pipeline misses of runs 1 and 2, and seven of the
+  nine of run 3. One of the three wrote down its reason, that the merge is keyed
+  per fixture and tell.
+- Run 4 filed 64 findings over 57 pairs and reads 0.913. Its six pipeline misses
+  are token-drift's section 14 row, both L13 rows on fixed-desktop-shell,
+  vh-bottom-bar's P3, motion-rhythm's M6 (which the baseline also missed) and
+  legacy-theme.css's second L13. Its two unmatched findings of its own are an
+  emerald delta below AA contrast on marketing-defaults and near-identical
+  section padding on motion-rhythm.
+- Three caveats. Runs 1 to 3 each consulted the session's advisor model before
+  drafting. Run 3's reviewer listed the scratch folder beside the fixtures and
+  read the scorer's source; it opened neither `labels.json` nor a baseline file.
+  And how the baseline run was dispatched (the inlined-body route this file
+  describes) differs from the agent-type route used here.
+
+Nothing in the auditor's detection text, the catalogue, the labels, the scorer
+or the merge was edited against these runs.
 
 #### Blind baseline, 2026-09-22 (0.6.0 corpus, 40 fixtures, superseded)
 

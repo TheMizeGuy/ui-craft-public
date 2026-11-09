@@ -192,6 +192,42 @@ const CLEAN = '<!doctype html>\n<html lang="en"><head><meta name="viewport" cont
     && r.text.length <= MAX_CHARS, r.stdout);
 }
 
+// --- 11c-11g: the per-edit pass against the session baseline ---------------------------
+{
+  const p = project();
+  const original = `<main>\n${IMG}<p>Old copy.</p>\n</main>\n`;
+  write(p, 'old.html', original);
+  const r1 = run(p, 'post-tool-use', edit(p, 'old.html', original, '<p>Old copy.</p>', '<p>New copy.</p>'));
+  check('11c an Edit elsewhere in a file whose <img> predates the session -> silent per edit (no finding, no clean ack)', silent(r1), r1.stdout);
+  check('11d the Stop pass is silent on that file too', silent(run(p, 'stop', stopPayload(p))));
+}
+{
+  const p = project();
+  const original = `<main>\n${IMG}<p>Old copy.</p>\n</main>\n`;
+  write(p, 'legacy.html', original);
+  const r = run(p, 'post-tool-use', edit(p, 'legacy.html', original, '<p>Old copy.</p>', '<p>New copy.</p>', { originalFile: false }));
+  check('11e an Edit with no originalFile -> per edit prints the attribution note and tags the line [attribution unknown]',
+    shape(r, 'PostToolUse') && r.text.includes('may predate this session') && /\[attribution unknown\] WCAG 1\.1\.1/.test(r.text)
+    && r.text.length <= MAX_CHARS, r.stdout);
+}
+{
+  const p = project();
+  const original = `<main>\n${IMG}</main>\n`;
+  write(p, 'two.html', original);
+  const r = run(p, 'post-tool-use', edit(p, 'two.html', original, '</main>', `<img src="b.png">\n</main>`));
+  check('11f an Edit adding a second <img> -> per edit lists WCAG 1.1.1 tagged [grew]',
+    shape(r, 'PostToolUse') && /\[grew\] WCAG 1\.1\.1/.test(r.text) && !r.text.includes('may predate this session'), r.stdout);
+}
+{
+  const p = project();
+  const original = `<main>\n${IMG}<div>x</div>\n</main>\n`;
+  write(p, 'mixed.html', original);
+  const r = run(p, 'post-tool-use', edit(p, 'mixed.html', original, '<div>x</div>', '<div style="height: 100vh">x</div>'));
+  check('11g an Edit adding a new finding to a file with an old one -> lists the new one, counts the old one on a tail line',
+    shape(r, 'PostToolUse') && !r.text.includes('WCAG 1.1.1') && r.text.includes("1 finding(s) from these rules were in the file before this session's first edit"),
+    r.stdout);
+}
+
 // --- 14-16, 18: caps, pause, ignore, quiet ------------------------------------------------
 {
   const p = project();

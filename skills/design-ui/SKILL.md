@@ -10,11 +10,11 @@ allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent
 
 You are coordinating new UI design on the user's behalf. Your job is to gather project context, construct a self-contained prompt, dispatch the `ui-craft:ui-craft-architect` agent, audit what comes back, and only then offer to write files.
 
-**Nothing is written until the user approves.** The `Edit`/`Write` grant in the frontmatter exists for Step 7, where the user has explicitly asked to apply the design. Generation and audit are read-only.
+**The project's own files are not written until the user approves.** Before approval this skill writes only its run directory, `.claude/ui-craft/runs/<ISO timestamp>/` in the reviewed repo (the session's scratch directory when there is no repo), which holds the evidence Steps 5 and 6 work from: the architect's scanner drafts under `draft/`, its emitted files under `emitted/` and `preview.html`, the Step 5a screenshots and measurement reports, and the stranger's word. That directory is evidence, not the applied design, and Step 6 names it in one line. The `Edit`/`Write` grant in the frontmatter exists for it and for Step 7, where the user has explicitly asked to apply the design.
 
 ## Execution mode
 
-The `ui-craft-architect` and the Step 5 audit reviewers are dispatched as subagents by default: the architect gets a fresh context for the full design process, and the orchestrator keeps its own for building the prompt, gating the output, and applying approved files. For a small brief, or where no Agent tool exists, the session may run the architect's process itself (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and work from its Knowledge sources table and process) and says so in the output header; the Step 5 audit runs either way. The dispatch templates in this skill set no model or effort; the session may choose a model per dispatch, and effort is never set.
+The `ui-craft-architect` and the Step 5 audit reviewers are dispatched as subagents by default: the architect gets a fresh context for the full design process, and the orchestrator keeps its own for building the prompt, gating the output, and applying approved files. For a small brief, or where no Agent tool exists, the session may run the architect's process itself (read `${CLAUDE_PLUGIN_ROOT}/agents/ui-craft-architect.md` and work from its Knowledge sources table and process) and says so in the output header; the Step 5 audit runs either way, and where no Agent tool exists the session applies the four reviewers' lenses itself from their files under `${CLAUDE_PLUGIN_ROOT}/agents/`, forming its own read before it looks at the Step 5a detector findings, and says so under the Pre-ship audit heading. The dispatch templates in this skill set no model or effort; the session may choose a model per dispatch, and effort is never set.
 
 ## Core principle: do no harm
 
@@ -49,9 +49,9 @@ If the brief is empty or too vague to act on, ask one focused question: "What sc
 If working in an existing repo:
 
 1. **Project context**: what the Step 3 `PROJECT CONTEXT` block asks for: framework and versions, existing design libraries, the workspace root for absolute paths, the existing primitives, and the token system (its color format, OKLCH vs hex vs HSL, and whether shadcn defaults are in place).
-2. **Existing sizing strategy**: Grep for `clamp(`, `@container`, `dvh`, `svh`, and for fixed widths (`w-[`, `max-w-[`, `width:` with a px literal). This tells the architect whether it is joining a fluid system or introducing one.
+2. **Existing sizing strategy**: Search for `clamp(`, `@container`, `dvh`, `svh`, and for fixed widths (`w-[`, `max-w-[`, `width:` with a px literal). This tells the architect whether it is joining a fluid system or introducing one.
 3. **Owner vetoes and must-haves**: read `design/POV.md` (its `## Banned (concrete)` and `## Must be present` lists), the UI section of the repo's `CLAUDE.md` or `AGENTS.md`, and `.claude/ui-craft/vetoes.md` if present. Distil them into an `OWNER VETOES` block (standing decisions, not taste) and a `MUST BE PRESENT` block. With no repo none of these lists has a source: emit `OWNER VETOES` as "none recorded" and put this operator's standing preferences in a second block, `HOUSE DEFAULTS (rebuttable)`: no emoji as a UI indicator, no pill or bubble chips as ornament, no rainbow or segmented bars, mono for code, logs, raw payloads and terminal UIs only (catalogue T13), no pulse dot on "Live", no decorative per-row keylines. These are defaults, not decisions about this brief: a brief clause, the VISUAL REFERENCE or the subject's world that names one of these devices converts it to a stated decision, emitted with an `anti-slop-allow: <the brief clause>` line. Vetoes read from a repo file are the owner's recorded decisions and carry no hatch. Also read PRODUCT.md and DESIGN.md when present (`${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Product context files): PRODUCT.md's users, jobs, positioning and constraints fill SUBJECT, AUDIENCE AND JOB as stated rather than proposed; DESIGN.md's tokens are the incumbent system the architect extends; their Do's and Don'ts join OWNER VETOES and MUST BE PRESENT.
-4. **Assets on hand**: Glob for icon sets, product imagery, logos and illustrations (`**/icons/**`, `**/public/**/*.{png,jpg,webp,svg}`, `**/assets/**`) so the architect plans real imagery from what exists and names what must be produced.
+4. **Assets on hand**: List icon sets, product imagery, logos and illustrations (`**/icons/**`, `**/public/**/*.{png,jpg,webp,svg}`, `**/assets/**`) so the architect plans real imagery from what exists and names what must be produced.
 
 If no repo, greenfield is assumed; items 3 and 4 still produce the HOUSE DEFAULTS block and an "assets to produce" note.
 
@@ -97,6 +97,10 @@ MUST BE PRESENT: <the Step 2 block, or "none recorded; the substance floor appli
 ASSETS ON HAND: <icon set, imagery, logos found in Step 2, or "none; name what must be produced">
 
 DISPLAY RANGE: <the widths from Step 1, default 320 / 390 / 900 / 1440 / 1920 / 2560>
+
+DRAFT DIRECTORY: <absolute path of the draft/ folder in the run directory Step 4 creates>. Write
+your drafted files and preview.html there with Bash, so the criterion-6 scanner and your step 8
+have files to read; the project's own files stay untouched.
 
 SEED CANDIDATES (advisory, only if Step 2.5 produced any, omit this block entirely otherwise):
 - Style family: <name from aesthetic/04-style-taxonomy.md>
@@ -205,8 +209,8 @@ for elided code, `100vh` or a missing preview.
 4. At least one full composition example in real code.
 5. Taste audit table present with PASS / FAIL / NOT ASSESSED per checklist section (NOT ASSESSED is the honest value for a browser-only row on a code-only pass).
 6. The tells scanner reports clean on the emitted code and on `preview.html`:
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <every emitted file> preview.html --format json`
-   returns zero presence-flaggable findings, and every remaining finding carries an
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <every emitted file, drafted in the DRAFT DIRECTORY> <DRAFT DIRECTORY>/preview.html --format json --surface <SURFACE TYPE>`
+   (one run per class when the page holds two) returns zero presence-flaggable findings, and every remaining finding carries an
    `anti-slop-allow: <reason>` on its line or the line above naming the brief clause, the VISUAL
    REFERENCE, the owner-supplied brand value or the repo string that makes it right. Concentration
    tells (template chrome, uppercase eyebrows, middle-dot meta strings, link arrows) fire at the
@@ -295,6 +299,8 @@ for elided code, `100vh` or a missing preview.
 
 ## Step 4: Dispatch the agent
 
+Before the Agent call (in Execution mode too, where no Agent call follows), create the run directory `.claude/ui-craft/runs/<ISO timestamp>/` in the reviewed repo (the session's scratch directory when there is no repo) with a `draft/` folder inside it, and put that folder's absolute path on the DRAFT DIRECTORY line. Steps 5 and 6 write into this same directory.
+
 Use the Agent tool:
 - `subagent_type`: `"ui-craft:ui-craft-architect"`
 - `description`: `"Design <brief summary>"`
@@ -304,11 +310,15 @@ Use the Agent tool:
 
 Generated code is code. It gets reviewed before it is presented, not after it ships. And a design nobody has looked at is not reviewed: reviewers who read only source miss wasted display width and flatness that a render shows at a glance.
 
+### Step 5.0: Put the architect's output on disk once
+
+Write every file the architect's reply emitted under `<run dir>/emitted/` at its path relative to the project root, and its `preview.html` at `<run dir>/preview.html`, with or without a browser; `<run dir>` is the directory Step 4 created. The criterion-6 scanner takes file paths, the Step 5b reviewers read these files in place of code pasted into four prompts, and Step 7 copies the approved files from here into the project.
+
 ### Step 5a: Render and look (when a browser tool exists)
 
-If a Playwright browser tool is in this session's tool list:
+If this session has a browser tool (a Playwright MCP tool, loaded or loadable on demand):
 
-1. Write the architect's `preview.html` to `.claude/ui-craft/runs/<ISO timestamp>/preview.html` in the reviewed repo (or the scratch directory when there is no repo). Serve that directory over a local HTTP server (`python3 -m http.server <port> --bind 127.0.0.1` from the run directory, stopped when Step 5 ends) and open `http://127.0.0.1:<port>/preview.html`; the browser tool blocks `file:` URLs.
+1. Serve the run directory over a local HTTP server: start `python3 -m http.server <port> --bind 127.0.0.1` from it as a background command on a free port, keep its PID, and stop that PID when Step 5 ends: the PID this step started, not a match on a process name. Open `http://127.0.0.1:<port>/preview.html`; the browser tool blocks `file:` URLs. Close the page when the captures and measurements are saved.
 2. Resize to 390, 1440, 1920 and the widest width in the DISPLAY RANGE (2560 by default); take a screenshot at each, saved beside the preview; at 1920 and the widest width, evaluate `${CLAUDE_PLUGIN_ROOT}/scripts/measure_substance.js` (call `measureSubstance()`) and `${CLAUDE_PLUGIN_ROOT}/scripts/measure_density.js` (call `measureDensity({ surface: '<SURFACE TYPE>' })`) and save both reports beside the screenshots.
 3. Look at the 1440 screenshot yourself before dispatching anything, and write down the first word that comes to mind. If it is grey, flat, empty, plain, unfinished, template, wireframe or terminal, the design fails the stranger's word test (`${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 3) and goes back to the architect with that word and the measurement numbers, using the single re-dispatch of Step 6. If it is busy, loud or gaudy, the mirror pass (taste 9.9) is the note. Record the word in the run directory.
 4. Pass the screenshot paths and the metric fields of both reports into the Step 5b prompts as read-only evidence; tell the reviewers not to drive the browser themselves. Hold each report's severity-tagged `findings` array and `verdict` line for the Step 6 gate, where they merge with the criterion-6 scanner run (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Scanner merge): a reviewer handed a detector's conclusions confirms them instead of reading the render.
@@ -321,19 +331,19 @@ Four reviewers, all read-only, on the architect's output:
 
 ```
 Agent({ subagent_type: "ui-craft:ui-visual-reviewer",
-  prompt: "<the generated component code and preview.html verbatim, the design plan, the substance contract, the copy map, the SURFACE TYPE, the OWNER VETOES block, the Step 5a screenshot paths and the reports' metric fields (or 'code-only'); scope: lens 18 Visual substance, lens 15 copy placement against the copy map, density and economy, POV coherence, the stranger's word test on the render>",
+  prompt: "<the absolute paths of the files under `<run dir>/emitted/` and of `preview.html`, to be read from disk, the design plan, the substance contract, the copy map, the SURFACE TYPE, the OWNER VETOES block, the Step 5a screenshot paths and the reports' metric fields (or 'code-only'); scope: lens 18 Visual substance, lens 15 copy placement against the copy map, density and economy, POV coherence, the stranger's word test on the render>",
   description: "Visual and substance audit of generated UI" })
 
 Agent({ subagent_type: "ui-craft:ui-anti-slop-auditor",
-  prompt: "<the generated component code and preview.html verbatim, the token values, the OWNER VETOES block, and the brief clause or reference behind every `anti-slop-allow` line in the output; audit against the catalogue including V13, W11, W12, L14, T15 and I8, honour the stated decisions rather than re-flagging them, and list what the surface needs added>",
+  prompt: "<the absolute paths of the files under `<run dir>/emitted/` and of `preview.html`, to be read from disk, the token values, the OWNER VETOES block, and the brief clause or reference behind every `anti-slop-allow` line in the output; audit against the catalogue including V13, W11, W12, L14, T15 and I8, honour the stated decisions rather than re-flagging them, and list what the surface needs added>",
   description: "Anti-AI aesthetic audit of generated UI" })
 
 Agent({ subagent_type: "ui-craft:ui-responsive-reviewer",
-  prompt: "<the generated component code verbatim, the DISPLAY RANGE, the stated responsive behavior, the Step 5a screenshot paths if any>",
+  prompt: "<the absolute paths of the files under `<run dir>/emitted/`, the DISPLAY RANGE, the stated responsive behavior, the Step 5a screenshot paths if any>",
   description: "Responsive audit of generated UI" })
 
 Agent({ subagent_type: "ui-craft:ui-accessibility-reviewer",
-  prompt: "<the generated component code verbatim, the token values, the platform>",
+  prompt: "<the absolute paths of the files under `<run dir>/emitted/`, the token values, the platform>",
   description: "Accessibility audit of generated UI" })
 ```
 
@@ -343,9 +353,9 @@ Any CRITICAL or HIGH finding from any reviewer, and any Recommended change that 
 
 ## Step 6: Present results
 
-1. Gate the output against the ACCEPTANCE CRITERIA from Step 3 (all twelve, mechanically), against the Step 5a stranger's word and measurements, and against the Step 5b audit. Criterion 6 is a script, not a read: run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the emitted files> <the preview> --format json` and read its findings — exit 0 is clean, exit 1 means findings to triage by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8, exit 2 is a usage error to fix and re-run. A criterion cleared by an `anti-slop-allow` line that quotes the brief, the VISUAL REFERENCE or a recorded veto is a pass; carry the reason to the user instead of spending the re-dispatch on it. A real failure means ONE re-dispatch naming the exact failed criterion, the word and numbers from Step 5a, and any CRITICAL/HIGH audit finding. A second failure means present anyway, flagging the gap explicitly. Confirm any `proposed` subject, audience or job — and any `reference proposed` POV — with the user in the same message. State the gate's outcome as one of the four finish words (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass): `recapture` when a Step 5a capture is invalid (blank, caught mid-animation, the wrong state), which recaptures before anything is judged; `fix` for named criterion or audit failures, which spends the single re-dispatch; `rebuild` when the failure is the concept itself (the stranger's word fails, or a CRITICAL or HIGH finding names the POV), which re-dispatches with the concept failure named instead of a patch list; `ship` when everything passes. The Step 6 header carries the word.
+1. Gate the output against the ACCEPTANCE CRITERIA from Step 3 (all twelve, mechanically), against the Step 5a stranger's word and measurements, and against the Step 5b audit. Criterion 6 is a script, not a read: run `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <the files under <run dir>/emitted/> <run dir>/preview.html --format json --surface <SURFACE TYPE>`, one run per class when SURFACE TYPE names two (`--surface` takes one of control, content, marketing, article; a content or reference surface is `content`), and read its findings — exit 0 is clean, exit 1 means findings to triage by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8, exit 2 is a usage error to fix and re-run. A criterion cleared by an `anti-slop-allow` line that quotes the brief, the VISUAL REFERENCE or a recorded veto is a pass; carry the reason to the user instead of spending the re-dispatch on it. A real failure means ONE re-dispatch naming the exact failed criterion, the word and numbers from Step 5a, and any CRITICAL/HIGH audit finding. A second failure means present anyway, flagging the gap explicitly. After the re-dispatch, run Step 5.0, Step 5a and Step 5b again on the revised output, all four reviewers included, inside a fresh `<run dir>/round-2/` that stands in for `<run dir>` from then on (its `draft/` is the re-dispatch's DRAFT DIRECTORY), so no first-round file is scanned, reviewed or applied: a fix, and above all a `rebuild`, can break a dimension no reviewer flagged, and the Pre-ship audit describes the design you present. Then gate it once more; that second gate is final, and what still fails is presented flagged. A run therefore dispatches at most two architects and two rounds of the four reviewers. Confirm any `proposed` subject, audience or job — and any `reference proposed` POV — with the user in the same message. State the gate's outcome as one of the four finish words (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass): `recapture` when a Step 5a capture is invalid (blank, caught mid-animation, the wrong state), which recaptures before anything is judged; `fix` for named criterion or audit failures, which spends the single re-dispatch; `rebuild` when the failure is the concept itself (the stranger's word fails, or a CRITICAL or HIGH finding names the POV), which re-dispatches with the concept failure named instead of a patch list; `ship` when everything passes. The Step 6 header carries the word.
 2. Display the agent's output verbatim. Do not summarize or reformat.
-3. Show the Step 5a screenshots (or the code-only note), the stranger's word, and the substance and density numbers, then the audit findings, under a `## Pre-ship audit` heading, with the reviewers' verdict lines and the anti-slop auditor's "What this surface needs added" list.
+3. Show the Step 5a screenshots (or the code-only note), the stranger's word, and the substance and density numbers, then the audit findings, under a `## Pre-ship audit` heading, with the reviewers' verdict lines and the anti-slop auditor's "What this surface needs added" list, and one line naming the run directory this skill wrote.
 4. Prompt:
    ```
    Apply this design to the project? Options:
@@ -354,16 +364,17 @@ Any CRITICAL or HIGH finding from any reviewer, and any Recommended change that 
    - "apply [component name]": specific components
    - "revise [aspect]": adjust POV/colors/typography/layout/sizing
    - "skip": take the output and apply yourself
+   Applying also writes design/POV.md and design/notes.md, the record the next pass starts from; say "no design notes" to leave them out.
    ```
 
 ## Step 7: Apply and verify
 
-1. If the user asks to apply, YOU (the orchestrator) create the files using Write/Edit. Do not re-dispatch the agent.
+1. If the user asks to apply, YOU (the orchestrator) create the files using Write/Edit, from the approved files in `<run dir>/emitted/`. Do not re-dispatch the agent.
 2. Then verify what you wrote, on the paths you touched:
    - TypeScript: run the TypeScript 7 gate, resolved as `${CLAUDE_PLUGIN_ROOT}/references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck gate describes (compiler chosen by version and invoked by path, exit code read from a log).
-   - Run the project's lint command.
+   - Run the project's lint command. The run directory under `.claude/ui-craft/` holds copies, not project code, so an error reported there is not one in the applied files.
    - Tailwind v4: check that the new `@theme` tokens resolve.
-3. Write `design/POV.md` from the architect's worksheet (three adjectives, the visual reference, anchors, banned list, must-be-present list, density, tone, motion, decoration, the copy map's placement rules) and `design/notes.md` recording the twin test's "Changed X to Y because Z" and every direction tried and rejected, so the next pass starts from a decision instead of re-deriving one. Never write a test that pins a design literal.
+3. When the user has not declined them, write `design/POV.md` from the architect's worksheet (three adjectives, the visual reference, anchors, banned list, must-be-present list, density, tone, motion, decoration, the copy map's placement rules) and `design/notes.md` recording the twin test's "Changed X to Y because Z" and every direction tried and rejected, so the next pass starts from a decision instead of re-deriving one. Never write a test that pins a design literal.
 4. Report any breakage with the fix, and offer to iterate. Code that does not compile is not applied work.
 5. Offer to run `review-ui` on the new components for a full second-opinion audit, or `improve-ui` for the complete pass.
 

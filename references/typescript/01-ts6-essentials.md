@@ -173,7 +173,7 @@ The fleet contract installs both under distinct names:
 
 ```bash
 cd <root>; for c in node_modules/ts7/bin/tsc node_modules/@typescript/native/bin/tsc node_modules/typescript/bin/tsc; do [ -f "$c" ] && node "$c" --version 2>/dev/null | grep -q "Version 7\." && TS7="$c" && break; done
-node "$TS7" --noEmit > /tmp/tsc.log 2>&1; echo "tsc exit=$?"; head -200 /tmp/tsc.log
+LOG="$(mktemp "${TMPDIR:-/tmp}/ui-craft-tsc.XXXXXX")"; node "$TS7" --noEmit > "$LOG" 2>&1; echo "tsc exit=$? log=$LOG"; head -200 "$LOG"
 ```
 
 When no candidate prints `Version 7.`, the project has no TS7 gate: run the TypeScript 6 compiler by path for the check, and report the missing gate.

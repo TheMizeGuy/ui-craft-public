@@ -101,7 +101,7 @@ A review that reads only components misses the thing that will revert its fixes:
 - `design/*.md`, in particular a `POV.md` and a `known-debt.md`;
 - the theme or token README;
 - stylelint / eslint / biome rules that constrain visual properties: a banned `box-shadow`, a forbidden `border`, a capped radius scale, an accent allow-list, a "no decorative colour" rule;
-- tests that pin visual values or text volume. Grep the test tree for `toHaveStyle`, `toMatchInlineSnapshot` over CSS, `box-shadow`, `border-radius`, `.css.snap`, `wordCount`, and `toBeGreaterThan(` applied to a word, heading or paragraph count.
+- tests that pin visual values or text volume. Search the test tree for `toHaveStyle`, `toMatchInlineSnapshot` over CSS, `box-shadow`, `border-radius`, `.css.snap`, `wordCount`, and `toBeGreaterThan(` applied to a word, heading or paragraph count.
 
 Each rule that enforces **flatness** (bans edges, badges, elevation, or accent use) or **text volume** (a word-count or heading-count FLOOR, which is a padding generator by construction: `${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md` § 3 bans the floor and keeps the ceiling) becomes a finding:
 
@@ -193,7 +193,7 @@ Include these ACCEPTANCE CRITERIA in every specialist prompt, and check them on 
 4. Every Recommended change that removes a device names the device that takes over its job (`${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Finding format; the working list of replacements is `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6). A removal with no named replacement is an open question for the owner, not a recommendation.
 5. Substance and placement findings carry their numbers: the accent chroma, the boundary ratio against both surfaces, the surface-level count, the image count, the word count against that surface's budget. A substance or placement claim with no measurement is TASTE (`${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 2, `${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md` § 7).
 
-A report failing any criterion gets ONE re-dispatch naming the failed item; a second failure means including the raw output in the merge, flagged as non-conforming.
+A report failing any criterion gets ONE re-dispatch naming the failed item; a second failure means including the raw output in the merge, flagged as non-conforming. A specialist that returns nothing, an error or a refusal has failed criterion 1 and spends that same re-dispatch (the session's own rules choose its model); if it again returns no report, there is nothing to merge: name its dimension under `Dimensions not reviewed` with the reason, give it no verdict row, and leave it out of the ledger's `dimensions` so Step 8 carries its prior entries forward. A dimension with no report is not a dimension with no findings.
 
 ## Step 6: Capture browser evidence once, then dispatch in parallel
 
@@ -216,7 +216,7 @@ Standard mode has no dedicated verifier agent, so the coordinator applies the ve
 3. Validate severities against the severity-validation table in the same file (taste never at HIGH/CRITICAL; accessibility blockers never below HIGH; a finding that blocks a core task at any width in the default matrix, or scrolls primary content horizontally at 320px, never below HIGH).
 4. Enforce the geometry evidence rule (`${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md`, "Geometry evidence rule"): any spatial claim without geometry evidence keeps its canonical confidence class, gains the `[unverified: geometry measurement needed]` modifier on its Evidence line, and is capped at MEDIUM. Never rewrite its confidence class.
 5. Set the blocker flags from the merged findings: `accessibility_blocker`, `responsive_blocker`, `core_task_blocker`, `runtime_instability` (definitions in `04-verdicts-and-verification.md`). A set flag caps its dimension at the 3rd token of its family, never the 1st or 2nd.
-5a. Derive each dispatched dimension's verdict token from its merged findings with the table in `04-verdicts-and-verification.md` § Verdict derivation (any CRITICAL: 4th token; any HIGH: 3rd; only MEDIUM/LOW: 2nd; only TASTE or none: 1st, except that a dimension with no findings in code-only or screenshot-only evidence mode takes the 2nd token with `(evidence: static, <what was not exercised>)` appended), then apply the blocker cap. Do not copy a specialist's proposed token.
+5a. Derive the verdict token of each dispatched dimension that returned a report (one moved to `Dimensions not reviewed` under Step 5 gets none) from its merged findings with the table in `04-verdicts-and-verification.md` § Verdict derivation (any CRITICAL: 4th token; any HIGH: 3rd; only MEDIUM/LOW: 2nd; only TASTE or none: 1st, except that a dimension with no findings in code-only or screenshot-only evidence mode takes the 2nd token with `(evidence: static, <what was not exercised>)` appended), then apply the blocker cap. Do not copy a specialist's proposed token.
 6. Re-rank by severity (CRITICAL first, TASTE last) and number sequentially.
 7. If a prior ledger matches this scope, compute the delta below and prepend it to the report.
 
@@ -251,7 +251,7 @@ A prior entry that is absent from this run only because the run did not cover it
 **Scope:** <files, count, and the URL verbatim when one was supplied>
 **Platform:** <detected platform>
 **Specialists:** <which were dispatched>
-**Dimensions not reviewed:** <undispatched specialists and why, or "none">
+**Dimensions not reviewed:** <undispatched specialists, and dispatched ones that returned no report, each with why, or "none">
 **Evidence level:** <code + browser / code-only / screenshot-only>
 **Product context:** <PRODUCT.md, DESIGN.md read | none found>
 **Widths viewed:** <the renders a reviewer actually opened and examined, each with its width | "none: code-only">
@@ -264,7 +264,7 @@ A prior entry that is absent from this run only because the run did not cover it
 
 | Dimension | Verdict | Blockers | Key finding |
 |---|---|---|---|
-| <one row per DISPATCHED dimension, verdict token from 04-verdicts-and-verification.md> | | N | <worst issue> |
+| <one row per DISPATCHED dimension that returned a report, verdict token from 04-verdicts-and-verification.md> | | N | <worst issue> |
 
 **Blocker flags set:** <accessibility_blocker / responsive_blocker / core_task_blocker / runtime_instability, with the finding number that set each, or "none">
 
@@ -321,7 +321,7 @@ After presenting the report, write (or overwrite) `.claude/ui-craft/last-review.
 
 `measurements` is optional and keyed by width: on a browser run, the numbers `measure_substance.js` and `measure_density.js` printed at 1920 (and at the widest width when it differs), copied verbatim. A code-only run omits the key rather than writing estimates. It is what lets the next run report **SUBSTANCE REGRESSED** (Step 7): without a stored number, a pass that strips the previous pass's edges, badges and accent has nothing to be compared against.
 
-Carry forward any prior entry whose dimension is absent from `dimensions` this run, unchanged and whether or not Step 1 loaded the ledger as a baseline, so a narrow review never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
+Carry forward any prior entry whose dimension is absent from `dimensions` this run, unchanged and whether or not Step 1 loaded the ledger as a baseline, so a narrow review never erases a wider one. The ledger and the run evidence (Step 6) are the only files this skill writes without asking; say so in one line.
 
 ## Step 9: Optional shareable artifact
 
@@ -347,6 +347,7 @@ Three limits on what you apply:
 
 After applying:
 - Re-run `scan_tells.mjs` on the touched files and compare it with `evidence/scan_tells.json`: findings the applied change introduced or grew are triaged by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8; findings that were already there stay in the report as filed and are not fixed unasked.
+- Run the TypeScript 7 gate on a TypeScript project, resolved as `${CLAUDE_PLUGIN_ROOT}/references/typescript/01-ts6-essentials.md` § The TypeScript 7 typecheck gate describes (compiler chosen by version and invoked by path, exit code read from a log), and the project's lint command when it has one. An error the applied change introduced is fixed, or reported with its fix and that finding counted as not applied; errors that were there before the change are reported as pre-existing and not fixed unasked.
 - When the applied set touches a rendered surface and a browser is available, recapture the before set's widths and states into `<run dir>/evidence/after/` under the before set's file names, then run the finish pass by dispatching `ui-craft:ui-verifier` in FINISH MODE (`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass) and report its disposition word; otherwise offer a re-review on the same scope.
 - Offer to run `optimize-ui` if performance wasn't in this pass, or `improve-ui` for the full team treatment.
 - If the review surfaced non-obvious patterns, write them to the goodmem Learnings space, if goodmem is configured in this session.

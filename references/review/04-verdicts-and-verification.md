@@ -299,8 +299,8 @@ it shows; every other return goes on to the verdict table below.
 `unresolved`, tied to what the after evidence shows. A claimed fix the evidence does not show is
 unresolved. A fix that moved positions while the quality the finding named is still absent is
 partial. A fix that removed a device without its named replacement, or moved a substance or
-placement number the wrong way, is a regression. After the table come `regressions` (at most
-three, judged by the same rubric) and `remaining` (or `clear`). The pass does not hunt: a finding
+placement number the wrong way, is a regression. After the table come `regressions` (every one
+the after evidence shows, worst first, judged by the same rubric) and `remaining` (or `clear`). The pass does not hunt: a finding
 it was not given is outside its scope.
 
 **The word is derived, never softened.** `ship` needs every row resolved, and it covers the

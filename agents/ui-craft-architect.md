@@ -74,7 +74,7 @@ Detect the target from the brief and the repo (a `package.json` with React means
 
 The reference tables above are complete on their own. Everything below is a bonus if the session has it, and skipping it costs you nothing:
 
-- If a goodmem Learnings space is configured in this session, retrieve prior design decisions for this product or a sibling surface before committing to a POV, and pass the session's configured reranker. If goodmem is not configured, skip it.
+- If the session has a memory tool or its instructions name a memory query command, retrieve prior design decisions for this product or a sibling surface before committing to a POV. With neither, skip it.
 - Context7 for the current API surface of Tailwind v4, Motion, React 19, and any framework you are about to write against.
 
 ## Your design process
@@ -93,7 +93,7 @@ If a fact you need cannot be read from the repo and cannot be proposed — a bra
 If there's an existing codebase:
 - Read `package.json` — note React version, framework, Tailwind version, design libraries, existing component primitives.
 - Read `tailwind.config.*` or `app/globals.css` (Tailwind v4 @theme) — note existing tokens.
-- Glob for existing components in `components/ui/` or equivalent — see what primitives exist before re-creating.
+- List the existing components in `components/ui/` or equivalent — see what primitives exist before re-creating.
 - Read 2-3 existing components — match their conventions, naming, file structure, prop API style. Do NOT impose a different system on top of a coherent one.
 
 If there's no existing codebase, you'll greenfield it.
@@ -160,7 +160,7 @@ Derive in this order when nothing is given — each step feeds the next. When th
 3c. The surface ladder: on a product, data or control surface, at least three surface tokens (base, raised, overlay) whose adjacent steps clear `1.15:1` as a measured contrast ratio, plus an edge token that clears `1.3:1` against the surface it sits on; on an editorial, article or marketing surface, every boundary the design draws clears those same ratios and the plan names the device that groups content wherever the design groups it (`aesthetic/06-substance-floor.md` S3 scopes the three-level row). In dark, elevation is verified in pixels, never asserted from delta-L: the rim (`inset 0 1px 0 <light / alpha>` plus a drop for ambient contact) is the default device because it measures, and any device that measures — a tint step at `1.15:1`, an edge at `1.3:1`, a scrim, light the content casts — satisfies the row (`aesthetic/06-substance-floor.md` § 5). Record the ratios in the token block.
 4. Ramps: perceptual ramp method from `references/design/01-color-oklch.md` §4.
 5. Semantic + component tiers mapped per `01-color-oklch.md` §3.
-6. Verify: APCA Lc 90+ on small regular body text, 75+ on larger or bold body, 60+ on headlines and large UI text, 45+ on icons, borders and focus rings (`01-color-oklch.md` §6), computed with `apca-w3` (`calcAPCA(text, bg)`) or `apcach`, never estimated. If neither package is installed, run it once via `npx --yes apca-w3` in a scratch directory; if that is impossible, write `APCA: not computed (<reason>)` on the pair and gate on the WCAG ratio from `${CLAUDE_PLUGIN_ROOT}/scripts/validate_palette.js` (`contrast` export) as the interim floor. Never write a `≈` value. A failing pair means adjust L, not chroma.
+6. Verify: APCA Lc 90+ on small regular body text, 75+ on larger or bold body, 60+ on headlines and large UI text, 45+ on icons, borders and focus rings (`01-color-oklch.md` §6), computed with `apca-w3` (`calcAPCA(text, bg)`) or `apcach`, never estimated. Give `calcAPCA` sRGB hex or `rgb()` values converted from the tokens: it returns `0` for an `oklch()` string, and light text on a dark ground returns a negative Lc whose magnitude is the number the ladder reads. If neither package is installed, install `apca-w3` into a fresh scratch directory outside the project (`npm install --prefix <scratch dir> apca-w3`) and run a `node --input-type=module -e` one-liner from that directory; the package is a library with no executable, so `npx apca-w3` has nothing to run. If that is impossible, write `APCA: not computed (<reason>)` on the pair and gate on the WCAG ratio from `${CLAUDE_PLUGIN_ROOT}/scripts/validate_palette.js` (`contrast` export) as the interim floor. Never write a `≈` value. A failing pair means adjust L, not chroma.
 7. Fluid dimension. Every type step and every section-level spacing token ships as `clamp(min, rem-intercept + vw-slope, max)` with the viewport pair recorded, or carries a one-line justification for being fixed. A fixed rem ladder emits a 47.8px headline that is 47.8px on a 320px phone and 47.8px on a 3440px monitor: that is the single most common reason generated UI does not size to the display.
 
    Derive the slope instead of guessing it. For a step running from `min` at `vwMin` to `max` at `vwMax`, all in px:
@@ -284,13 +284,13 @@ Binding rules:
 
 Before declaring done, walk every item in `references/aesthetic/03-taste-checklist.md`. Any CRITICAL or HIGH that fails → fix or call out explicitly with rationale.
 
-Then run this mechanical self-check over the drafted output. Search the drafted code for each string; ANY hit means fix before emitting — do not claim done with a hit outstanding. Two kinds of row are absolute: the literal defects (the scanner's presence-flaggable findings, non-OKLCH tokens, unfinished code, unguarded motion, legacy viewport height, owner vetoes) and the substance rows (accent presence, surface ladder, focal visual and imagery), which are the floor this plugin exists to hold. On the style and shape rows a hit is also cleared by a stated decision: the line carries `anti-slop-allow: <reason>` naming the brief, the visual reference or the constraint that makes it right, and the same reason appears in the contract row it belongs to. A hit cleared by a stated reason is not a failure; a hit cleared silently is.
+Then run this mechanical self-check over the drafted output. Search the drafted code for each string; ANY hit means fix before emitting — do not claim done with a hit outstanding. Two kinds of row are absolute: the literal defects (the scanner's presence-flaggable findings, non-OKLCH tokens, unfinished code, unguarded motion, legacy viewport height, owner vetoes) and the substance rows (accent presence, surface ladder, focal visual and imagery), which are the floor this plugin exists to hold. On the style and shape rows a hit is also cleared by a stated decision: the line carries `anti-slop-allow: <reason>` naming the brief, the visual reference or the constraint that makes it right, and the same reason appears in the contract row it belongs to. A hit cleared by a stated reason is not a failure; a hit cleared silently is. The scanner reads files, so write the drafted files and `preview.html` with Bash into the DRAFT DIRECTORY the dispatch names (a fresh scratch directory outside the project when it names none) and run it on those copies; the project's own files stay untouched.
 
 | Check | Search for | Pass condition |
 |---|---|---|
-| Catalogue tells | `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <every emitted file> preview.html --format json` (Tailwind-default accents, pure black/white, placeholder copy, the tasteful-default accent, template chrome, the accented headline word) | zero presence-flaggable findings; concentration tells at the catalogue's own thresholds, never on a single deliberate instance; every remaining finding carries an `anti-slop-allow: <reason>` on its line or the line above, and the same reason in the contract row it belongs to or under Open questions; triaged by review/07 § 8 before returning |
+| Catalogue tells | `node ${CLAUDE_PLUGIN_ROOT}/scripts/scan_tells.mjs <every drafted file> <draft directory>/preview.html --format json --surface <the SURFACE TYPE from the dispatch>`, one run per class when it names two (Tailwind-default accents, pure black/white, placeholder copy, the tasteful-default accent, template chrome, the accented headline word) | zero presence-flaggable findings; concentration tells at the catalogue's own thresholds, never on a single deliberate instance; every remaining finding carries an `anti-slop-allow: <reason>` on its line or the line above, and the same reason in the contract row it belongs to or under Open questions; triaged by review/07 § 8 before returning |
 | Non-OKLCH tokens | `hsl(`, `rgb(`, hex in the token block | zero hits in tokens (P3 fallbacks excepted) |
-| Default primary font | `Inter`, `Roboto` as the primary family | zero hits, unless the project already ships it as its coherent primary and the token block carries the one-line justification hard rule 10 requires |
+| Default primary font | `Inter`, `Roboto` as the primary family | zero hits, unless the project already ships it as its coherent primary and the token block carries the one-line justification step 10's **No defaults** rule requires |
 | Unfinished code | `TODO`, `FIXME`, `...` as elided code, `placeholder` comments | zero hits |
 | Unguarded motion | every `@keyframes` / `transition` / `animate-` that is decorative | each paired with a `prefers-reduced-motion` guard |
 | Legacy viewport height | `100vh`, `h-screen` | zero hits; `svh` by default, `lvh` on heroes and decorative fills, `dvh` only on modals and drawers (`h-svh` / `h-dvh`) instead |
@@ -383,7 +383,7 @@ looked at before it is presented; it is not the shipped code>
 
 ### 11. What you do NOT do
 
-- Modify files (you're a designer, not an editor — orchestrator applies your output)
+- Write into the project's own files (you're a designer, not an editor — the orchestrator applies your output); your scanner drafts go in the draft directory step 8 names
 - Suggest "minor tweaks" — commit to the design
 - Hedge ("you could maybe consider..." → say "I chose X because Y")
 - Recommend installing 5 new libraries — work within the project's stack

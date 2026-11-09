@@ -1,7 +1,7 @@
 ---
 name: improve-ui
 description: |-
-  Use this skill when the user wants the full UI treatment: a comprehensive multi-specialist pass covering visual + usability/flow + accessibility + responsive + motion + performance + type safety + anti-AI aesthetics in one review, plus (for improvement asks) a prioritized fix plan. Triggers: "improve this UI", "make this UI better", "make this god tier", "polish these components", "refactor the UI", "level up the design", "make this look like a human team built it", "full UI pass", "comprehensive UI review", "thorough UI audit", "improve the whole interface". Dispatches the ui-craft:ui-team-lead orchestrator, which coordinates every applicable specialist in parallel plus a dedicated verifier, deduplicates findings, and produces a unified per-dimension-verdict report ordered by impact. This is the heavy-hitter, and the only skill that writes the CI verdict artifact.
+  Use this skill when the user wants the full UI treatment: a comprehensive multi-specialist pass covering visual + usability/flow + accessibility + responsive + motion + performance + type safety + anti-AI aesthetics in one review, plus (for improvement asks) a prioritized fix plan. Triggers: "improve this UI", "make this UI better", "make this god tier", "polish these components", "refactor the UI", "level up the design", "make this look like a human team built it", "full UI pass", "comprehensive UI review", "thorough UI audit", "improve the whole interface". Dispatches the team lead (the `ui-team-lead` body, run as a general-purpose subagent), which coordinates every applicable specialist in parallel plus a dedicated verifier, deduplicates findings, and produces a unified per-dimension-verdict report ordered by impact. This is the heavy-hitter, and the only skill that writes the CI verdict artifact.
 argument-hint: '[path | file | directory | url | screenshot | "staged" | "diff" | "pr" | "all"]'
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, Agent, Artifact
 ---
@@ -68,7 +68,7 @@ Two blocks the team lead forwards verbatim to every specialist. Both exist becau
 - `design/*.md`, in particular a `POV.md` and a `known-debt.md`;
 - the theme or token README;
 - stylelint / eslint / biome rules that constrain visual properties: a banned `box-shadow`, a forbidden `border`, a capped radius scale, an accent allow-list, a "no decorative colour" rule;
-- tests that pin visual values or text volume. Grep the whole test tree for `toHaveStyle`, `toMatchInlineSnapshot` over CSS, `box-shadow`, `border-radius`, `.css.snap`, `wordCount`, and `toBeGreaterThan(` applied to a word, heading or paragraph count.
+- tests that pin visual values or text volume. Search the whole test tree for `toHaveStyle`, `toMatchInlineSnapshot` over CSS, `box-shadow`, `border-radius`, `.css.snap`, `wordCount`, and `toBeGreaterThan(` applied to a word, heading or paragraph count.
 
 Each rule that enforces **flatness** (bans edges, badges, elevation, or accent use) or **text volume** (a word-count or heading-count FLOOR, a padding generator by construction: `${CLAUDE_PLUGIN_ROOT}/references/design/12-copy-placement-and-volume.md` § 3 keeps the ceiling and bans the floor) becomes a finding: `id` `visual-doctrine-<slug>`, `dimension: visual`, title beginning `Doctrine: `, severity MEDIUM, `file:line` at the rule, and a Recommended change stating the keep-or-retire choice for the owner rather than making it. No schema change is needed: `${CLAUDE_PLUGIN_ROOT}/ARCHITECTURE.md` § Data contracts already routes a rubric row with no enum value of its own to `visual`.
 
@@ -167,7 +167,8 @@ TASK:
    CONSTRAINTS and OWNER VETOES above, plus the measured numbers from step 3.
 5. Wait for all specialists.
 6. Run ui-verifier LAST on the merged findings and the scanner output at
-   <RUN DIRECTORY>/evidence/scan_tells.json (with the measurement reports' findings arrays). It
+   <RUN DIRECTORY>/evidence/scan_tells.json (with the measurement reports' findings arrays and
+   the OWNER VETOES block). It
    returns the verified findings, the four blocker flags, and one canonical verdict token per
    dimension.
 7. Merge: deduplicate, re-rank by impact, number sequentially.
@@ -237,11 +238,11 @@ ACCEPTANCE CRITERIA (merged report is rejected if any fails):
 
 Do the placeholder substitution mechanically, in this order:
 
-1. Resolve the plugin root ONCE: the absolute directory this skill was loaded from (its installed cache directory, e.g. `~/.claude/plugins/cache/<marketplace>/ui-craft/<version>/`). Call it `ROOT`.
+1. `ROOT` is the plugin's absolute directory. The harness resolved it when this skill loaded: it is the path in front of `/agents/ui-team-lead.md` in item 2. Use that exact string.
 2. Read `${CLAUDE_PLUGIN_ROOT}/agents/ui-team-lead.md` and take its body (everything after the frontmatter).
-3. Replace EVERY literal `${CLAUDE_PLUGIN_ROOT}` in that body with `ROOT`. Do the same for any specialist body the lead will inline.
+3. A file read from disk still carries the plugin-root placeholder, which the harness expands only in the skill and agent text it loads itself: the name `CLAUDE_PLUGIN_ROOT` wrapped in `${` and `}`. Replace every occurrence in that body with `ROOT`. Do the same for any specialist body the lead will inline.
 4. Create the run directory: `mkdir -p <repo>/.claude/ui-craft/runs/<ISO timestamp>/`.
-5. Before sending, grep the assembled prompt for the literal string `${CLAUDE_PLUGIN_ROOT}`. If any survives, the substitution failed and every reference read inside the subagent will fail. Fix it before dispatching.
+5. Before sending, search the assembled prompt for the bare name `CLAUDE_PLUGIN_ROOT`. A hit is a placeholder that was not replaced, and every reference read inside the subagent fails on it: replace it, then dispatch.
 
 ```
 Agent({
@@ -255,22 +256,10 @@ Run the team lead in the foreground when the user is waiting on the report.
 
 ## Step 5: Present results
 
-1. Read `<RUN DIRECTORY>/merged-report.md` from disk. Do not rely on the returned message, which truncates around 60KB and will silently cut the tail of a large pass. If the file is missing or under 100 bytes, treat the run as failed and re-dispatch once.
-2. Gate the merged report against the ACCEPTANCE CRITERIA from Step 3. Any failure means ONE re-dispatch naming the failed criterion; a second failure means you apply the verifier's rules (`${CLAUDE_PLUGIN_ROOT}/agents/ui-verifier.md`, or `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`) to the raw specialist findings directly and present the result flagged. Never present an unverified report.
+1. Read `<RUN DIRECTORY>/merged-report.md` from disk. Do not rely on the returned message, which truncates around 60KB and will silently cut the tail of a large pass. If the file is missing or under 100 bytes, the run failed. Items 1 and 2 share one re-dispatch: a run that fails either check is re-dispatched once, naming what failed; if the re-dispatched run's file is missing or under 100 bytes, run the team lead's process in this session (Execution mode) and say so in the header.
+2. Gate the merged report against the ACCEPTANCE CRITERIA from Step 3. Any failure spends the shared re-dispatch, naming the failed criterion; a failure once it is spent means you apply the verifier's rules (`${CLAUDE_PLUGIN_ROOT}/agents/ui-verifier.md`, or `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`) to the findings in the merged report directly and present the result flagged. Never present an unverified report.
 3. Show the merged report verbatim. Then, when the doctrine audit (Step 2c) or a specialist found any, list the **Doctrine constraints** below it: each repo rule that would revert an accepted fix, with its `file:line`, the finding it would revert, and the keep-or-retire choice, stated as a choice for the owner rather than a decision you made. A fix applied while a live rule still enforces the opposite is reverted by that rule, so the owner's keep-or-retire choice comes before the fix.
-4. If the user only wanted an audit, stop here (offer to apply on request). Otherwise prompt:
-   ```
-   This is the full pass from the specialist team. Apply changes? Options:
-   - "all CRITICAL" / "all CRITICAL and HIGH"
-   - "quick wins only"
-   - "design pass" / "flow pass" / "motion + responsive pass" / "perf pass" / "type safety pass"
-   - "finding 3, 7, 12, 15"
-   - "everything in <filename>"
-   - "skip"
-   ```
-5. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, in the triage-tier order of review/07 § 5 (tier 1 broken tasks, data loss and inaccessible paths before tier 4 visual consistency), fixing each at the level its drift class names, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement; never turn the report into a "remove the slop" sweep, never apply a removal whose replacement the user has not seen, and never apply a device the OWNER VETOES block bans, even when the report proposed it -- substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave the finding open. **The doctrine gate:** before applying a finding, check its rework against the Step 2c doctrine constraints (re-run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` if the tree changed). If an open constraint would revert the rework (a pin test on the literal the fix changes, a word-count floor the cut copy would trip, a doctrine line that bans the device the fix adds), apply the fix and the constraint's retirement in the same change with the user's say-so on the retirement, or hold the fix and say which constraint blocks it. Never apply a fix that CI or the repo's own rules will undo. After applying, re-run `scan_tells.mjs` on the touched files and compare it with `<RUN DIRECTORY>/evidence/scan_tells.json`: findings the applied change introduced or grew are triaged by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8; findings that were already there stay in the report as filed and are not fixed unasked.
-6. If the harness provides an Artifact tool, offer to render the merged report (verdict table + numbered findings) as a shareable HTML artifact. If no Artifact tool is available, skip this offer silently and don't mention its absence.
-7. Refresh the ledger: write (or overwrite) `.claude/ui-craft/last-review.json` in the reviewed repo.
+4. Refresh the ledger: write (or overwrite) `.claude/ui-craft/last-review.json` in the reviewed repo.
 
    ```json
    {"schemaVersion": 3, "timestamp": "<ISO 8601>", "scope": "<resolved scope, URL verbatim if supplied>",
@@ -282,7 +271,20 @@ Run the team lead in the foreground when the user is waiting on the report.
                             "imagesPerSection": 0.6, "wordsBeforePrimary": 22, "orphanParagraphs": 0, "textOnlySections": 0}}}
    ```
 
-   `measurements` is optional and keyed by width: on a browser run, the numbers the team lead's measurement scripts printed at 1920 (and the widest width when it differs), verbatim; a code-only run omits the key. The next run compares against it to report SUBSTANCE REGRESSED. Carry forward, unchanged and whether or not Step 1 loaded the ledger as a baseline, any prior entry whose dimension is absent from `dimensions` this run, so a narrow pass never erases a wider one. This is the one file the skill writes without asking; note it happened in one line.
+   `measurements` is optional and keyed by width: on a browser run, the numbers the team lead's measurement scripts printed at 1920 (and the widest width when it differs), verbatim; a code-only run omits the key. The next run compares against it to report SUBSTANCE REGRESSED. Carry forward, unchanged and whether or not Step 1 loaded the ledger as a baseline, any prior entry whose dimension is absent from `dimensions` this run, so a narrow pass never erases a wider one. The ledger and the run directory are what this skill writes without asking; say so in one line.
+
+5. If the harness provides an Artifact tool, offer to render the merged report (verdict table + numbered findings) as a shareable HTML artifact. If no Artifact tool is available, skip this offer silently and don't mention its absence.
+6. If the user only wanted an audit, make the item 8 offer and end the run with an offer to apply on request. Otherwise prompt:
+   ```
+   This is the full pass from the specialist team. Apply changes? Options:
+   - "all CRITICAL" / "all CRITICAL and HIGH"
+   - "quick wins only"
+   - "design pass" / "flow pass" / "motion + responsive pass" / "perf pass" / "type safety pass"
+   - "finding 3, 7, 12, 15"
+   - "everything in <filename>"
+   - "skip"
+   ```
+7. If the user picks, apply each finding's suggested rework using Edit/Write, following the non-destructive method in `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md`: classify Sacred (logic) vs Slop (visual) before touching a file, prescribe tokens before components, prefer an override stylesheet over in-place rewrites, apply one layer at a time, in the triage-tier order of review/07 § 5 (tier 1 broken tasks, data loss and inaccessible paths before tier 4 visual consistency), fixing each at the level its drift class names, and never reshape JSX structure for aesthetic reasons. Do not re-dispatch a reviewer. Apply only the findings the user named, each with its stated replacement, and nothing adjacent: the report is not a "remove the slop" sweep. A removal whose replacement the user has not seen is shown to them first and applied on their go-ahead, or left open. A device the OWNER VETOES block bans is not applied even when the report proposed it: substitute another device from the same tell's replacement column in `${CLAUDE_PLUGIN_ROOT}/references/aesthetic/06-substance-floor.md` § 6, or tell the user about the conflict and leave the finding open. **The doctrine gate:** before applying a finding, check its rework against the Step 2c doctrine constraints (re-run `node ${CLAUDE_PLUGIN_ROOT}/scripts/audit_doctrine.mjs <repo-root> --format json` if the tree changed). If an open constraint would revert the rework (a pin test on the literal the fix changes, a word-count floor the cut copy would trip, a doctrine line that bans the device the fix adds), apply the fix and the constraint's retirement in the same change with the user's say-so on the retirement, or hold the fix and say which constraint blocks it. Never apply a fix that CI or the repo's own rules will undo. After applying, re-run `scan_tells.mjs` on the touched files and compare it with `<RUN DIRECTORY>/evidence/scan_tells.json`: findings the applied change introduced or grew are triaged by `${CLAUDE_PLUGIN_ROOT}/references/review/07-surgical-visual-upgrade.md` § 8; findings that were already there stay in the report as filed and are not fixed unasked.
 
 8. **The CI verdict artifact: this skill is its only producer.** `review-ui` and `optimize-ui` never write one, because the gate schema requires six verdicts and neither of those runs a full pass with a verifier. `${CLAUDE_PLUGIN_ROOT}/ci/verdict-artifact-schema.json` is canonical for the shape; `ARCHITECTURE.md` § Data contracts explains it. Read the schema rather than trusting the sketch below if the two ever disagree. Offer, don't force:
 

@@ -26,9 +26,9 @@ architecture and navigation**, and **Error recovery and state integrity** is
 decidable from a single rendered artifact. Those three are decidable only from a
 SEQUENCE: two consecutive screens, a back press, a reload, a forced failure.
 
-That asymmetry is why flow defects survived every earlier version of this rubric.
-A checkout whose every screen is pixel-correct and whose step 2 discards step 1's
-input scored clean on ten dimensions, because the defect is not in any frame.
+That asymmetry is why a review of single frames cannot see flow defects. A checkout
+whose every screen is pixel-correct and whose step 2 discards step 1's input is clean
+on every single-frame dimension, because the defect is not in any frame.
 
 The consequence for reviewers:
 

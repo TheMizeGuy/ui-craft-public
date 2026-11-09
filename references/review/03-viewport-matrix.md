@@ -98,13 +98,13 @@ confirm a resize mid-task keeps state and scroll position
 ## High-confidence viewport failures (always flag)
 
 - **Content occupying under 60% of the viewport width at 1920px or above**, with
-  no second column, sidebar, or reading-measure reason. This sits at the TOP of
-  the list deliberately. It used to appear only under "quality defects" below,
-  where it competed with a severity ladder anchored entirely on breakage — so a
-  page wasting 1008px of a 2560px display cleared every wide-viewport review it
-  was given. It is a measurable failure, not a preference: record utilisation as
-  a percentage and the unused pixel count. And centring is not the fix; two
-  504px gutters waste exactly what one 1008px gutter did
+  no second column, sidebar, or reading-measure reason. This is first on the
+  list on purpose: a severity ladder anchored on breakage ranks a page that
+  renders correctly as a preference, so a page wasting 1008px of a 2560px
+  display clears a wide-viewport review unless waste is a failure in its own
+  right. It is a measurable failure, not a preference: record utilisation as a
+  percentage and the unused pixel count. And centring is not the fix; two 504px
+  gutters waste exactly what one 1008px gutter did
   (`references/review/05-density-and-economy.md`)
 
 - Horizontal scrolling in primary content
@@ -118,11 +118,10 @@ confirm a resize mid-task keeps state and scroll position
 
 ## Quality defects (viewport-related)
 
-- Excessive dead space on large displays — see the always-flag list above; it
-  was demoted to this section once and that is precisely why it shipped. The
-  threshold and the menu of correct fixes are in "Surplus width above 1600px"
-  below, because "excessive" with no number and no target behaviour produces a
-  finding nobody can act on
+- Excessive dead space on large displays belongs to the always-flag list above,
+  not here. The threshold and the menu of correct fixes are in "Surplus width
+  above 1600px" below, because "excessive" with no number and no target
+  behaviour produces a finding nobody can act on
 - Line lengths > 75ch on wide screens (the same decision as dead space, from the
   other side: see below)
 - A single container child absorbing the slack: an unsized column in a

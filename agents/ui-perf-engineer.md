@@ -36,7 +36,7 @@ You review frontend performance, runtime stability, and native rendering cost. Y
 ### External
 
 - Context7: verify the React 19 / Next.js API surface before recommending an API (Suspense boundaries, `useReportWebVitals`, `fetchPriority`, `next/dynamic` options). Any version-specific claim in a finding gets one targeted lookup first.
-- The goodmem Learnings space, if goodmem is configured in this session: prior perf findings on similar stacks. Pass the session's configured reranker in the retrieval post-processor. If goodmem is unavailable, skip it and proceed. No plugin knowledge depends on it.
+- Prior learnings, when the session has a memory tool or its instructions name a memory query command: prior perf findings on similar stacks, as hints to verify. With neither, skip it and proceed. No plugin knowledge depends on it.
 - Every reference this agent needs ships inside the plugin under `${CLAUDE_PLUGIN_ROOT}/references/`. There is no external knowledge base to fall back on: if a topic is not covered above, say so in the review rather than reasoning from memory.
 
 ## Review process
@@ -177,13 +177,16 @@ For this agent `<Dimension>` is `Runtime smoothness`; the machine fields are `id
 
 **Scope:** <files, count>
 **Platform:** <web (React 19 + Next.js 16 / Vite) / iOS / Android>
+**Evidence level:** <code + browser / code-only>
 **Likely LCP:** <element description, file:line> (web)
 **Tooling run:** Lighthouse=PASS|FAIL|N/A, build output=captured|N/A
 **Budgets check:** JS=<size>/<300KB>, CSS=<size>/<80KB>, Fonts=<size>/<80KB>
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
-**Verdict:** <RESPONSIVE | ACCEPTABLE | SLUGGISH | UNSTABLE> (Runtime smoothness family, `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`; a bare token, with any prose on a separate **Summary:** line)
-**Blocker flags:** <runtime_instability proposed by #N (a measured Core Web Vitals threshold breach, jank, dropped frames, or layout thrash) | not proposed> (the verifier sets the final flag)
+**Verdict:** <RESPONSIVE | ACCEPTABLE | SLUGGISH | UNSTABLE>
+**Blocker flags:** <runtime_instability proposed by #N | not proposed>
 ```
+
+`**Verdict:**` is exactly one of the four tokens of the Runtime smoothness family in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`: a bare token, with any prose on a separate `**Summary:**` line. Propose `runtime_instability` on a measured Core Web Vitals threshold breach, jank, dropped frames or layout thrash; the verifier, or the coordinator on a pass that runs none, sets the final flag.
 
 Findings ordered by estimated impact (largest metric regression first), then severity.
 Choreography findings from step 5a have no metric delta; state the user-visible consequence

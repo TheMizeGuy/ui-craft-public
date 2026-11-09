@@ -140,10 +140,10 @@ If the page's CSP blocks the CDN import, fetch `axe.min.js` once with Bash and i
 curl -sL https://cdn.jsdelivr.net/npm/axe-core@4/axe.min.js -o /tmp/axe.min.js && wc -c /tmp/axe.min.js
 ```
 
-then `browser_evaluate` with the file contents prepended to the `axe.run(...)` call. The CLI form is equivalent when a shell is the easier path:
+then `browser_evaluate` with the file contents prepended to the `axe.run(...)` call. The CLI form is equivalent when a shell is the easier path; it exits 0 whether or not it finds violations (`--exit` is the flag that turns violations into exit 1, and it takes no value):
 
 ```bash
-npx --yes @axe-core/cli <url> --exit 0
+npx --yes @axe-core/cli <url>
 ```
 
 Then capture the accessibility tree with `browser_snapshot`, and the resolved colors for any element you intend to make a contrast claim about:
@@ -180,7 +180,7 @@ Compute the ratio with the formula in `${CLAUDE_PLUGIN_ROOT}/references/accessib
 
 - Automation finding + evidence = strong claim
 - Clean automation + screenshot/code concern = "needs manual verification"
-- No accessibility tree = soften the CONFIDENCE, not the severity, and say why. "CRITICAL, confidence medium: no accessibility tree available, claim is from source" is honest. Silently downgrading a CRITICAL to MEDIUM because the tooling was missing is not
+- No accessibility tree: keep the confidence class (one of the four) and say on the `Evidence:` line where the claim comes from. A defect the source proves (a control with no accessible name in the markup, `outline: none` with no replacement) keeps its severity, with the quoted lines as its evidence. A claim only a runtime can settle (the computed name, the focus order, what gets announced) carries the evidence-status modifier from `${CLAUDE_PLUGIN_ROOT}/references/review/02-evidence-pipeline.md` § Evidence status. Lowering a CRITICAL without the modifier and a stated reason hides the gap
 - Whole categories the input could not cover (an Understandable pass with no form present, a media pass with no media) are reported as "not applicable", never as passing
 - NEVER say "accessible" from clean automation alone
 - Contrast and target-size claims follow the canonical geometry evidence rule
@@ -192,6 +192,7 @@ Compute the ratio with the formula in `${CLAUDE_PLUGIN_ROOT}/references/accessib
 ```
 [CRITICAL] [Hard defect] Accessibility fundamentals -- missing focus visibility on primary navigation
 Surface: main navigation bar, all viewports
+Location: src/components/nav/main-nav.css:18
 Issue: focus ring removed with `outline: none` and no replacement
 Why it matters: keyboard-only users cannot see where they are in the navigation
 Evidence: CSS rule removing outline without `:focus-visible` replacement
@@ -206,6 +207,8 @@ Citation rules:
 - Contrast findings carry both resolved colors, the computed ratio, and the threshold with the reason that threshold applies (normal vs large text vs non-text). Four parts, or the verifier drops it.
 - Target-size findings carry the measured target box (including padding) and, when relying on the spacing exception, the measured gap against the two-case 2.5.8 rule: undersized versus undersized needs centres at least 24 CSS px apart; undersized versus any neighbour of 24 px or more needs a gap of at least (24 - size) / 2 (`${CLAUDE_PLUGIN_ROOT}/references/accessibility/01-wcag-2-2.md` section 2).
 - Native findings cite the platform rule alongside the WCAG criterion, for example `WCAG: 1.4.3 Contrast (AA); Apple HIG 4.5:1 body text` or `WCAG: 1.4.4 Resize Text (AA); Android sp text sizing at 200% font scale`.
+
+Machine fields for the ledger and the CI artifact: `dimension` is `accessibility`, `id` is `accessibility-<kebab-slug of the title>`, and `file` plus optional `line` come from the `Location:` field (a path and line, or `runtime only` / `screenshot only` when no source is in scope).
 
 ### Priority rule
 
@@ -226,7 +229,7 @@ Open with the summary block. The gates that consume this review require every fi
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
 **Not assessed:** <categories with no input in scope, or "none">
 **Keyboard traversal:** <driven with browser_press_key (Tab / Shift+Tab / Escape) plus browser_snapshot | static analysis only, no keyboard traversal (axe does not cover the keyboard rows)>
-**Blocker flags:** <accessibility_blocker proposed by #N | not proposed> (the verifier confirms or clears it)
+**Blocker flags:** <accessibility_blocker proposed by #N | not proposed>
 **Verdict:** <INCLUSIVE | ADEQUATE | GAPS | EXCLUDING>
 **Summary:** <one line; the verdict line above is a bare token because the report table and the CI gate consume it mechanically>
 ```

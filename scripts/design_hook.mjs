@@ -3,7 +3,8 @@
  * design_hook.mjs -- the opt-in ui-craft design hook (registered in hooks/hooks.json).
  *
  * Two tiers. After an Edit or Write of a UI file, a per-edit pass runs the
- * scanner's mechanical rules on that file and names what the edit left behind.
+ * scanner's mechanical rules on that file and names what this session's edits
+ * added to it.
  * When the agent stops, a deep pass runs every rule over the files edited this
  * session and separates what the session introduced from what was already
  * there. It never blocks: every path exits 0, and the only output is context
@@ -372,8 +373,11 @@ function postToolUse(payload, ctx) {
     return { ...result, chars: emit('PostToolUse', text) };
   }
 
-  const findings = scan(target.abs, target.content, config.surface, PER_EDIT_SET)
+  const before = entry.baseline && isObject(entry.baseline.counts) ? entry.baseline.counts : null;
+  const all = scan(target.abs, target.content, config.surface, PER_EDIT_SET)
     .filter((f) => PER_EDIT_SET.has(ruleOf(f)) && !f.heuristic);
+  const findings = before ? all.filter((f) => occurrences(f) > (Number(before[ruleOf(f)]) || 0)) : all;
+  const preExisting = all.length - findings.length;
   const keyed = findings.map((f) => ({ f, key: `${ruleOf(f)}|${occurrences(f)}` }));
   const current = new Set(keyed.map((k) => k.key));
   const known = new Set([...entry.shown, ...entry.deferred]);
@@ -383,6 +387,7 @@ function postToolUse(payload, ctx) {
   result.findings = findings.length;
 
   if (!findings.length) {
+    if (preExisting) return { ...result, skipped: 'pre-existing only' };
     if (state.ackShown || config.quiet) return { ...result, skipped: 'clean' };
     state.ackShown = true;
     const text = `${PREFIX} ${target.rel}: none of the per-edit rules matched. That is not a design review: the stop pass runs more rules, and /ui-craft:review-ui is the review.`;
@@ -391,8 +396,11 @@ function postToolUse(payload, ctx) {
   if (!fresh.length) return { ...result, skipped: 'seen' };
 
   const head = [`${PREFIX} ${target.rel}: ${fresh.length} design finding(s) from the per-edit rules`];
-  const items = fresh.map((k) => findingLine(k.f, `L${k.f.line}`));
-  const { text, shown } = fit(state, head, items, (k) => `- and ${k} more in this file; the stop pass lists them`, [], MAX_CHARS);
+  if (!before) head.push(ATTRIBUTION_NOTE);
+  const kindOf = (f) => (!before ? 'attribution unknown' : (Number(before[ruleOf(f)]) || 0) > 0 ? 'grew' : '');
+  const items = fresh.map((k) => findingLine(k.f, `L${k.f.line}`, kindOf(k.f)));
+  const tail = preExisting ? [`${preExisting} finding(s) from these rules were in the file before this session's first edit and are not listed.`] : [];
+  const { text, shown } = fit(state, head, items, (k) => `- and ${k} more in this file; the stop pass lists them`, tail, MAX_CHARS);
   entry.shown.push(...fresh.slice(0, shown).map((k) => k.key));
   entry.deferred.push(...fresh.slice(shown).map((k) => k.key));
   return { ...result, shown, chars: emit('PostToolUse', text) };

@@ -40,7 +40,7 @@ Understand: React version, tsconfig strict level, linter config, testing framewo
 # TS7 (Go-native) type gate, invoked BY PATH. Never bare `tsc`, never `npx tsc`
 # Resolve the TS7 compiler by VERSION, never by alias name: the fleet uses the `ts7` alias, Microsoft's documented layout uses `@typescript/native` for 7 and aliases `typescript` to `@typescript/typescript6` (binary `tsc6`).
 cd <root>; for c in node_modules/ts7/bin/tsc node_modules/@typescript/native/bin/tsc node_modules/typescript/bin/tsc; do [ -f "$c" ] && node "$c" --version 2>/dev/null | grep -q "Version 7\." && TS7="$c" && break; done
-node "$TS7" --noEmit > /tmp/tsc.log 2>&1; echo "tsc exit=$?"; head -200 /tmp/tsc.log   # any non-zero exit is FAIL (TS7 exits 1, TS6 exits 2; never test for one number)
+LOG="$(mktemp "${TMPDIR:-/tmp}/ui-craft-tsc.XXXXXX")"; node "$TS7" --noEmit > "$LOG" 2>&1; echo "tsc exit=$? log=$LOG"; head -200 "$LOG"   # any non-zero exit is FAIL (TS7 exits 1, TS6 exits 2; never test for one number)
 cd <root> && npx eslint <files> 2>&1 | head -200   # or biome check
 ```
 
@@ -70,28 +70,30 @@ Two hazards when reading the gate's output, both documented in `${CLAUDE_PLUGIN_
 
 ### 4. Findings format
 
+Use the canonical finding block from `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Finding format, with its field names unchanged. Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `Taste note`; there is no "Possible issue" class: an unmeasured claim keeps its class, carries `[unverified: runtime measurement needed]` on its `Evidence:` line, and is capped at MEDIUM until measured.
+
+For this agent `<Dimension>` is `TypeScript safety`; the machine fields are `id` (`typescript-<kebab-slug>`), `dimension: typescript`, `file` and `line` (from `Location:`). Name the angle inside the title, and add the two code blocks and the `Reference:` line below `Recommended change:`:
+
 ````
-### [SEVERITY] [CONFIDENCE] TypeScript safety -- <one-line title>
+[SEVERITY] [CONFIDENCE] TypeScript safety -- <angle>: <short title>
+Surface: <component / hook / module>
+Location: <path/to/file.tsx:42-58>
+Issue: <what is wrong in the type system>
+Why it matters: <the bug this lets through that the fix would stop at compile time>
+Evidence: <the compiler or lint output, or the quoted type that proves it>
+Recommended change: <one-line direction>
 
-Use the canonical finding block from `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md` § Finding format verbatim (`[SEVERITY] [CONFIDENCE] <Dimension> -- <short title>`, then `Surface:`, `Location:`, `Issue:`, `Why it matters:`, `Evidence:`, `Recommended change:`). Confidence is exactly one of `Hard defect`, `Quality defect`, `Pattern smell`, `Taste note`; there is no "Possible issue" class: an unmeasured claim keeps its class, carries `[unverified: runtime measurement needed]` on its `Evidence:` line, and is capped at MEDIUM until measured. Use the canonical field names (`Surface:`, `Location:`, `Issue:`, `Why it matters:`, `Evidence:`, `Recommended change:`, plus this agent's `Reference:` line); the machine fields are `id` (`typescript-<kebab-slug>`), `dimension: typescript`, `file` and `line` (from `Location:`). Name the angle inside the title.
-
-**File:** `path/to/file.tsx:42-58`
-
-**Issue:** What's wrong in the type system.
-
-**Why it matters:** What bug this allows at compile time that would be caught with the fix.
-
-**Current code:**
+Current code:
 ```ts
 // the type problem
 ```
 
-**Suggested rework:**
+Reworked:
 ```ts
 // the fix, clean under the project's TS7 gate
 ```
 
-**Reference:** `${CLAUDE_PLUGIN_ROOT}/references/typescript/03-state-typing.md` §Async data states
+Reference: `${CLAUDE_PLUGIN_ROOT}/references/typescript/03-state-typing.md` §Async data states
 ````
 
 `[CONFIDENCE]` is one of the four classes in `${CLAUDE_PLUGIN_ROOT}/references/review/01-universal-rubric.md`: `[Hard defect]` (reachable unsoundness or an objectively broken type), `[Quality defect]` (a real weakness with a safer alternative that still compiles), `[Pattern smell]` (a construct commonly correlated with type bugs), `[Taste note]` (advisory, style-only). Do not invent other class names.
@@ -112,11 +114,14 @@ Use the canonical finding block from `${CLAUDE_PLUGIN_ROOT}/references/review/01
 ## TypeScript UI Review
 
 **Scope:** <files, count>
+**Evidence level:** <code-only | code + browser, as the dispatch states it>
 **tsconfig:** strict=<bool>, noUncheckedIndexedAccess=<bool>, exactOptionalPropertyTypes=<bool>, verbatimModuleSyntax=<bool>
 **Tooling:** tsc=<TS7 | TS6-fallback | not run>:PASS|FAIL, eslint/biome=PASS|FAIL|N/A
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
-**Verdict:** <SOUND | ADEQUATE | LEAKY | UNSOUND> (TypeScript safety family, `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`; a bare token, with any prose on a separate **Summary:** line)
+**Verdict:** <SOUND | ADEQUATE | LEAKY | UNSOUND>
 ```
+
+`**Verdict:**` is exactly one of the four tokens of the TypeScript safety family in `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md`: a bare token, with any prose on a separate `**Summary:**` line.
 
 Findings by severity, grouped by file. End with recommended next steps + raw tsc/lint output.
 

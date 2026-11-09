@@ -12,7 +12,7 @@ You are coordinating a performance review and optimization of UI code. Your job 
 
 For a multi-dimension review use `review-ui`; for the full pass with the verifier use `improve-ui`. This skill is performance-only.
 
-**Read-only until the user picks.** The only file this skill writes unasked is the review ledger (Step 6). The `Edit`/`Write` grant in the frontmatter exists for that and for the Step 5 apply step.
+**The project's source is not edited until the user picks.** Measuring is part of the review: where they are available, the typecheck gate, the project's own build and Lighthouse run the way the project runs them and leave their usual output (a build directory, a report, a log). The only file this skill itself writes unasked is the review ledger (Step 6). The `Edit`/`Write` grant in the frontmatter exists for that and for the Step 5 apply step.
 
 ## Scope of the perf engineer
 
@@ -22,7 +22,7 @@ Both halves report under one dimension, `Runtime smoothness`, whose verdict fami
 
 ## Execution mode
 
-The `ui-perf-engineer` is dispatched as a subagent by default. For a small scope, or where no Agent tool exists, the session may run its measurement-first process itself; it says so in the report header and stays read-only. The orchestrator owns scope, context, the prompt, gating, and the ledger. The dispatch template in this skill sets no model or effort; the session may choose a model for the dispatch, and effort is never set.
+The `ui-perf-engineer` is dispatched as a subagent by default. For a small scope, or where no Agent tool exists, the session may run its measurement-first process itself; it says so in the report header, runs the measurements that are available, and edits no project source. The orchestrator owns scope, context, the prompt, gating, and the ledger. The dispatch template in this skill sets no model or effort; the session may choose a model for the dispatch, and effort is never set.
 
 ## Finding vocabulary (single source, do not restate)
 
@@ -106,7 +106,7 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
    finding with no metric delta, the user-visible consequence (your step 10).
 3. Every finding: current code + verbatim-applicable fix + reference citation + machine fields.
 4. Tooling section states what ran and what was unavailable. No silent skips.
-5. The `runtime_instability` blocker flag is set, or explicitly stated as not set.
+5. The `runtime_instability` blocker flag is proposed, or explicitly stated as not proposed.
 ```
 
 ## Step 4: Dispatch
@@ -117,10 +117,11 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
 
 ## Step 5: Present results
 
-1. Gate the report against the ACCEPTANCE CRITERIA from Step 3. Any failure means ONE re-dispatch naming the failed criterion; a second failure means present it flagged.
+1. Gate the report against the ACCEPTANCE CRITERIA from Step 3. Any failure means ONE re-dispatch naming the failed criterion; a second failure means present it flagged. A dispatch that returns nothing, an error or a refusal is re-dispatched once before the gate applies; if it fails again, run the measurement-first process in this session (Execution mode) and say in the header which path ran.
 2. Show it verbatim, under a header carrying the scope, evidence level, the `Runtime smoothness` verdict token, and the `runtime_instability` flag state.
 3. If a prior ledger was loaded, prepend the performance delta using the same buckets the other skills use, matched on `id` + `file`: NEW, RESOLVED (re-verified), STILL OPEN (same severity), REGRESSED (higher severity), IMPROVED (lower severity), Carried forward (every prior entry whose dimension is not performance).
-4. Prompt:
+4. Refresh the ledger now (Step 6). The turn ends at the prompt below, and the ledger is written on every run whether or not the user picks anything.
+5. Prompt:
    ```
    Apply any of these optimizations? Tell me which:
    - "all CRITICAL" / "all CRITICAL and HIGH"
@@ -128,9 +129,9 @@ ACCEPTANCE CRITERIA (report is rejected if any fails):
    - "everything in <filename>"
    - "skip"
    ```
-5. If the user picks, apply with Edit/Write. After applying:
+6. If the user picks, apply with Edit/Write. After applying:
    - Run the TypeScript 7 gate (resolved as in Step 3) to verify fixes compile.
-   - Run build if possible to check bundle size delta.
+   - Run the project's build when it has a build command, and report the bundle size delta against the before number.
    - Re-measure if a URL is available. A perf fix with no after-number is an assertion.
    - Offer to run `review-ui` if design quality wasn't checked yet, or `improve-ui` for the full team treatment.
 

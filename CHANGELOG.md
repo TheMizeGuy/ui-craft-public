@@ -1,5 +1,92 @@
 # Changelog
 
+## 0.7.1 — 2026-11-09
+
+A readiness pass for the fable model class, which now runs many of these agents:
+an audit of every model-facing file against Anthropic's migration guide for it,
+each finding checked by two verifiers before it was applied. That class applies
+instructions as written, so a stale sentence, a tool name the harness does not
+provide, a rule broader than its author meant or a missing branch costs more than
+it did. The detection text of `ui-anti-slop-auditor` is left as it is because it
+measured well on both model classes: blind runs of the 0.7.0 auditor on 2026-11-09
+over the 72-file blind copy and its 69 labels, two on the fable class and one on
+the opus class, read 0.855 / 0.937, 0.855 / 0.952 and 0.870 / 0.952 for pipeline
+recall and precision (the gated reading). All three passed the gate, every clean
+control was within tolerance, no run filed a finding on a clean control, and the
+two model classes differed by one LOW label, no more than the two fable runs
+differed from each other. What changes here are harness mismatches, defects,
+contradictions between files, and fit items from the audit. A fourth blind run,
+made from the 0.7.1 tree on the fable class after these changes, reads 0.913 /
+0.926 on the gated reading with every clean control within tolerance; the four
+runs are recorded in `tests/harness/README.md` with their findings files.
+
+- **Harness mismatches.** Claude Code expands the plugin-root placeholder in
+  skill and agent text at load, so improve-ui Step 4 told the session to replace
+  the plugin path with itself and to read a correct prompt as a failed
+  substitution; Step 4 and the team lead's note now describe the placeholder
+  without writing it, take the root from the path the harness already expanded,
+  and search for the bare name. Tool names used as verbs (`Grep for`, `Glob for`)
+  become search and list in design-ui, review-ui, improve-ui, the team lead, the
+  architect and the anti-slop auditor, because the main session and
+  general-purpose agents run without those tools. A browser tool counts when it
+  is loaded or loadable on demand, and a server that failed to connect does not.
+  The architect and the perf engineer look up prior learnings by capability,
+  with no space or reranker id a subagent cannot know. The architect's APCA
+  fallback installs `apca-w3` with `npm install --prefix` in a scratch directory
+  and passes hex values (`npx apca-w3` has no executable to run, and `calcAPCA`
+  returns 0 for an `oklch()` string). The axe CLI line drops `--exit 0`, which
+  turned violations into exit 1 and read `0` as a second URL.
+- **Defects.** The design hook's per-edit pass listed findings that predated the
+  session under "Real problem: fix it"; it now subtracts the session baseline as
+  the Stop pass does, counts the old findings on a tail line, stays silent when an
+  edit touched only old ones, tags `grew` and `attribution unknown`, and the
+  design-hook selftest grows from 54 to 59 cases. design-ui's criterion-6 scanner
+  takes file paths and nothing put the architect's output on disk: Step 4 creates
+  the run directory with a `draft/` folder the architect writes its scanner drafts
+  into, a new Step 5.0 writes the emitted files and `preview.html` there on every
+  run, the four reviewers read those files, and Step 7 applies from them. After the
+  single re-dispatch Steps 5.0 to 5b run again on the revision, in a fresh
+  `round-2/` folder of the run directory, and the second gate is final: at most two architects and two rounds of four reviewers. improve-ui and
+  optimize-ui write the ledger before the apply prompt that ends the turn.
+  improve-ui's two Step 5 checks share one re-dispatch, a second missing report
+  falls back to the team lead's process in the session, and that fallback verifies
+  the merged report (the specialists' raw reports are never on disk). review-ui
+  and optimize-ui say what follows a specialist that returns nothing, an error or a
+  refusal, and review-ui runs the TypeScript 7 gate and lint after applying. The
+  gate snippet logs to a `mktemp` file and prints its path instead of sharing
+  `/tmp/tsc.log` with every run on the machine. The perf and TypeScript engineers
+  carry the evidence-level line their skills' first criterion checks.
+- **Contradictions between files.** design-ui said nothing is written before
+  approval while Step 5a wrote render evidence; it now names its run directory as
+  the only write before approval and Step 6 reports it, and README, USAGE,
+  ARCHITECTURE and `review/02` list it. The team lead's hard rule named one file
+  while Phase 1 writes the evidence too; it now lists them, and the team lead
+  hands the OWNER VETOES block to the verifier. The TypeScript engineer's finding
+  template used its own field names, which the rubric calls a bug; it now uses the
+  canonical block, and the accessibility example gains its `Location:` line and
+  the agent its machine fields. The accessibility reviewer no longer models
+  "confidence medium", a value outside the four classes. Motion blockers are
+  proposed rather than set, Motion quality carries no flag, and the motion
+  duration bands match `design/04-motion.md`. The finish pass reports every
+  regression, worst first, in the verifier and in `review/04` alike, where both
+  capped them at three. optimize-ui's write rule covers the build output that
+  measuring leaves, and its fifth criterion reads a proposed flag. improve-ui's
+  description names the general-purpose dispatch its body uses, the team lead's
+  Phase 6 heading says hand off, and the architect cites the No defaults rule by
+  name. README's design-ui row and render widths, USAGE's greenfield line and its
+  three report samples follow the skills.
+- **Fit for literal reading.** improve-ui applies a removal whose replacement the user has
+  not seen on their go-ahead, as review-ui does, instead of never. design-ui's
+  apply prompt names the `design/POV.md` and `design/notes.md` writes, and "no
+  design notes" leaves them out; with no Agent tool the session applies the four
+  reviewers' lenses itself after forming its own read. Migration-relative history
+  leaves `review/01`, `review/03` and the anti-slop auditor's SCANNER FINDINGS
+  sentence; instruction text leaves the perf, TypeScript and responsive output
+  fences; optimize-ui's "if possible" on the post-apply build becomes a condition.
+- No scanner rule, corpus label, CI schema or ledger schema changes. Freedom
+  counts: design-ui 26 of 26 with 12 criteria, the architect 37 of 37, the
+  review-side pool 131 of 133 (the team lead from 20 to 19).
+
 ## 0.7.0 — 2026-10-26
 
 Measured against the 0.6.8 release. Impeccable's 450 antipattern fixture pairs: the scanner alone hits 228 (68 before) across 22 of its rules (6 before). The corpus grows from 41 fixtures and 48 labels to 71 fixtures, a DESIGN.md and 69 labels; the scanner alone scores 0.928 / 0.970 on it (0.896 / 0.915 before). Blind auditor alone 0.884 / 0.984 (0.870 / 0.779 before the scorer learned to count a further instance of a matched tell as an instance rather than a false positive), the pipeline the release gates 0.957 / 0.943, and the judgment-only labels 2 of 4, reported and not gated. On Limerino's 39 HTML pages the scanner reports 72 findings where 0.6.8 reported 62: three new findings that anti-slop 2.5 also files, the admin index's missing imagery, ten W11 findings on release-notes pages the old scanner masked (an `<ol>` named inside a CSS comment counted as the page's primary element; they are silent under `--surface article`), and three narrowings. The scanner selftest grows from 120 to 337 cases, the design-hook selftest from 50 to 54.

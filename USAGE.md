@@ -27,7 +27,10 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    evidence under `runs/<timestamp>/evidence/` (the scanner output on every run, the captures on
    a browser run), and a full `improve-ui` pass also writes
    `runs/<timestamp>/merged-report.md`, because a seven-specialist report exceeds the ~60KB at
-   which a subagent's reply truncates. Add `.claude/ui-craft/` to `.gitignore` if your repo runs
+   which a subagent's reply truncates. `design-ui` writes its run directory under
+   `runs/<timestamp>/` before you approve anything: the architect's drafts and emitted files and
+   the preview on every run, and the screenshots, the two measurement reports and the stranger's
+   word on a run with a browser tool. Add `.claude/ui-craft/` to `.gitignore` if your repo runs
    a clean-tree check, but do not ignore `.claude/` wholesale: gate artifacts under
    `.claude/ui-craft-artifacts/` are meant to be committed.
 5. **Strongest first run**: a code-only run has no geometry data, so every unmeasured spatial
@@ -58,7 +61,8 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    versions), the token system (`globals.css` / `tailwind.config.*`: color format, whether
    shadcn defaults are still in place), existing `components/ui/*` primitives, the workspace
    root, the owner's recorded vetoes and must-haves (`design/POV.md`, the repo's UI rules), and
-   the icons and imagery already on hand. A greenfield project keeps only the fleet-wide vetoes.
+   the icons and imagery already on hand. A greenfield project has no recorded vetoes; the
+   operator's standing preferences travel as rebuttable house defaults.
 3. It pulls up to three advisory seeds from the internal style taxonomy: a style family, a
    domain convention row, and a font pairing. Seeds are raw material for the architect's
    point-of-view, never a substitute for it, and the anti-AI-tells catalogue wins on conflict.
@@ -74,9 +78,12 @@ agent/reference file map, see [`README.md`](README.md) and [`ARCHITECTURE.md`](A
    production-grade code, states a substance contract and a copy map per screen, emits a
    self-contained `preview.html`, then runs the taste-checklist audit against its own output
    before returning.
-6. When a browser tool is in the session, the skill serves the preview locally, renders it at
-   390, 1440 and 1920, looks at it (the stranger's word test: if the first word is grey, flat
-   or template, it goes back), and runs the density and substance measurement scripts.
+6. The skill writes the architect's files and its preview into the run directory
+   (`.claude/ui-craft/runs/<timestamp>/`), where the scanner and the reviewers read them. When a
+   browser tool is in the session, it serves the preview locally, renders it at 390, 1440, 1920
+   and the widest width in the display range, looks at it (the stranger's word test: if the
+   first word is grey, flat or template, it goes back), and runs the density and substance
+   measurement scripts.
 7. Generated code is code, so it gets reviewed before you see it: the skill dispatches
    `ui-craft:ui-visual-reviewer`, `ui-craft:ui-anti-slop-auditor`,
    `ui-craft:ui-responsive-reviewer` and `ui-craft:ui-accessibility-reviewer` in parallel over
@@ -165,12 +172,14 @@ Apply this design to the project? Options:
 - "apply settings-nav": specific components
 - "revise typography": adjust POV/colors/typography/layout/sizing
 - "skip": take the output and apply yourself
+Applying also writes design/POV.md and design/notes.md, the record the next pass starts from; say "no design notes" to leave them out.
 ```
 
-Nothing is written until you pick one; the orchestrating session applies the files itself with
-`Edit`/`Write`, and the architect agent never writes to disk. After applying, the skill runs the
-typecheck gate, lint, and (on Tailwind v4) an `@theme` token resolution check on the paths it
-touched, then reports any breakage with the fix. Code that does not compile is not applied work.
+Nothing outside `.claude/ui-craft/` is written until you pick one; the orchestrating session
+applies the files itself with `Edit`/`Write`, and the architect agent writes only its scanner
+drafts, into the run directory. After applying, the skill runs the typecheck gate, lint, and (on
+Tailwind v4) an `@theme` token resolution check on the paths it touched, then reports any
+breakage with the fix. Code that does not compile is not applied work.
 
 ## Walkthrough: `/ui-craft:review-ui`: standard review
 
@@ -238,9 +247,11 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 **Dimensions not reviewed:** motion (no animation in scope), runtime (no performance concern and no measurable runtime)
 **Evidence level:** code-only
 **Product context:** none found
+**Widths viewed:** none: code-only
 **Not exercised:** touch drag, keyboard-only path, 200% zoom, reduced motion, offline
 **Surface:** control
 **Flows reviewed:** complete a checkout (3 steps)
+**Substance:** NOT ASSESSED: code-only run
 
 ### Dimension Verdicts
 
@@ -249,6 +260,8 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 | Visual quality | ADEQUATE | 0 | CTA priority unclear against the secondary action |
 | Accessibility | GAPS | 1 | Submit button has no accessible name |
 | Responsive quality | ADEQUATE | 0 | Summary column drops to one line at 375px |
+| Anti-AI aesthetic | ADEQUATE | 0 | Default shadcn radius scale left on the form card |
+| TypeScript safety | SOUND | 0 | One `as` cast could be a type guard (TASTE) |
 
 **Blocker flags set:** accessibility_blocker (finding 1)
 
@@ -256,7 +269,8 @@ touched, then reports any breakage with the fix. Code that does not compile is n
 **Verdict:** fix the HIGH before shipping
 
 1. [HIGH] [Hard defect] Accessibility -- submit button has no accessible name
-Surface: CheckoutForm.tsx:88
+Surface: checkout form, submit button
+Location: src/components/CheckoutForm.tsx:88
 Issue: <button><IconArrow /></button> with no aria-label or visible text
 Why it matters: screen reader users hear "button" with no indication of what it does
 Evidence: rendered markup has no accessible name in the code path
@@ -356,13 +370,15 @@ and **Review ledger** in [README.md](README.md#toolkit) for the artifact and led
 **Dimensions not reviewed:** none
 **Evidence level:** code + browser
 **Product context:** PRODUCT.md, DESIGN.md read
-**Widths exercised:** 320, 375, 430, 768, 1024, 1440
+**Widths exercised:** 320, 390, 900, 1440, 1920, 2560
+**Widths viewed:** 390, 1440, 1920, 2560
 **Not exercised:** touch drag, offline
 **Surface:** marketing (landing), control (checkout, team settings)
 **Flows reviewed:** complete a checkout (4 steps), invite a teammate (3 steps)
 **Token system:** shadcn default
+**Substance:** at 1920: accent chroma 0.11, 3 surface levels, focal visual present, 0.4 images per section; utilisation 64%, 18 words before the primary action
 **Primary font:** Inter, FAIL
-**CWV estimate:** LCP ~3.1s, INP ~180ms, CLS ~0.04
+**CWV:** LCP 2.3s / INP 180ms / CLS 0.04, measured with Lighthouse (mobile)
 **TS strictness:** partial
 **POV:** none detected
 
@@ -431,7 +447,7 @@ verdict
 | Finding | Score | After evidence |
 |---|---|---|
 | #2 icon-only buttons have no accessible name | resolved | both buttons carry an aria-label in the after snapshot |
-| #3 checkout summary clips the pay button below 430px | partial | evidence/after/375.png: the button fits, the total still clips |
+| #3 checkout summary clips the pay button below 430px | partial | evidence/after/390.png: the button fits, the total still clips |
 | #1 default shadcn token fingerprint in globals.css | unresolved | the tokens in the diff are unchanged |
 regressions: none
 remaining: #1, #3
@@ -472,36 +488,32 @@ scored fixes, not the whole surface (`references/review/04-verdicts-and-verifica
 ```
 ## Performance Review
 
-**Scope:** src/app/page.tsx
+**Scope:** src/app/page.tsx, http://localhost:3000/
 **Platform:** Web
-**Evidence level:** code-only
-**Likely LCP element:** hero <Image> (no `priority`, no explicit width/height)
-**Tooling:** TS7 gate OK, build OK, Lighthouse unavailable (no lighthouserc.* found)
-**Runtime smoothness:** SLUGGISH
-**runtime_instability:** not set
+**Evidence level:** code + browser
+**Likely LCP element:** hero <img> (no priority hint, no explicit width/height)
+**Tooling:** TS7 gate OK, build OK, Lighthouse ran on the URL (mobile profile)
+**Runtime smoothness:** UNSTABLE
+**runtime_instability:** set by #1 (LCP 3.3s measured against the 2.5s budget)
 
 **Findings:** 1 CRITICAL, 2 HIGH, 1 MEDIUM, 0 LOW, 0 TASTE
 **Verdict:** fix the CRITICAL before shipping
 
-1. [CRITICAL] Core Web Vitals -- hero image not marked as LCP candidate
-File: src/app/page.tsx:22
-Impact: +800ms LCP on 4G (estimated from unoptimized <img> vs next/image with priority)
-Current:
-```tsx
-<img src="/hero.jpg" alt="Product hero" />
-```
-Fix:
-```tsx
-<Image src="/hero.jpg" alt="Product hero" priority width={1600} height={900} />
-```
-Reference: references/performance/01-core-web-vitals.md
+1. [CRITICAL] [Hard defect] Runtime smoothness -- LCP: hero image not marked as the LCP candidate
+Surface: home page, first viewport
+Location: src/app/page.tsx:22
+Issue: the hero is a bare <img> with no priority hint and no intrinsic size
+Why it matters: the largest element in the first viewport starts loading late and shifts the layout when it lands
+Evidence: Lighthouse reports this image as the LCP element at 3.3s; references/performance/01-core-web-vitals.md
+Impact: about -800ms LCP expected with a priority hint and explicit size (cited from the reference)
+Recommended change: replace `<img src="/hero.jpg" alt="Product hero" />` with `<Image src="/hero.jpg" alt="Product hero" priority width={1600} height={900} />` from next/image
 ...
 
 ### Perf budget check
-| Metric | Budget | Estimated | Status |
+| Metric | Budget | Measured | Status |
 |---|---|---|---|
-| LCP | < 2.5s | ~3.3s | FAIL |
-| JS bundle | < 170KB | 142KB | PASS |
+| LCP | < 2.5s | 3.3s (Lighthouse) | FAIL |
+| JS bundle | < 300KB | 142KB | PASS |
 ```
 
 Every finding carries a quantified impact line ("+800ms LCP", "+120KB JS"), measured when
@@ -641,8 +653,9 @@ The agent triages each finding by `references/review/07-surgical-visual-upgrade.
 problem is fixed, a confident false positive or a device the brief names takes a disclosed
 `anti-slop-allow: <who decided: evidence>` on its line, and anything wider (an `ignore` entry,
 turning the hook off) is your decision. A finding that was in the file before this session's
-first edit is counted on one line and not listed; a file the hook could not verify a baseline
-for marks its findings `attribution unknown`. The hook never blocks a tool call or a stop, and
+first edit is counted on one line and not listed, per edit and at the stop pass, and one whose
+count grew is marked `grew`; a file the hook could not verify a baseline for marks its findings
+`attribution unknown`. The hook never blocks a tool call or a stop, and
 it fires at most one stop continuation per finding per session.
 
 ## Troubleshooting

@@ -115,10 +115,10 @@ Transitions. Code that treats one as the other is a finding.
 | Large hero or zoom continuity | 0.5-0.6s |
 | Above 0.6s on an interactive path | Decoration. Needs a stated reason or it is a finding |
 
-These are the Apple counterparts of the web 150-300ms micro / 200-500ms transition bands used in
-step 2 below. Spring `duration` is perceptual settling time rather than a hard cutoff, so a 0.5s
-spring and a 0.5s ease do not feel the same length; judge springs by their class, not by
-comparing their number to a curve's.
+These are the Apple counterparts of the web bands in step 2 below (micro-interactions under
+200ms, transitions 200-400ms). Spring `duration` is perceptual settling time rather than a hard
+cutoff, so a 0.5s spring and a 0.5s ease do not feel the same length; judge springs by their
+class, not by comparing their number to a curve's.
 
 ## Review process
 
@@ -139,7 +139,7 @@ For each animated element, check:
 | Criterion | Question |
 |---|---|
 | Purpose | Does this communicate a state change, spatial relationship, or feedback? |
-| Duration | Is it in the right range? (web: 150-300ms micro, 200-400ms transitions, over 400ms is catalogue M3; Apple: the bands above) |
+| Duration | Is it in the right range? (web: hover and press feedback 50-120ms, component state and micro-interactions 100-200ms, component enter and exit and page transitions 200-400ms, over 400ms is catalogue M3, per `design/04-motion.md` section 1; a spring is judged by its settle time; Apple: the bands above) |
 | Curves | Spring physics or appropriate easing? Is a gesture-driven change on a timing curve? |
 | Interruptibility | Can user input cancel or reverse? |
 | Non-blocking | Can the user interact during the animation? |
@@ -229,7 +229,7 @@ Open with the summary block:
 **Reduced motion:** <honored / partial / ignored / not applicable>
 **Findings:** N CRITICAL, N HIGH, N MEDIUM, N LOW, N TASTE
 **Verdict:** <FLUID | ADEQUATE | STIFF | HARMFUL>
-**Blocker flags:** <accessibility_blocker and/or core_task_blocker with the finding number that set each, or "none">
+**Blocker flags:** <accessibility_blocker and/or core_task_blocker proposed by #N, or "not proposed">
 ```
 
 `**Verdict:**` is exactly one of the four tokens in the Motion quality family from
@@ -237,11 +237,13 @@ Open with the summary block:
 sentence: the report table and the CI gate consume it mechanically. If a human-readable line
 helps, add it as a separate `**Summary:**` line below the verdict.
 
-Propose `accessibility_blocker` (the verifier confirms it) when motion excludes users: decorative or vestibular-trigger motion
+Propose `accessibility_blocker` when motion excludes users: decorative or vestibular-trigger motion
 with no reduce-motion path, or a reduced-motion path that removes the feedback along with the
-animation. Set `core_task_blocker` when motion blocks completion: content inaccessible during an
-animation, or a non-interruptible transition on a critical path. A set flag caps the verdict
-at STIFF at best, never FLUID or ADEQUATE (`references/review/04-verdicts-and-verification.md` § Blocker flags).
+animation. Propose `core_task_blocker` when motion blocks completion: content inaccessible during
+an animation, or a non-interruptible transition on a critical path. The verifier, or the
+coordinator on a pass that runs none, confirms or clears each. Motion quality carries no flag of
+its own, so its token comes from the severity derivation alone
+(`${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Blocker flags).
 
 Then findings ordered by severity, CRITICAL first, TASTE last.
 
