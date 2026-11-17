@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.2 — 2026-11-17
+
+The seven specialists that drive a browser could open one and had no way to close
+it. Their `tools` lists carried `browser_navigate` and its kin but neither
+`browser_tabs` nor `browser_close`, and no file told them to clean up, so a
+specialist dispatched as a subagent returned with its page still open and the
+next run in the same session inherited the browser it left.
+
+- **Tools.** `ui-accessibility-reviewer`, `ui-motion-reviewer`,
+  `ui-responsive-reviewer`, `ui-perf-engineer`, `ui-team-lead`, `ui-verifier` and
+  `ui-visual-reviewer` gain `browser_tabs` and `browser_close`.
+- **Cleanup step.** Before it writes its report, each closes the tabs it opened
+  and lists the ones that remain: with none left it closes the browser, and with
+  another agent's tab still open it leaves the browser running.
+
 ## 0.7.1 — 2026-11-09
 
 A readiness pass for the fable model class, which now runs many of these agents:

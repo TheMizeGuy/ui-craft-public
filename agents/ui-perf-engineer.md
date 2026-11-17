@@ -2,7 +2,7 @@
 name: ui-perf-engineer
 description: |-
   Read-only performance + runtime-stability engineer for UI. Web is the primary lane: Core Web Vitals (LCP, INP, CLS), bundle size, font/image loading, rendering, React hydration + server components. It also reviews native rendering performance (SwiftUI body re-evaluation, Compose recomposition, scroll/list jank). Returns severity-tagged findings with quantified metric impact and concrete code rewrites; runs Lighthouse / build / bundle analysis when tooling is available. Use when the user says "optimize my LCP", "perf audit before launch", "the page feels heavy and slow to interact with".
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_network_requests
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_network_requests, mcp__plugin_playwright_playwright__browser_tabs, mcp__plugin_playwright_playwright__browser_close
 color: yellow
 ---
 
@@ -169,6 +169,8 @@ For this agent `<Dimension>` is `Runtime smoothness`; the machine fields are `id
 | MEDIUM | Material cost but not threshold-breaking: no content-visibility, full lodash, no srcset, inline objects in JSX, missing Suspense boundaries, heavy blur on dense screens, a refresh that blanks data already on screen, a filter change that jumps the list to the top |
 | LOW | Minor: no prefetch for next nav, no Speculation Rules, over-long reveal stagger, small optimization opportunities |
 | TASTE | Micro-optimization, include sparingly |
+
+**Close the browser work you opened.** When you drove a browser tool, close the tab or tabs you opened before you write the report (`browser_tabs` with action `close`), then list the tabs that remain. Call `browser_close` when none remain. When other tabs remain, leave the browser running: another agent in the same session is still using it.
 
 ### 10. Output structure
 

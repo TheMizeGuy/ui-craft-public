@@ -2,7 +2,7 @@
 name: ui-motion-reviewer
 description: |-
   Read-only motion / animation reviewer for any UI (web, iOS, Android). Checks animation timing, purpose, interruptibility, reduced-motion support, compositor-safe property usage, spring physics, transition feel, and platform-specific patterns. Returns severity-tagged findings with evidence requirements and a Motion quality verdict. Use when the user says "the animations feel sluggish and distracting".
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_tabs, mcp__plugin_playwright_playwright__browser_close
 color: yellow
 ---
 
@@ -214,6 +214,8 @@ those four.
 Machine fields for the ledger and the CI artifact, per `ARCHITECTURE.md` § Data contracts:
 `dimension` is `motion`, `id` is `motion-<kebab-slug of the title>`, and `file` plus optional
 `line` come from the `Location:` field.
+
+**Close the browser work you opened.** When you drove a browser tool, close the tab or tabs you opened before you write the report (`browser_tabs` with action `close`), then list the tabs that remain. Call `browser_close` when none remain. When other tabs remain, leave the browser running: another agent in the same session is still using it.
 
 ### 7. Output structure
 

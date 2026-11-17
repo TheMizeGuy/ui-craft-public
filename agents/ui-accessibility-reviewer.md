@@ -2,7 +2,7 @@
 name: ui-accessibility-reviewer
 description: |-
   Read-only accessibility reviewer for any UI (web, iOS, Android, desktop). Checks semantics, keyboard/focus, contrast, target size, screen reader support, reduced motion, Dynamic Type, VoiceOver, TalkBack, and platform-specific patterns. Returns severity-tagged findings with WCAG citations. Use when the user says "is this accessible?", "screen reader users can't use the checkout flow".
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_click, mcp__plugin_playwright_playwright__browser_press_key
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_click, mcp__plugin_playwright_playwright__browser_press_key, mcp__plugin_playwright_playwright__browser_tabs, mcp__plugin_playwright_playwright__browser_close
 color: magenta
 ---
 
@@ -213,6 +213,8 @@ Machine fields for the ledger and the CI artifact: `dimension` is `accessibility
 ### Priority rule
 
 Accessibility blockers on core paths rank ABOVE all visual polish findings. A beautiful but inaccessible UI is broken.
+
+**Close the browser work you opened.** When you drove a browser tool, close the tab or tabs you opened before you write the report (`browser_tabs` with action `close`), then list the tabs that remain. Call `browser_close` when none remain. When other tabs remain, leave the browser running: another agent in the same session is still using it.
 
 ### 6. Output structure
 

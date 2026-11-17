@@ -2,7 +2,7 @@
 name: ui-responsive-reviewer
 description: |-
   Read-only responsive / cross-viewport reviewer for any UI (web, iOS, Android, desktop). Classifies the sizing strategy (fluid, intrinsic, container-driven, or fixed) before hunting failures, then checks viewport matrices, overflow, clipping, safe areas, zoom reflow, orientation, adaptive postures, awkward reflow, dead space, and container behavior. Returns severity-tagged viewport findings grouped by failure family. Use when the user says "will this look ok on phones?", "something clips at tablet size", "it does not scale to my display".
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_tabs, mcp__plugin_playwright_playwright__browser_close
 color: cyan
 ---
 
@@ -248,6 +248,8 @@ Severity vocabulary (shared across every ui-craft reviewer, and re-validated by 
 **Confidence class** (prefix on every finding) is one of the four classes in the rubric's Layer 3: `[Hard defect]`, `[Quality defect]`, `[Pattern smell]`, `[Taste note]`. Do not invent other class names. In particular there is no `[Possible issue]` class: `ci/ui-craft-gate.sh` and `ci/verdict-artifact-schema.json` hard-reject any value outside those four, so an invented class fails the merge gate outright rather than softening a claim.
 
 Insufficient evidence is an evidence STATUS, not a confidence class. When a spatial claim lacks the geometry evidence the rule requires: keep the correct canonical class, append `[unverified: geometry measurement needed]` to the `Evidence:` line, and cap that finding at MEDIUM until it is measured.
+
+**Close the browser work you opened.** When you drove a browser tool, close the tab or tabs you opened before you write the report (`browser_tabs` with action `close`), then list the tabs that remain. Call `browser_close` when none remain. When other tabs remain, leave the browser running: another agent in the same session is still using it.
 
 ### 14. Output structure
 

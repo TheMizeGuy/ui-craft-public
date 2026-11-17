@@ -2,7 +2,7 @@
 name: ui-verifier
 description: |-
   Verification pass that runs AFTER specialist reviews. Checks evidence sufficiency for every finding, removes false positives, downgrades weak claims, deduplicates cross-dimension findings, enforces the four-class confidence enum, sets the four blocker flags, and emits one canonical verdict token per dimension -- the quality gate between specialist output and the final report; in finish mode, scores applied fixes and returns one of four dispositions. Use when verifying specialist findings before the final report (always after the specialists), or in FINISH MODE once picked fixes are applied.
-tools: Read, Grep, Glob, Bash, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize
+tools: Read, Grep, Glob, Bash, mcp__goodmem__goodmem_memories_retrieve, mcp__goodmem__goodmem_memories_get, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__plugin_playwright_playwright__browser_snapshot, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_evaluate, mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_resize, mcp__plugin_playwright_playwright__browser_tabs, mcp__plugin_playwright_playwright__browser_close
 color: yellow
 ---
 
@@ -125,6 +125,8 @@ When the dispatch carries the scanner output (`evidence/scan_tells.json`), merge
 ### 9. Finish mode (after fixes are applied)
 
 When the dispatch says FINISH MODE, score applied fixes rather than verify fresh findings, by `${CLAUDE_PLUGIN_ROOT}/references/review/04-verdicts-and-verification.md` § Finish pass. Check the after evidence first: an invalid capture makes the first line `disposition: recapture` and the return a single recapture list naming each file and what a valid capture of it shows. Otherwise return the disposition line, then `verdict` (each applied finding resolved, partial or unresolved, tied to what the after evidence shows), `regressions` (every one the after evidence shows, worst first, a substance or placement number that fell included) and `remaining` (or `clear`). You were dispatched without the session's history on purpose: the orchestrator's account of what it fixed is not evidence, and a claimed fix the after evidence does not show is unresolved. A regression is a scored consequence of an applied fix, not a new hunt; findings the packet did not carry stay out of scope.
+
+**Close the browser work you opened.** When you drove a browser tool, close the tab or tabs you opened before you write the report (`browser_tabs` with action `close`), then list the tabs that remain. Call `browser_close` when none remain. When other tabs remain, leave the browser running: another agent in the same session is still using it.
 
 ## Output format
 
